@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace CreativeCookies.VideoHosting.Contracts
 {
-    interface IVideoSegment
+    public interface IVideoSegment
     {
-        int Id { get; set; }
-        int VideoId { get; set; }
+        Guid Id { get; set; }
+        Guid VideoId { get; set; }
         int SequenceNumber { get; set; }
         byte[] Data { get; set; }
     }

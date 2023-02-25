@@ -8,8 +8,8 @@ namespace CreativeCookies.VideoHosting.EfCore.Models
 {
     public abstract class BaseEntity
     {
-        public Guid Id { get; private set; }
-        public DateTime DateCreated { get; private set; }
+        public Guid Id { get; set; }
+        public DateTime DateCreated { get; set; }
         public DateTime DateUpdated { get; set; }
 
         public BaseEntity()

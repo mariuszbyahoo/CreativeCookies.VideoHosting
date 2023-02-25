@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CreativeCookies.VideoHosting.Contracts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CreativeCookies.VideoHosting.EfCore.Models
 {
-    public class Video : BaseEntity
+    public class Video : BaseEntity, IVideo
     {
         public string Name { get; set; }
         public string Description { get; set; }
