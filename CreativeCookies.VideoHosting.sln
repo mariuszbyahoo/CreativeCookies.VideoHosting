@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreativeCookies.VideoHostin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreativeCookies.VideoHosting.Contracts", "CreativeCookies.VideoHosting.Contracts\CreativeCookies.VideoHosting.Contracts.csproj", "{8C021E55-8CC4-4225-81B3-D4D2E27EB51D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreativeCookies.VideoHosting.EfCore", "CreativeCookies.VideoHosting.EfCore\CreativeCookies.VideoHosting.EfCore.csproj", "{A9FDDA3F-E346-42AC-A852-D87EC629C495}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{8C021E55-8CC4-4225-81B3-D4D2E27EB51D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C021E55-8CC4-4225-81B3-D4D2E27EB51D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C021E55-8CC4-4225-81B3-D4D2E27EB51D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9FDDA3F-E346-42AC-A852-D87EC629C495}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9FDDA3F-E346-42AC-A852-D87EC629C495}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9FDDA3F-E346-42AC-A852-D87EC629C495}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9FDDA3F-E346-42AC-A852-D87EC629C495}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
