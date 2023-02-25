@@ -1,0 +1,16 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CreativeCookies.VideoHosting.Contracts
+{
+    interface IVideoSegment
+    {
+        int Id { get; set; }
+        int VideoId { get; set; }
+        int SequenceNumber { get; set; }
+        byte[] Data { get; set; }
+    }
+}
