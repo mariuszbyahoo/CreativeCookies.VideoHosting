@@ -5,7 +5,7 @@ namespace CreativeCookies.VideoHosting.EfCore
 {
     interface IVideosRepository
     {
-        Task<IEnumerable<IVideo>> GetAll();
+        Task<IEnumerable<IVideo>> GetAll(CancellationToken token);
         Task<IVideo> GetVideo(Guid id, CancellationToken token);
         Task<IVideo> PostVideo(IVideo video, CancellationToken token);
         Task<IVideo> UpdateVideo(IVideo video, CancellationToken token);
