@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CreativeCookies.VideoHosting.Contracts\CreativeCookies.VideoHosting.Contracts.csproj" />
+    <ProjectReference Include="..\CreativeCookies.VideoHosting.EfCore\CreativeCookies.VideoHosting.EfCore.csproj" />
+  </ItemGroup>
+
 </Project>

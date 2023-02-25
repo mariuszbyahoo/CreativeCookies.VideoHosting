@@ -5,8 +5,8 @@ namespace CreativeCookies.VideoHosting.EfCore
 {
     public class VideoHostingDbContext : DbContext
     {
-        DbSet<Video> Videos { get; set; }
-        DbSet<VideoSegment> VideoSegments { get; set; }
+        public DbSet<Video> Videos { get; set; }
+        public DbSet<VideoSegment> VideoSegments { get; set; }
 
         public VideoHostingDbContext(DbContextOptions<VideoHostingDbContext> options) :
             base(options)
