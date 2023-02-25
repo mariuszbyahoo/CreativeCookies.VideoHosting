@@ -28,9 +28,9 @@ namespace CreativeCookies.VideoHosting.EfCore
             }
         }
 
-        public async Task<IEnumerable<IVideo>> GetAll()
+        public async Task<IEnumerable<IVideo>> GetAll(CancellationToken token)
         {
-            return await _context.Videos.ToListAsync();
+            return await _context.Videos.ToListAsync(token);
         }
 
         public async Task<IVideo> GetVideo(Guid id, CancellationToken token)
