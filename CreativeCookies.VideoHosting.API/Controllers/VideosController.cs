@@ -20,7 +20,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _appLifetime = appLifetime;
         }
 
-        [HttpGet] 
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<IVideo>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<IVideo>>> GetAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
