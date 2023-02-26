@@ -20,9 +20,14 @@ namespace CreativeCookies.VideoHosting.EfCore.Repositories
             _context = context;
         }
 
+        public async Task<bool> IsPresentInDatabase(Guid id, CancellationToken token)
+        {
+            return await _context.Videos.Where(x => x.Id == id).FirstOrDefaultAsync(token) != null;
+        }
+
         public async Task DeleteVideo(Guid id, CancellationToken token)
         {
-            var entity = await  _context.Videos.FirstOrDefaultAsync(v => v.Id.Equals(id), token);
+            var entity = await  _context.Videos.Where(v => v.Id.Equals(id)).FirstOrDefaultAsync(token);
             if (entity != null) {
                 _context.Remove(entity);
                 await _context.SaveChangesAsync(token);
@@ -36,7 +41,7 @@ namespace CreativeCookies.VideoHosting.EfCore.Repositories
 
         public async Task<IVideo> GetVideo(Guid id, CancellationToken token)
         {
-            return await _context.Videos.FirstOrDefaultAsync(v => v.Id.Equals(id), token);
+            return await _context.Videos.Where(v => v.Id.Equals(id)).FirstOrDefaultAsync(token);
         }
 
         public async Task<IVideo> PostVideo(IVideo video, CancellationToken token = default)
