@@ -1,4 +1,5 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
+﻿using CreativeCookies.VideoHosting.Contracts.Models;
+using CreativeCookies.VideoHosting.Contracts.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,16 +11,22 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     public class VideosController : ControllerBase
     {
         private readonly IVideosRepository _repository;
+        private readonly IHostApplicationLifetime _appLifetime;
 
-        public VideosController(IVideosRepository repository)
+        public VideosController(IVideosRepository repository, IHostApplicationLifetime appLifetime)
         {
             _repository = repository;
+            _appLifetime = appLifetime;
         }
 
         [HttpGet] 
-        public IActionResult Get()
+        public async Task<ActionResult<IEnumerable<IVideo>>> Get(CancellationToken cancellationToken)
         {
-            return Ok("Yep everything running as it should...");
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var result = await _repository.GetAll(cancellationToken);
+
+            return Ok(result);
         }
     }
 }

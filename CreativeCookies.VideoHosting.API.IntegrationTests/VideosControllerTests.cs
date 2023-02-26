@@ -1,4 +1,6 @@
+using CreativeCookies.VideoHosting.Contracts.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Newtonsoft.Json;
 
 namespace CreativeCookies.VideoHosting.API.IntegrationTests
 {
@@ -12,7 +14,7 @@ namespace CreativeCookies.VideoHosting.API.IntegrationTests
         }
 
         [Test]
-        public async Task ControllerRoute_AfterReceivingGET_Returns200WithDesiredMessage()
+        public async Task ControllerRoute_AfterReceivingGET_Returns200WithAnEmptyArray()
         {
             // Arrange
             var client = _factory.CreateClient();
@@ -22,8 +24,8 @@ namespace CreativeCookies.VideoHosting.API.IntegrationTests
 
             // Assert
             response.EnsureSuccessStatusCode();
-            var content = await response.Content.ReadAsStringAsync();
-            Assert.That(content, Is.EqualTo("Yep everything running as it should..."));
+            var content = JsonConvert.DeserializeObject<IEnumerable<IVideo>>(await response.Content.ReadAsStringAsync());
+            Assert.That(content, Is.EqualTo(new IVideo[0] ));
         }
     }
 }
