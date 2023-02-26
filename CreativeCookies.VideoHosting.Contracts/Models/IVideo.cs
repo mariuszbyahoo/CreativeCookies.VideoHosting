@@ -1,4 +1,4 @@
-﻿namespace CreativeCookies.VideoHosting.Contracts
+﻿namespace CreativeCookies.VideoHosting.Contracts.Models
 {
     public interface IVideo
     {

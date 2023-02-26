@@ -1,9 +1,8 @@
-﻿using CreativeCookies.VideoHosting.Contracts;
-using CreativeCookies.VideoHosting.EfCore;
+﻿using CreativeCookies.VideoHosting.Contracts.Models;
 
-namespace CreativeCookies.VideoHosting.EfCore
+namespace CreativeCookies.VideoHosting.Contracts.Repositories
 {
-    interface IVideosRepository
+    public interface IVideosRepository
     {
         Task<IEnumerable<IVideo>> GetAll(CancellationToken token);
         Task<IVideo> GetVideo(Guid id, CancellationToken token);

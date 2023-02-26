@@ -1,4 +1,5 @@
-﻿using CreativeCookies.VideoHosting.Contracts;
+﻿using CreativeCookies.VideoHosting.Contracts.Models;
+using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.EfCore.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -8,11 +9,11 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.EfCore
+namespace CreativeCookies.VideoHosting.EfCore.Repositories
 {
     public class VideosRepository : IVideosRepository
     {
-        private VideoHostingDbContext _context;
+        private readonly VideoHostingDbContext _context;
 
         public VideosRepository(VideoHostingDbContext context)
         {

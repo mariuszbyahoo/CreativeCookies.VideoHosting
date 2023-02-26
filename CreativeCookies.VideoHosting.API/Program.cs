@@ -1,4 +1,6 @@
+using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.EfCore;
+using CreativeCookies.VideoHosting.EfCore.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 public class Program
@@ -12,6 +14,8 @@ public class Program
         {
             options.UseSqlServer(builder.Configuration.GetConnectionString("DevelopmentConnection"));
         });
+
+        builder.Services.AddScoped<IVideosRepository, VideosRepository>();
 
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
