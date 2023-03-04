@@ -80,14 +80,12 @@ namespace CreativeCookies.VideoHosting.EfCore.Repositories
                 process.StandardInput.Flush();
                 process.StandardInput.Close();
                 process.WaitForExit();
-
+                var videoDto = new Video(video.Name, video.Location, video.Location);
                 // Save video file:
-                _context.Videos.Add((Video)video);
+                _context.Videos.Add(videoDto);
                 await _context.SaveChangesAsync();
-
                 // Read all segments from outputPath and then save them to database
-                var videoSegments = new List<IVideoSegment>();
-                var fileNames = Directory.GetFiles(outputPath);
+                segmentFiles.AddRange(Directory.GetFiles(outputPath));
 
 
                 // Save the segments to the database
@@ -104,9 +102,9 @@ namespace CreativeCookies.VideoHosting.EfCore.Repositories
                         };
                         await segmentStream.ReadAsync(segment.Data, 0, segment.Data.Length);
                         _context.VideoSegments.Add(segment);
-                        await _context.SaveChangesAsync();
                     }
                 }
+                await _context.SaveChangesAsync();
 
                 // Clear the TEMP folder
                 // HACK: TODO

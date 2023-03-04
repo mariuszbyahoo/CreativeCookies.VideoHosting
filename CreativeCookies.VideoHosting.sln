@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreativeCookies.VideoHostin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreativeCookies.VideoHosting.EfCore", "CreativeCookies.VideoHosting.EfCore\CreativeCookies.VideoHosting.EfCore.csproj", "{A9FDDA3F-E346-42AC-A852-D87EC629C495}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreativeCookies.VideoHosting.API.IntegrationTests", "CreativeCookies.VideoHosting.API.IntegrationTests\CreativeCookies.VideoHosting.API.IntegrationTests.csproj", "{82D59DB8-4E22-4F4A-8E84-FA1ACE41AA07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreativeCookies.VideoHosting.API.IntegrationTests", "CreativeCookies.VideoHosting.API.IntegrationTests\CreativeCookies.VideoHosting.API.IntegrationTests.csproj", "{82D59DB8-4E22-4F4A-8E84-FA1ACE41AA07}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreativeCookies.VideoHosting.EfCore.IntegrationTest", "CreativeCookies.VideoHosting.EfCore.IntegrationTest\CreativeCookies.VideoHosting.EfCore.IntegrationTest.csproj", "{1C2FDCA4-CA81-46F4-8600-54DD91DFD943}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{82D59DB8-4E22-4F4A-8E84-FA1ACE41AA07}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82D59DB8-4E22-4F4A-8E84-FA1ACE41AA07}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82D59DB8-4E22-4F4A-8E84-FA1ACE41AA07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C2FDCA4-CA81-46F4-8600-54DD91DFD943}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C2FDCA4-CA81-46F4-8600-54DD91DFD943}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C2FDCA4-CA81-46F4-8600-54DD91DFD943}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C2FDCA4-CA81-46F4-8600-54DD91DFD943}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

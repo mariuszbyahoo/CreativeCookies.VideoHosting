@@ -8,7 +8,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Models
 {
     public interface IVideoSegment
     {
-        Guid Id { get; set; }
+        Guid Id { get; }
         Guid VideoId { get; set; }
         int SequenceNumber { get; set; }
         byte[] Data { get; set; }

@@ -1,15 +1,12 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Models;
+﻿using CreativeCookies.VideoHosting.API.Models;
+using CreativeCookies.VideoHosting.Contracts.Models;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
-using CreativeCookies.VideoHosting.EfCore.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
 using System.Net.Mime;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
-    
+
     [Route("api/[controller]")]
     [ApiController]
     public class VideosController : ControllerBase
@@ -26,7 +23,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<IVideo>))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<IVideo>>> GetAsync(CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<Video>>> GetAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -38,7 +35,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IVideo))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IVideo>> GetSingleAsync(Guid id, CancellationToken cancellationToken)
+        public async Task<ActionResult<Video>> GetSingleAsync(Guid id, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -52,9 +49,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         [HttpPost]
         [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(IVideo))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Video))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IVideo>> PostAsync([FromBody] IVideo video, CancellationToken cancellationToken)
+        public async Task<ActionResult<Video>> PostAsync([FromBody] Video video, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -66,10 +63,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         [HttpPatch]
         [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IVideo))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Video))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IVideo>> PatchAsync([FromBody] IVideo video, CancellationToken cancellationToken)
+        public async Task<ActionResult<Video>> PatchAsync([FromBody] Video video, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
