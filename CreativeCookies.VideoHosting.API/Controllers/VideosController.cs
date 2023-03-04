@@ -1,7 +1,10 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Models;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
+using CreativeCookies.VideoHosting.EfCore.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 using System.Net.Mime;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
@@ -11,12 +14,12 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     [ApiController]
     public class VideosController : ControllerBase
     {
-        private readonly IVideosRepository _repository;
+        private readonly IVideosRepository _videoRepository;
         private readonly IHostApplicationLifetime _appLifetime;
 
         public VideosController(IVideosRepository repository, IHostApplicationLifetime appLifetime)
         {
-            _repository = repository;
+            _videoRepository = repository;
             _appLifetime = appLifetime;
         }
 
@@ -27,7 +30,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var result = await _repository.GetAll(cancellationToken);
+            var result = await _videoRepository.GetAll(cancellationToken);
 
             return Ok(result);
         }
@@ -39,7 +42,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var result = await _repository.GetVideo(id, cancellationToken);
+            var result = await _videoRepository.GetVideo(id, cancellationToken);
 
             if(result == null)
                 return NotFound();
@@ -57,8 +60,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
             if (video == null) return BadRequest();
 
-            var result = await _repository.PostVideo(video, cancellationToken);
-
+            var result = await _videoRepository.PostVideo(video, cancellationToken);
             return CreatedAtAction(nameof(PostAsync), result);
         }
 
@@ -73,10 +75,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
             if(video == null) return BadRequest();
 
-            if (await _repository.IsPresentInDatabase(video.Id, cancellationToken))
+            if (await _videoRepository.IsPresentInDatabase(video.Id, cancellationToken))
             {
 
-                var result = await _repository.UpdateVideo(video, cancellationToken);
+                var result = await _videoRepository.UpdateVideo(video, cancellationToken);
 
                 return Ok(result);
             }
@@ -93,9 +95,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(await _repository.IsPresentInDatabase(id, cancellationToken))
+            if(await _videoRepository.IsPresentInDatabase(id, cancellationToken))
             {
-                await _repository.DeleteVideo(id, cancellationToken);
+                await _videoRepository.DeleteVideo(id, cancellationToken);
 
                 return NoContent();
             }

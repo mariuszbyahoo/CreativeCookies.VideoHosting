@@ -4,9 +4,11 @@ using CreativeCookies.VideoHosting.EfCore.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CreativeCookies.VideoHosting.EfCore.Repositories
@@ -46,9 +48,71 @@ namespace CreativeCookies.VideoHosting.EfCore.Repositories
 
         public async Task<IVideo> PostVideo(IVideo video, CancellationToken token = default)
         {
-            var res = await _context.AddAsync(video, token);
-            await _context.SaveChangesAsync(token);
-            return res?.Entity;
+            // Open the video file as a FileStream
+            using (var fileStream = new FileStream($"{video.Location}/{video.Name}", FileMode.Open))
+            {
+                // Split the video into segments using FFmpeg
+                var segmentFiles = new List<string>();
+                var segmentDuration = 1; // Duration of each segment in seconds
+                var segmentNumber = 0;
+                var ffmpegPath = "C:/ffmpeg/bin/ffmpeg.exe"; // Path to the FFmpeg executable
+                var ffplayPath = "C:/ffmpeg/bin/ffplay.exe";
+                var ffpobePath = "C:/ffmpeg/bin/ffprobe.exe";
+                var outputPath = "C:/VideoParts"; // Path to the folder where segment files will be saved
+                var process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = ffmpegPath,
+                        Arguments = $"-i - -f segment -segment_time {segmentDuration} -c copy {outputPath}/segment_%d.mp4",
+                        RedirectStandardInput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+                };
+                process.Start();
+                var buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = await fileStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                {
+                    await process.StandardInput.BaseStream.WriteAsync(buffer, 0, bytesRead);
+                }
+                process.StandardInput.Flush();
+                process.StandardInput.Close();
+                process.WaitForExit();
+
+                // Save video file:
+                _context.Videos.Add((Video)video);
+                await _context.SaveChangesAsync();
+
+                // Read all segments from outputPath and then save them to database
+                var videoSegments = new List<IVideoSegment>();
+                var fileNames = Directory.GetFiles(outputPath);
+
+
+                // Save the segments to the database
+
+                foreach (var segmentFile in segmentFiles)
+                {
+                    using (var segmentStream = new FileStream(segmentFile, FileMode.Open))
+                    {
+                        var segment = new VideoSegment
+                        {
+                            VideoId = video.Id,
+                            SequenceNumber = segmentNumber++,
+                            Data = new byte[segmentStream.Length]
+                        };
+                        await segmentStream.ReadAsync(segment.Data, 0, segment.Data.Length);
+                        _context.VideoSegments.Add(segment);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
+                // Clear the TEMP folder
+                // HACK: TODO
+
+                return video;
+            }
         }
 
         public async Task<IVideo> UpdateVideo(IVideo video, CancellationToken token)
