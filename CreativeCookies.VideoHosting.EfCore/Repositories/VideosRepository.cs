@@ -48,7 +48,6 @@ namespace CreativeCookies.VideoHosting.EfCore.Repositories
 
         public async Task<IVideo> PostVideo(IVideo video, CancellationToken token = default)
         {
-            // HACK: TODO, zmień kod metody tak, aby rozdzielał wideo zamiast produkować pusty plik jako segment.
             // Open the video file as a FileStream
             using (var fileStream = new FileStream($"{video.Location}/{video.Name}", FileMode.Open))
             {
@@ -65,7 +64,7 @@ namespace CreativeCookies.VideoHosting.EfCore.Repositories
                     StartInfo = new ProcessStartInfo
                     {
                         FileName = ffmpegPath,
-                        Arguments = $"-i - -f segment -segment_time {segmentDuration} -c copy {outputPath}/segment_%d.mp4",
+                        Arguments = $"-i {video.Location}/{video.Name} -f segment -segment_time {segmentDuration} -c copy {outputPath}/segment_%d.mp4",
                         RedirectStandardInput = true,
                         UseShellExecute = false,
                         CreateNoWindow = true
@@ -93,7 +92,7 @@ namespace CreativeCookies.VideoHosting.EfCore.Repositories
 
                 foreach (var segmentFile in segmentFiles)
                 {
-                    using (var segmentStream = new FileStream(segmentFile, FileMode.Open))
+                    using (var segmentStream = new FileStream(segmentFile, FileMode.Open)) 
                     {
                         var segment = new VideoSegment
                         {
