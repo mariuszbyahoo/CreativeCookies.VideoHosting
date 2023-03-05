@@ -48,6 +48,7 @@ namespace CreativeCookies.VideoHosting.EfCore.Repositories
 
         public async Task<IVideo> PostVideo(IVideo video, CancellationToken token = default)
         {
+            // HACK: TODO, zmień kod metody tak, aby rozdzielał wideo zamiast produkować pusty plik jako segment.
             // Open the video file as a FileStream
             using (var fileStream = new FileStream($"{video.Location}/{video.Name}", FileMode.Open))
             {
