@@ -96,9 +96,10 @@ namespace CreativeCookies.VideoHosting.EfCore.Repositories
                     {
                         var segment = new VideoSegment
                         {
-                            VideoId = video.Id,
+                            VideoId = videoDto.Id,
                             SequenceNumber = segmentNumber++,
-                            Data = new byte[segmentStream.Length]
+                            Data = new byte[segmentStream.Length],
+                            Video = videoDto
                         };
                         await segmentStream.ReadAsync(segment.Data, 0, segment.Data.Length);
                         _context.VideoSegments.Add(segment);

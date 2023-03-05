@@ -19,6 +19,7 @@ namespace CreativeCookies.VideoHosting.EfCore.Models
         public Guid VideoId { get; set; }
         public int SequenceNumber { get; set; }
         public byte[] Data { get; set; }
+        public Video Video { get; set; }
 
         public VideoSegment()
         {

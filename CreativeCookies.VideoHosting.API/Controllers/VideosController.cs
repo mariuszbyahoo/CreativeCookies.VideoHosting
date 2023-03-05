@@ -2,7 +2,10 @@
 using CreativeCookies.VideoHosting.Contracts.Models;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Net;
 using System.Net.Mime;
+using System.Text;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
@@ -49,16 +52,24 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         [HttpPost]
         [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Video))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(IVideo))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<Video>> PostAsync([FromBody] Video video, CancellationToken cancellationToken)
+        public async Task<ActionResult<IVideo>> PostAsync([FromBody] Video video, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             if (video == null) return BadRequest();
 
             var result = await _videoRepository.PostVideo(video, cancellationToken);
-            return CreatedAtAction(nameof(PostAsync), result);
+            var response = new HttpResponseMessage(System.Net.HttpStatusCode.Created)
+            {
+                Content = new StringContent(JsonConvert.SerializeObject(result), Encoding.UTF8, "application/json"),
+                Headers =
+                {
+                    Location = new Uri($"api/videos/{result.Id}", UriKind.Relative)
+                }
+            };
+            return new ObjectResult(result) { StatusCode = (int)HttpStatusCode.Created };
         }
 
         [HttpPatch]

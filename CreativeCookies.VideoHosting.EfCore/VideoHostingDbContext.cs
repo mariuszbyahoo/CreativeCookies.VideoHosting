@@ -15,8 +15,7 @@ namespace CreativeCookies.VideoHosting.EfCore
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Video>().ToTable(nameof(Video));
-            modelBuilder.Entity<VideoSegment>().ToTable(nameof(VideoSegment));
+            modelBuilder.Entity<Video>().HasMany(v => v.VideoSegments).WithOne(s => s.Video).HasForeignKey(s => s.VideoId);
         }
     }
 }
