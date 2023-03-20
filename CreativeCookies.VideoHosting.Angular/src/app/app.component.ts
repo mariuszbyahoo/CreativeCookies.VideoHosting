@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-root',
@@ -6,5 +7,13 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'CreativeCookies.VideoHosting.Angular';
+  title = 'MyTube';
+
+  constructor(private modalService: NgbModal){
+
+  }
+
+  open(modal: any){
+    this.modalService.open(modal);
+  }
 }
