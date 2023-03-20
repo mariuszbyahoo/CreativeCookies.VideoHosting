@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreativeCookies.VideoHostin
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "CreativeCookies.VideoHosting.Angular", "CreativeCookies.VideoHosting.Angular\CreativeCookies.VideoHosting.Angular.esproj", "{5C55A316-76C5-4EB4-AE0C-5CE7E825275D}"
 EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "creativecookies.videohosting.client", "creativecookies.videohosting.client\creativecookies.videohosting.client.esproj", "{46B48832-F43C-4C28-90DF-DA16D7CEB881}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,12 @@ Global
 		{5C55A316-76C5-4EB4-AE0C-5CE7E825275D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C55A316-76C5-4EB4-AE0C-5CE7E825275D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5C55A316-76C5-4EB4-AE0C-5CE7E825275D}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{46B48832-F43C-4C28-90DF-DA16D7CEB881}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46B48832-F43C-4C28-90DF-DA16D7CEB881}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46B48832-F43C-4C28-90DF-DA16D7CEB881}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{46B48832-F43C-4C28-90DF-DA16D7CEB881}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46B48832-F43C-4C28-90DF-DA16D7CEB881}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46B48832-F43C-4C28-90DF-DA16D7CEB881}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
