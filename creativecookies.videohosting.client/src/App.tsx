@@ -13,7 +13,10 @@ function App() {
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<HomeComponent />} />
-            <Route path="blobsList" element={<BlobTypeListComponent connectionString='' containerName='' />} />
+                    <Route path="blobsList" element={
+                        <BlobTypeListComponent
+                            connectionString='?sv=2021-08-06&ss=btqf&srt=sco&st=2023-03-11T19%3A02%3A42Z&se=2023-04-12T18%3A02%3A00Z&sp=rl&sig=YtpkB3f8khUQryZ0PeriBtVc4KQxPwyFbbL94lkCn0w%3D'
+                            containerName='mytubestoragecool' />} />
             <Route path="plyr" element={<PlyrComponent />} />
             <Route path="*" element={<><h4>Wrong path</h4></>} />
           </Route>
