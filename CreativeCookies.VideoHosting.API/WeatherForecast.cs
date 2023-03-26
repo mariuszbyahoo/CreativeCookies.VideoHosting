@@ -1,4 +1,4 @@
-namespace CreativeCookies.VideoHosting.App
+namespace CreativeCookies.VideoHosting.API
 {
     public class WeatherForecast
     {

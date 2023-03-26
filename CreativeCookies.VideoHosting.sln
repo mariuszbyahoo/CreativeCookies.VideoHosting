@@ -5,6 +5,8 @@ VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreativeCookies.VideoHosting.App", "CreativeCookies.VideoHosting.App\CreativeCookies.VideoHosting.App.csproj", "{7DF5BC8C-3585-49AC-9167-44109B9033CD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreativeCookies.VideoHosting.API", "CreativeCookies.VideoHosting.API\CreativeCookies.VideoHosting.API.csproj", "{DC82CB57-9794-4390-B199-236DB8C01568}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{7DF5BC8C-3585-49AC-9167-44109B9033CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7DF5BC8C-3585-49AC-9167-44109B9033CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7DF5BC8C-3585-49AC-9167-44109B9033CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC82CB57-9794-4390-B199-236DB8C01568}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC82CB57-9794-4390-B199-236DB8C01568}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC82CB57-9794-4390-B199-236DB8C01568}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC82CB57-9794-4390-B199-236DB8C01568}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
