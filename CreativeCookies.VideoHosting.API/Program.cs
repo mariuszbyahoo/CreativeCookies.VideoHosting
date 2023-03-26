@@ -10,6 +10,15 @@ namespace CreativeCookies.VideoHosting.API
             // Add services to the container.
 
             builder.Services.AddControllers();
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -22,6 +31,8 @@ namespace CreativeCookies.VideoHosting.API
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            app.UseCors();
 
             app.UseHttpsRedirection();
 
