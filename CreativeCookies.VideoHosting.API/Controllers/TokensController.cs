@@ -23,7 +23,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _blobServiceClient = new BlobServiceClient(_storageAccountConnectionString);
 
         }
-
+        // MyIpAddress: 79.191.57.150
         [HttpGet("container")]
         public IActionResult GetSasToken()
         {
