@@ -1,4 +1,7 @@
 
+using Azure.Storage.Blobs;
+using Azure.Storage;
+
 namespace CreativeCookies.VideoHosting.API
 {
     public class Program
@@ -19,9 +22,16 @@ namespace CreativeCookies.VideoHosting.API
                         .AllowAnyMethod();
                 });
             });
+
+            var accountName = builder.Configuration.GetValue<string>("Storage:AccountName");
+            var accountKey = builder.Configuration.GetValue<string>("Storage:AccountKey");
+            var blobServiceUrl = builder.Configuration.GetValue<string>("Storage:BlobServiceUrl");
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddSingleton(x => new StorageSharedKeyCredential(accountName, accountKey));
+            builder.Services.AddSingleton(x => new BlobServiceClient(new Uri(blobServiceUrl), x.GetRequiredService<StorageSharedKeyCredential>()));
 
             var app = builder.Build();
 

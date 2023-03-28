@@ -12,16 +12,13 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     {
         private readonly BlobServiceClient _blobServiceClient;
         private readonly string _containerName;
-        private readonly string _storageAccountConnectionString;
-        private readonly string _storageAccountKey;
-        public TokensController()
-        {
-            // HACK: TODO Move to secrets or into other place
-            _containerName = "mytubestoragecool";
-            _storageAccountConnectionString = "DefaultEndpointsProtocol=https;AccountName=mytubestoragecool;AccountKey=Sb4becrL9oYYzT/HfLJ8iP72VOgLtZNyc990W5NtK8ykxiVHc9rKRxw3zskMcCONz6t03XOzseZL+AStVWANoQ==;EndpointSuffix=core.windows.net";
-            _storageAccountKey = "Sb4becrL9oYYzT/HfLJ8iP72VOgLtZNyc990W5NtK8ykxiVHc9rKRxw3zskMcCONz6t03XOzseZL+AStVWANoQ==";
-            _blobServiceClient = new BlobServiceClient(_storageAccountConnectionString);
+        private readonly StorageSharedKeyCredential _storageSharedKeyCredential;
 
+        public TokensController(BlobServiceClient blobServiceClient, StorageSharedKeyCredential storageSharedKeyCredential)
+        {
+            _blobServiceClient = blobServiceClient;
+            _storageSharedKeyCredential = storageSharedKeyCredential;
+            _containerName = "films";
         }
         // MyIpAddress: 79.191.57.150
         [HttpGet("container")]
@@ -29,7 +26,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         {
             var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
             var sasToken = GenerateSasToken(containerClient);
-            return Ok(new { SasToken = sasToken });
+            return Ok(new { sasToken });
         }
 
         private string GenerateSasToken(BlobContainerClient containerClient)
@@ -38,16 +35,13 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             {
                 BlobContainerName = containerClient.Name,
                 Resource = "c",
-                StartsOn = DateTimeOffset.UtcNow,
-                ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(30)
+                StartsOn = DateTimeOffset.UtcNow.AddMinutes(-300),
+                ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(300),
             };
 
             sasBuilder.SetPermissions(BlobContainerSasPermissions.List);
-
-            var storageSharedKeyCredential = new StorageSharedKeyCredential(containerClient.AccountName, _storageAccountKey);
-
-            var sasToken = sasBuilder.ToSasQueryParameters(storageSharedKeyCredential).ToString();
-            return sasToken;
+            var sasQueryParameters = sasBuilder.ToSasQueryParameters(_storageSharedKeyCredential);
+            return sasQueryParameters.ToString();
         }
     }
 }
