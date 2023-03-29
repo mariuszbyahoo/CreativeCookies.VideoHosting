@@ -30,8 +30,6 @@ const Home = () => {
   const [blobs, setBlobs] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // HACK: TODO Inspect why setSasToken is not changing the sasToken's value!!!
-
   useEffect(() => {
     setLoading(true);
 
