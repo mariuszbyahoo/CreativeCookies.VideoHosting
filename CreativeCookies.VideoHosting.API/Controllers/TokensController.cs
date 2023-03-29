@@ -48,7 +48,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(30),
             };
 
-            sasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
+            sasBuilder.SetPermissions(endpointType == EndpointType.Container ? BlobContainerSasPermissions.List : BlobContainerSasPermissions.Read);
             var sasQueryParameters = sasBuilder.ToSasQueryParameters(_storageSharedKeyCredential);
             return sasQueryParameters.ToString();
         }
