@@ -6,7 +6,7 @@ const Player = (props) => {
 
   return (
     <div className={styles.container}>
-      <h4>Here will be film, playing a film with title of: {params.name}</h4>
+      <h4>Here will be film, playing a film with title of: {params.title}</h4>
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { BlobServiceClient } from "@azure/storage-blob";
 import { useCallback, useEffect, useState } from "react";
 import styles from "./Home.module.css";
+import { NavLink } from "react-router-dom";
 
 const STORAGE_ACCOUNT_NAME = "mytubestoragecool";
 const CONTAINER_NAME = "films";
@@ -66,8 +67,12 @@ const Home = () => {
   if (blobs.length > 0) {
     content = (
       <ul>
-        {blobs.map((blob, index) => (
-          <li key={index}>{blob}</li>
+        {blobs.map((blobTitle, index) => (
+          <li key={index}>
+            <NavLink activeClassName="active-link" to={"/player/" + blobTitle}>
+              {blobTitle}
+            </NavLink>
+          </li>
         ))}
       </ul>
     );
