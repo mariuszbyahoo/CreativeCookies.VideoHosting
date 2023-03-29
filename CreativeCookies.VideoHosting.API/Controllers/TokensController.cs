@@ -31,22 +31,37 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpGet("film")]
-        public IActionResult GetSasTokenForFilm()
+        public IActionResult GetSasTokenForFilm([FromQuery] string blobTitle)
         {
             var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-            var sasToken = GenerateSasToken(containerClient, EndpointType.Film);
+            var sasToken = GenerateSasToken(containerClient, EndpointType.Film, blobTitle);
             return Ok(new { sasToken });
         }
 
-        private string GenerateSasToken(BlobContainerClient containerClient, EndpointType endpointType)
+        private string GenerateSasToken(BlobContainerClient containerClient, EndpointType endpointType, string blobTitle = "")
         {
-            var sasBuilder = new BlobSasBuilder
+            BlobSasBuilder sasBuilder = null;
+            if (endpointType == EndpointType.Container)
             {
-                BlobContainerName = containerClient.Name,
-                Resource = endpointType == EndpointType.Container ? "c" : "b",
-                StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
-                ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(30),
-            };
+                sasBuilder = new BlobSasBuilder
+                {
+                    BlobContainerName = containerClient.Name,
+                    Resource = "c",
+                    StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
+                    ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(30),
+                };
+            }
+            else
+            {
+                sasBuilder = new BlobSasBuilder
+                {
+                    BlobContainerName = containerClient.Name,
+                    BlobName = blobTitle,
+                    Resource =  "b",
+                    StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
+                    ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(1),
+                };
+            }
 
             sasBuilder.SetPermissions(endpointType == EndpointType.Container ? BlobContainerSasPermissions.List : BlobContainerSasPermissions.Read);
             var sasQueryParameters = sasBuilder.ToSasQueryParameters(_storageSharedKeyCredential);

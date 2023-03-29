@@ -12,7 +12,7 @@ const Player = (props) => {
 
   async function fetchSasToken() {
     const response = await fetch(
-      `https://localhost:7276/api/Tokens/films/${params.title}`
+      `https://localhost:7276/api/Tokens/film/${params.title}`
     );
     const data = await response.json();
     return data.sasToken;
