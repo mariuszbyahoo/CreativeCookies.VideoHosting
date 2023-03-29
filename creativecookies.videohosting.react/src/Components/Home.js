@@ -34,7 +34,7 @@ const Home = () => {
     const fetchData = async () => {
       let token = await fetchSasToken();
 
-      setBlobs(await listBlobs("films", token));
+      setBlobs(await listBlobs(CONTAINER_NAME, token));
     };
 
     fetchData();
@@ -48,7 +48,9 @@ const Home = () => {
         <div>Loading...</div>
       ) : (
         <ul>
-          {blobs && blobs.map((blob, index) => <li key={index}>{blob}</li>)}
+          {!loading &&
+            blobs.length > 0 &&
+            blobs.map((blob, index) => <li key={index}>{blob}</li>)}
         </ul>
       )}
     </div>
