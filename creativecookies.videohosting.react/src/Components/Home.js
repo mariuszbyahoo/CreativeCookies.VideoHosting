@@ -22,7 +22,6 @@ async function listBlobs(containerName, sasToken) {
   for await (const blob of containerClient.listBlobsFlat()) {
     blobs.push(blob.name);
   }
-  console.log("returned blobs list: ", blobs);
   return blobs;
 }
 
@@ -35,7 +34,6 @@ const Home = () => {
 
     const fetchData = async () => {
       let token = await fetchSasToken();
-      console.log("fetchSasToken with fetch API: ", token);
 
       setBlobs(await listBlobs("films", token));
     };
