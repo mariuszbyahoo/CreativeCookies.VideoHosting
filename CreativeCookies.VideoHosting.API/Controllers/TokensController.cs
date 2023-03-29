@@ -35,8 +35,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             {
                 BlobContainerName = containerClient.Name,
                 Resource = "c",
-                StartsOn = DateTimeOffset.UtcNow.AddMinutes(-300),
-                ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(300),
+                StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
+                ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(30),
             };
 
             sasBuilder.SetPermissions(BlobContainerSasPermissions.List);
