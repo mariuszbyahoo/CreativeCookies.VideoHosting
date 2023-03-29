@@ -3,9 +3,6 @@ import { useCallback, useEffect, useState } from "react";
 import styles from "./Home.module.css";
 import { NavLink } from "react-router-dom";
 
-const STORAGE_ACCOUNT_NAME = "mytubestoragecool";
-const CONTAINER_NAME = "films";
-
 const Home = () => {
   const [blobs, setBlobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,7 +13,7 @@ const Home = () => {
     setError(null);
     fetchSasToken()
       .then((token) => {
-        listBlobs(CONTAINER_NAME, token)
+        listBlobs(process.env.REACT_APP_CONTAINER_NAME, token)
           .then((blobs) => {
             setBlobs(blobs);
             setLoading(false);
@@ -46,7 +43,7 @@ const Home = () => {
 
   async function listBlobs(containerName, sasToken) {
     const blobServiceClient = new BlobServiceClient(
-      `https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net/?${sasToken}`
+      `https://${process.env.REACT_APP_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/?${sasToken}`
     );
 
     const containerClient = blobServiceClient.getContainerClient(containerName);
@@ -69,9 +66,7 @@ const Home = () => {
       <ul>
         {blobs.map((blobTitle, index) => (
           <li key={index}>
-            <NavLink activeClassName="active-link" to={"/player/" + blobTitle}>
-              {blobTitle}
-            </NavLink>
+            <NavLink to={"/player/" + blobTitle}>{blobTitle}</NavLink>
           </li>
         ))}
       </ul>
