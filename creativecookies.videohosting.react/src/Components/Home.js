@@ -1,7 +1,6 @@
 import { BlobServiceClient } from "@azure/storage-blob";
 import { useEffect, useState } from "react";
 import styles from "./Home.module.css";
-import axios from "axios";
 
 const STORAGE_ACCOUNT_NAME = "mytubestoragecool";
 const CONTAINER_NAME = "films";
