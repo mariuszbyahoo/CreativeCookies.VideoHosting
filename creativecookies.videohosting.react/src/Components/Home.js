@@ -29,7 +29,6 @@ async function listBlobs(containerName, sasToken) {
 const Home = () => {
   const [blobs, setBlobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sasToken, setSasToken] = useState("");
 
   // HACK: TODO Inspect why setSasToken is not changing the sasToken's value!!!
 
@@ -38,7 +37,6 @@ const Home = () => {
 
     const fetchData = async () => {
       let token = await fetchSasToken();
-      setSasToken(token);
       console.log("fetchSasToken with fetch API: ", token);
 
       setBlobs(await listBlobs("films", token));
@@ -48,16 +46,16 @@ const Home = () => {
     setLoading(false);
   }, []); // Empty array to run the effect only once, when the component mounts.
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <div className={styles.container}>
       <h1>Blobs in the Azure Blob Storage Container:</h1>
-      <ul>
-        {blobs && blobs.map((blob, index) => <li key={index}>{blob}</li>)}
-      </ul>
+      {loading ? (
+        <div>Loading...</div>
+      ) : (
+        <ul>
+          {blobs && blobs.map((blob, index) => <li key={index}>{blob}</li>)}
+        </ul>
+      )}
     </div>
   );
 };
