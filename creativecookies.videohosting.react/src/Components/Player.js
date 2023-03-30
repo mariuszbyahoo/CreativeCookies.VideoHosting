@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import styles from "./Player.module.css";
-import Plyr from "plyr";
+import "plyr-react/plyr.css";
+import Plyr from "plyr-react";
 import { useEffect, useRef, useState } from "react";
 
 const Player = (props) => {
@@ -59,14 +60,9 @@ const Player = (props) => {
   if (loading) {
     content = <p>loading</p>;
   } else {
-    content = <Plyr {...plyrProps} />;
+    content = plyrVideo;
   }
 
-  return (
-    <div className={styles.container}>
-      <h4>Here will be film, playing a film with title of: {params.title}</h4>
-      {plyrVideo}
-    </div>
-  );
+  return <div className={styles.container}>{content}</div>;
 };
 export default Player;
