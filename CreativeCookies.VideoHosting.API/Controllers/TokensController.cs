@@ -30,8 +30,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             return Ok(new { sasToken });
         }
 
-        [HttpGet("film")]
-        public IActionResult GetSasTokenForFilm([FromQuery] string blobTitle)
+        [HttpGet("film/{blobTitle}")]
+        public IActionResult GetSasTokenForFilm(string blobTitle)
         {
             var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
             var sasToken = GenerateSasToken(containerClient, EndpointType.Film, blobTitle);
