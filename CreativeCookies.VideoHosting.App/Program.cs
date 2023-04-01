@@ -1,3 +1,5 @@
+using Azure.Storage.Blobs;
+using Azure.Storage;
 using CreativeCookies.VideoHosting.App.Data;
 using CreativeCookies.VideoHosting.App.Models;
 using Microsoft.AspNetCore.Authentication;
@@ -28,9 +30,25 @@ namespace CreativeCookies.VideoHosting.App
 
             builder.Services.AddAuthentication()
                 .AddIdentityServerJwt();
+            var accountName = builder.Configuration.GetValue<string>("Storage:AccountName");
+            var accountKey = builder.Configuration.GetValue<string>("Storage:AccountKey");
+            var blobServiceUrl = builder.Configuration.GetValue<string>("Storage:BlobServiceUrl");
+
+
+            builder.Services.AddSingleton(x => new StorageSharedKeyCredential(accountName, accountKey));
+            builder.Services.AddSingleton(x => new BlobServiceClient(new Uri(blobServiceUrl), x.GetRequiredService<StorageSharedKeyCredential>()));
 
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
 
             var app = builder.Build();
 
