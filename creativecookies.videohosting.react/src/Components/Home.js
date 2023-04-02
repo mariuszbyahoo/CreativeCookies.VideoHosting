@@ -34,9 +34,7 @@ const Home = () => {
   }, [fetchMoviesHandler]); // Empty array to run the effect only once, when the component mounts.
 
   async function fetchSasToken() {
-    const response = await fetch(
-      `https://localhost:7276/api/Tokens/container/`
-    );
+    const response = await fetch(`https://localhost:7276/api/sas/container/`);
     const data = await response.json();
     return data.sasToken;
   }

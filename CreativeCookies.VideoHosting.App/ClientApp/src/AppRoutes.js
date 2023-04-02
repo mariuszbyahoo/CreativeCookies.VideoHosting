@@ -1,6 +1,4 @@
 import ApiAuthorzationRoutes from './components/api-authorization/ApiAuthorizationRoutes';
-import { Counter } from "./components/Counter";
-import { FetchData } from "./components/FetchData";
 import FilmsList from './components/FilmsList';
 import { Home } from "./components/Home";
 import Player from './components/Player';
