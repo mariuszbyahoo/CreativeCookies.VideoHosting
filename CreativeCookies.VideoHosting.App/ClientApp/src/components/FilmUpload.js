@@ -1,39 +1,85 @@
-import { BlockBlobClient, AnonymousCredential } from "@azure/storage-blob";
+import {
+  BlockBlobClient,
+  AnonymousCredential,
+  newPipeline,
+} from "@azure/storage-blob";
 import styles from "./FilmUpload.module.css";
 import { useState } from "react";
 
+// BELOW SOLUTION IS FOR LARGE FILES, RETURNS 401:
+
+// const uploadFilm = async (file) => {
+//   const blobName = file.name;
+//   const account = process.env.REACT_APP_STORAGE_ACCOUNT_NAME;
+//   const containerName = process.env.REACT_APP_CONTAINER_NAME;
+//   const apiAddress = process.env.REACT_APP_API_ADDRESS;
+
+//   const response = await fetch(
+//     `https://${apiAddress}/api/SAS/film-upload/${blobName}`
+//   );
+//   const data = await response.json();
+//   //const sasToken = data.sasToken;
+//   const sasToken =
+//     "?sv=2021-12-02&ss=bfqt&srt=c&sp=rwdlacupyx&se=2023-04-03T01:43:39Z&st=2023-04-02T17:43:39Z&spr=https,http&sig=M7TO7%2BsaJh7UhN9Vi3LOzq2hjwa1EcvD4Bw1yYuSE%2Bw%3D";
+
+//   const blockSize = 100 * 1024 * 1024; // 100MB
+//   const fileSize = file.size;
+//   const blockCount = Math.ceil(fileSize / blockSize);
+//   const blockIds = Array.from({ length: blockCount }, (_, i) => {
+//     const id = ("0000" + i).slice(-5); // Create a 5-character zero-padded string
+//     const encoder = new TextEncoder();
+//     const idBytes = encoder.encode(id);
+//     return uint8ArrayToBase64(idBytes);
+//   });
+
+//   const blobURL = `https://${account}.blob.core.windows.net/${containerName}/${encodeURIComponent(
+//     blobName
+//   )}?${sasToken}`;
+
+//   const pipeline = newPipeline(new AnonymousCredential());
+//   const blobClient = new BlockBlobClient(blobURL, pipeline);
+
+//   for (let i = 0; i < blockCount; i++) {
+//     const start = i * blockSize;
+//     const end = Math.min(start + blockSize, fileSize);
+//     const chunk = file.slice(start, end);
+//     const chunkSize = end - start;
+//     await blobClient.stageBlock(blockIds[i], chunk, chunkSize);
+//   }
+
+//   await blobClient.commitBlockList(blockIds);
+// };
+
+// BELOW WORKS FINE, BUT IS ELIGIBLE ONLY FOR SMALL FILES 
+// (uploads it as a single file instead of splitting it for smaller chunks)
+
 const uploadFilm = async (file) => {
   const blobName = file.name;
+  const account = process.env.REACT_APP_STORAGE_ACCOUNT_NAME;
+  const containerName = process.env.REACT_APP_CONTAINER_NAME;
+  const apiAddress = process.env.REACT_APP_API_ADDRESS;
 
   const response = await fetch(
-    `https://${process.env.REACT_APP_API_ADDRESS}/api/SAS/film-upload/${blobName}`
+    `https://${apiAddress}/api/SAS/film-upload/${blobName}`
   );
   const data = await response.json();
   const sasToken = data.sasToken;
+  // const sasToken =
+  //   "?sv=2021-12-02&ss=bfqt&srt=c&sp=rwdlacupyx&se=2023-04-03T01:43:39Z&st=2023-04-02T17:43:39Z&spr=https,http&sig=M7TO7%2BsaJh7UhN9Vi3LOzq2hjwa1EcvD4Bw1yYuSE%2Bw%3D";
 
-  const blockSize = 100 * 1024 * 1024; // 100MB
-  const fileSize = file.size;
-  const blockCount = Math.ceil(fileSize / blockSize);
-  const blockIds = Array.from({ length: blockCount }, (_, i) => {
-    const id = ("0000" + i).slice(-5); // Create a 5-character zero-padded string
-    const encoder = new TextEncoder();
-    const idBytes = encoder.encode(id);
-    return uint8ArrayToBase64(idBytes);
-  });
-  const blobClient = new BlockBlobClient(
-    `https://${process.env.REACT_APP_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${process.env.REACT_APP_CONTAINER_NAME}/${blobName}&${sasToken}`,
-    new AnonymousCredential()
-  );
+  const blobURL = `https://${account}.blob.core.windows.net/${containerName}/${encodeURIComponent(
+    blobName
+  )}?${sasToken}`;
 
-  for (let i = 0; i < blockCount; i++) {
-    const start = i * blockSize;
-    const end = Math.min(start + blockSize, fileSize);
-    const chunk = file.slice(start, end);
-    const chunkSize = end - start;
-    await blobClient.stageBlock(blockIds[i], chunk, chunkSize);
+  const pipeline = newPipeline(new AnonymousCredential());
+  const blobClient = new BlockBlobClient(blobURL, pipeline);
+
+  try {
+    const uploadResponse = await blobClient.uploadData(file);
+    console.log("Upload response:", uploadResponse);
+  } catch (error) {
+    console.error("Error uploading file:", error);
   }
-
-  await blobClient.commitBlockList(blockIds);
 };
 
 const uint8ArrayToBase64 = (arr) => {
