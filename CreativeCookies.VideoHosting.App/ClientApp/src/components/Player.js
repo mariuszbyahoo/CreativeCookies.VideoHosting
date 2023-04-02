@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+﻿import { useParams } from "react-router-dom";
 import styles from "./Player.module.css";
 import "plyr-react/plyr.css";
 import Plyr from "plyr-react";
@@ -23,20 +23,20 @@ const Player = (props) => {
 
   async function fetchSasToken() {
     const response = await fetch(
-      `https://localhost:7276/api/sas/film/${params.title}`
+      `https://${process.env.REACT_APP_API_ADDRESS}/api/sas/film/${params.title}`
     );
     const data = await response.json();
     return data.sasToken;
   }
-  const plyrProps = {
-    type: "video",
-    sources: {
-      src: "https://mytubestoragecool.blob.core.windows.net/films/Konrad%20Berkowicz,%20czyli%20podr%C3%B3bka.mp4?sv=2021-12-02&st=2023-03-30T17%3A29%3A13Z&se=2023-03-30T17%3A35%3A13Z&sr=b&sp=r&sig=uU4EQunrvZUvmzUoRFFC%2BPbCvfSRmn42wfWKwFYi65U%3D",
-      type: "video/mp4",
-      size: "1080",
-      provider: "html5",
-    },
-  };
+  //const plyrProps = {
+  //    type: "video",
+  //    sources: {
+  //        src: "https://mytubestoragecool.blob.core.windows.net/films/Konrad%20Berkowicz,%20czyli%20podr%C3%B3bka.mp4?sv=2021-12-02&st=2023-03-30T17%3A29%3A13Z&se=2023-03-30T17%3A35%3A13Z&sr=b&sp=r&sig=uU4EQunrvZUvmzUoRFFC%2BPbCvfSRmn42wfWKwFYi65U%3D",
+  //        type: "video/mp4",
+  //        size: "1080",
+  //        provider: "html5",
+  //    },
+  //};
 
   const videoOptions = undefined;
   const plyrVideo = videoUrl && (
@@ -47,6 +47,8 @@ const Player = (props) => {
         sources: [
           {
             src: videoUrl,
+            provider: "html5",
+            type: "video/mp4",
             provider: "html5",
           },
         ],

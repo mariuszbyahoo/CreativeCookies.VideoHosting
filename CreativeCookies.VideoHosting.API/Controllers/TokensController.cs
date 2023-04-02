@@ -1,7 +1,6 @@
 ﻿using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
-using CreativeCookies.VideoHosting.Domain;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -67,5 +66,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             var sasQueryParameters = sasBuilder.ToSasQueryParameters(_storageSharedKeyCredential);
             return sasQueryParameters.ToString();
         }
+    }
+    public enum EndpointType
+    {
+        Container = 0,
+        Film = 1
     }
 }

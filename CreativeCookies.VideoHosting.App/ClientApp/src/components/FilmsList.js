@@ -1,9 +1,9 @@
-import { BlobServiceClient } from "@azure/storage-blob";
+﻿import { BlobServiceClient } from "@azure/storage-blob";
 import { useCallback, useEffect, useState } from "react";
-import styles from "./Home.module.css";
+import styles from "./FilmsList.module.css";
 import { NavLink } from "react-router-dom";
 
-const Home = () => {
+const FilmsList = () => {
   const [blobs, setBlobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState();
@@ -34,7 +34,12 @@ const Home = () => {
   }, [fetchMoviesHandler]); // Empty array to run the effect only once, when the component mounts.
 
   async function fetchSasToken() {
-    const response = await fetch(`https://localhost:7276/api/sas/container/`);
+    console.log(
+      `process.env.REACT_APP_API_ADDRESS: ${process.env.REACT_APP_API_ADDRESS}`
+    );
+    const response = await fetch(
+      `https://${process.env.REACT_APP_API_ADDRESS}/api/SAS/container/`
+    );
     const data = await response.json();
     return data.sasToken;
   }
@@ -79,4 +84,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default FilmsList;
