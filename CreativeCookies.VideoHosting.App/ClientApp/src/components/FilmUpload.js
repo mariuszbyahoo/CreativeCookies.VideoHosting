@@ -1,11 +1,12 @@
 import { BlockBlobClient, AnonymousCredential } from "@azure/storage-blob";
+import styles from "./FilmUpload.module.css";
+import { useState } from "react";
 
 const uploadLargeFile = async (file) => {
-  const blobName = "Freshly uploaded film.mp4";
+  const blobName = file.name;
 
-  // Fetch the SAS token from your API
   const response = await fetch(
-    `${process.env.REACT_APP_API_ADDRESS}/api/SAS/container`
+    `https://${process.env.REACT_APP_API_ADDRESS}/api/SAS/container`
   );
   const data = await response.json();
   const sasToken = data.sasToken;
@@ -31,11 +32,50 @@ const uploadLargeFile = async (file) => {
     const start = i * blockSize;
     const end = Math.min(start + blockSize, fileSize);
     const chunk = file.slice(start, end);
+    // HACK: TODO, ADD Controller and action for SAS token with uploading permission.
     await blobClient.stageBlock(blockIds[i], chunk);
   }
 
   await blobClient.commitBlockList(blockIds);
 };
-const FilmUpload = (props) => {};
+
+const FilmUpload = (props) => {
+  const [file, setFile] = useState();
+
+  const description = `https://${process.env.REACT_APP_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${process.env.REACT_APP_CONTAINER_NAME}/`;
+
+  const fileChangeHandler = (e) => {
+    if (e.target.files) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const fileUploadHandler = () => {
+    if (!file) {
+      return;
+    }
+
+    uploadLargeFile(file);
+  };
+
+  return (
+    <div className={styles.container}>
+      Upload a file below to add it into films container into {description}
+      <br />
+      <input
+        type="file"
+        placeholder="Select film to upload"
+        onChange={fileChangeHandler}
+      />
+      <br />
+      <button type="submit" onClick={fileUploadHandler}>
+        Upload
+      </button>
+      <br />
+      <br />
+      {file && <p>Title of the uploaded film: {file.name}</p>}
+    </div>
+  );
+};
 
 export default FilmUpload;
