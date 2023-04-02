@@ -8,67 +8,91 @@ namespace CreativeCookies.VideoHosting.App.Controllers
     [Route("api/[controller]")]
     public class SASController : ControllerBase
     {
-            private readonly BlobServiceClient _blobServiceClient;
-            private readonly string _containerName;
-            private readonly StorageSharedKeyCredential _storageSharedKeyCredential;
+        private readonly BlobServiceClient _blobServiceClient;
+        private readonly string _containerName;
+        private readonly StorageSharedKeyCredential _storageSharedKeyCredential;
 
-            public SASController(BlobServiceClient blobServiceClient, StorageSharedKeyCredential storageSharedKeyCredential)
-            {
-                _blobServiceClient = blobServiceClient;
-                _storageSharedKeyCredential = storageSharedKeyCredential;
-                _containerName = "films";
-            }
-            // MyIpAddress: 79.191.57.150
-            [HttpGet("container")]
-            public IActionResult GetSasTokenForContainer()
-            {
-                var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-                var sasToken = GenerateSasToken(containerClient, EndpointType.Container);
-                return Ok(new { sasToken });
-            }
+        public SASController(BlobServiceClient blobServiceClient, StorageSharedKeyCredential storageSharedKeyCredential)
+        {
+            _blobServiceClient = blobServiceClient;
+            _storageSharedKeyCredential = storageSharedKeyCredential;
+            _containerName = "films";
+        }
+        // MyIpAddress: 79.191.57.150
+        [HttpGet("container")]
+        public IActionResult GetSasTokenForContainer()
+        {
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+            var sasToken = GenerateSasToken(containerClient, EndpointType.Container);
+            return Ok(new { sasToken });
+        }
 
-            [HttpGet("film/{blobTitle}")]
-            public IActionResult GetSasTokenForFilm(string blobTitle)
+        [HttpGet("film/{blobTitle}")]
+        public IActionResult GetSasTokenForFilm(string blobTitle)
+        {
+            if (string.IsNullOrEmpty(blobTitle))
             {
-                var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-                var sasToken = GenerateSasToken(containerClient, EndpointType.Film, blobTitle);
-                return Ok(new { sasToken });
+                return BadRequest($"Field: string blobTitle is mandatory!");
             }
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+            var sasToken = GenerateSasToken(containerClient, EndpointType.Film, blobTitle);
+            return Ok(new { sasToken });
+        }
 
-            private string GenerateSasToken(BlobContainerClient containerClient, EndpointType endpointType, string blobTitle = "")
+        [HttpGet("film-upload/{blobTitle}")]
+        public IActionResult GetSasTokenForFilmUpload(string blobTitle)
+        {
+            if (string.IsNullOrEmpty(blobTitle))
             {
-                BlobSasBuilder sasBuilder = null;
-                if (endpointType == EndpointType.Container)
+                return BadRequest($"Field: string blobTitle is mandatory!");
+            }
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+            var sasToken = GenerateSasToken(containerClient, EndpointType.FilmUpload, blobTitle);
+            return Ok(new { sasToken });
+        }
+
+        private string GenerateSasToken(BlobContainerClient containerClient, EndpointType endpointType, string blobTitle = "")
+        {
+            BlobSasBuilder sasBuilder = null;
+            if (endpointType == EndpointType.Container)
+            {
+                sasBuilder = new BlobSasBuilder
                 {
-                    sasBuilder = new BlobSasBuilder
-                    {
-                        BlobContainerName = containerClient.Name,
-                        Resource = "c",
-                        StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
-                        ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(30),
-                    };
+                    BlobContainerName = containerClient.Name,
+                    Resource = "c",
+                    StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
+                    ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(30),
+                };
+                sasBuilder.SetPermissions(BlobSasPermissions.List);
+            }
+            else 
+            {
+                sasBuilder = new BlobSasBuilder
+                {
+                    BlobContainerName = containerClient.Name,
+                    BlobName = blobTitle,
+                    Resource = "b",
+                    StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
+                    ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(1),
+                };
+                if (endpointType == EndpointType.FilmUpload)
+                {
+                    sasBuilder.SetPermissions(BlobSasPermissions.Create | BlobSasPermissions.Write);
                 }
                 else
                 {
-                    sasBuilder = new BlobSasBuilder
-                    {
-                        BlobContainerName = containerClient.Name,
-                        BlobName = blobTitle,
-                        Resource = "b",
-                        StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
-                        ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(1),
-                    };
+                    sasBuilder.SetPermissions(BlobSasPermissions.Read);
                 }
-
-                sasBuilder.SetPermissions(endpointType == EndpointType.Container ? BlobContainerSasPermissions.List : BlobContainerSasPermissions.Read);
-                var sasQueryParameters = sasBuilder.ToSasQueryParameters(_storageSharedKeyCredential);
-                return sasQueryParameters.ToString();
+            }
+            var sasQueryParameters = sasBuilder.ToSasQueryParameters(_storageSharedKeyCredential);
+            return sasQueryParameters.ToString();
         }
     }
 
     public enum EndpointType
     {
         Container = 0,
-        Film = 1
+        Film = 1,
+        FilmUpload = 2
     }
 }
