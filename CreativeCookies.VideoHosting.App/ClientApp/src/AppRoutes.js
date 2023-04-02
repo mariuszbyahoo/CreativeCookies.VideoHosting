@@ -11,15 +11,6 @@ const AppRoutes = [
         element: <Home />
     },
     {
-        path: '/counter',
-        element: <Counter />
-    },
-    {
-        path: '/fetch-data',
-        requireAuth: true,
-        element: <FetchData />
-    },
-    {
         path: '/films-list',
         element: <FilmsList />
     },
