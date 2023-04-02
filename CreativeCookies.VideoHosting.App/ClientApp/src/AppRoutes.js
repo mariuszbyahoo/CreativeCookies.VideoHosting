@@ -24,7 +24,7 @@ const AppRoutes = [
         element: <FilmsList />
     },
     {
-        path: '/film/:title',
+        path: '/player/:title',
         requireAuth: true,
         element: <Player />
     },
