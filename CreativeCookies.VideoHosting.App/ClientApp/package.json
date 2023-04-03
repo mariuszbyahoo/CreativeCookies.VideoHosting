@@ -7,6 +7,7 @@
     "bootstrap": "^5.2.0",
     "http-proxy-middleware": "^2.0.6",
     "jquery": "^3.6.0",
+    "js-base64": "^3.7.5",
     "merge": "^2.1.1",
     "oidc-client": "^1.11.5",
     "plyr-react": "^5.1.2",
