@@ -6,6 +6,8 @@ import {
 import styles from "./FilmUpload.module.css";
 import { useState } from "react";
 import { Base64 } from "js-base64";
+import { Button, Input } from "@mui/material";
+import { Search, UploadFile } from "@mui/icons-material";
 
 const uploadFilm = async (file) => {
   const blobName = file.name;
@@ -64,22 +66,28 @@ const FilmUpload = (props) => {
     }
 
     uploadFilm(file);
+    alert("DONE!");
   };
 
   return (
     <div className={styles.container}>
-      Upload a file below to add it into films container into{" "}
-      {process.env.REACT_APP_STORAGE_ACCOUNT_NAME}
-      <br />
-      <input
+      <label for="select-film" className={styles["custom-file-upload"]}>
+        <Search />
+        Select...
+      </label>
+      <Input
+        id="select-film"
         type="file"
-        placeholder="Select film to upload"
+        placeholder="MUI - select film to upload"
         onChange={fileChangeHandler}
-      />
-      <br />
-      <button type="submit" onClick={fileUploadHandler}>
+      />{" "}
+      <Button
+        variant="contained"
+        endIcon={<UploadFile />}
+        onClick={fileUploadHandler}
+      >
         Upload
-      </button>
+      </Button>
       <br />
       <br />
       {file && <p>Title of the uploaded film: {file.name}</p>}
