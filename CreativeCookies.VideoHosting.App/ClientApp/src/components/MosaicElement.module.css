@@ -2,3 +2,13 @@ img {
     max-width: 200px;
     max-height: 200px;
 }
+
+a {
+    text-decoration: none;
+}
+
+.videoTitle {
+    text-decoration: none;
+    color: #343a40;
+    font-weight: 500;
+}

@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import styles from "./MosaicElement.module.css";
 import { useEffect, useState } from "react";
 import { BlobServiceClient } from "@azure/storage-blob";
@@ -50,10 +50,10 @@ const MosaicElement = (props) => {
   }, [props.thumbnail]);
 
   return (
-    <NavLink to={"/player/" + props.film.name}>
+    <Link to={"/player/" + props.film.name} style={styles.linkImage}>
       <img src={blobImage} alt="thumbnail" />
-      {props.film.name}
-    </NavLink>
+      <p className={styles.videoTitle}>{props.film.name}</p>
+    </Link>
   );
 };
 
