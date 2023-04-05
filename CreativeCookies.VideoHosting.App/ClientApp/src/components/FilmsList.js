@@ -52,7 +52,7 @@ const FilmsList = () => {
     const containerClient = blobServiceClient.getContainerClient(containerName);
     const blobs = [];
     for await (const blob of containerClient.listBlobsFlat()) {
-      blobs.push(blob.name);
+      blobs.push(blob);
     }
     return blobs;
   }
@@ -65,11 +65,16 @@ const FilmsList = () => {
     content = <h4>An error occured, while fetching the API: {error}</h4>;
   }
   if (blobs.length > 0) {
+    // Order by date desc
+    blobs.sort(
+      (a, b) =>
+        new Date(b.properties.createdOn) - new Date(a.properties.createdOn)
+    );
     content = (
       <ul>
-        {blobs.map((blobTitle, index) => (
+        {blobs.map((blob, index) => (
           <li key={index}>
-            <NavLink to={"/player/" + blobTitle}>{blobTitle}</NavLink>
+            <NavLink to={"/player/" + blob.name}>{blob.name}</NavLink>
           </li>
         ))}
       </ul>
