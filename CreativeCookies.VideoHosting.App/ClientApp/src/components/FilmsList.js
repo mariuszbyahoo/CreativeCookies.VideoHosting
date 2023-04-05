@@ -1,8 +1,7 @@
 ﻿import { BlobServiceClient } from "@azure/storage-blob";
 import { useCallback, useEffect, useState } from "react";
 import styles from "./FilmsList.module.css";
-import { NavLink } from "react-router-dom";
-import Mosaic from "./FilmsMosaic";
+import Mosaic from "./Mosaic";
 
 const FilmsList = () => {
   const [filmBlobs, setFilmBlobs] = useState([]);
@@ -18,7 +17,9 @@ const FilmsList = () => {
         listBlobs(process.env.REACT_APP_CONTAINER_NAME, token)
           .then((blobs) => {
             setFilmBlobs(blobs.filter((b) => b.name.includes(".mp4")));
-            setThumbnailBlobs(blobs.filter((b) => b.name.includes(".png")));
+            setThumbnailBlobs(
+              blobs.filter((b) => b.name.includes(".png")).map((b) => b.name)
+            );
             setLoading(false);
           })
           .catch((error) => {
@@ -67,9 +68,6 @@ const FilmsList = () => {
   if (error) {
     content = <h4>An error occured, while fetching the API: {error}</h4>;
   }
-
-  console.log("filmBlobs: ", filmBlobs);
-  console.log("thumbnailBlobs: ", thumbnailBlobs);
 
   if (filmBlobs.length > 0) {
     // Order by date desc
