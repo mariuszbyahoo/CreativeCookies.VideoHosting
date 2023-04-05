@@ -5,7 +5,8 @@ import { NavLink } from "react-router-dom";
 import Mosaic from "./FilmsMosaic";
 
 const FilmsList = () => {
-  const [blobs, setBlobs] = useState([]);
+  const [filmBlobs, setFilmBlobs] = useState([]);
+  const [thumbnailBlobs, setThumbnailBlobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState();
 
@@ -16,7 +17,8 @@ const FilmsList = () => {
       .then((token) => {
         listBlobs(process.env.REACT_APP_CONTAINER_NAME, token)
           .then((blobs) => {
-            setBlobs(blobs);
+            setFilmBlobs(blobs.filter((b) => b.name.includes(".mp4")));
+            setThumbnailBlobs(blobs.filter((b) => b.name.includes(".png")));
             setLoading(false);
           })
           .catch((error) => {
@@ -65,13 +67,17 @@ const FilmsList = () => {
   if (error) {
     content = <h4>An error occured, while fetching the API: {error}</h4>;
   }
-  if (blobs.length > 0) {
+
+  console.log("filmBlobs: ", filmBlobs);
+  console.log("thumbnailBlobs: ", thumbnailBlobs);
+
+  if (filmBlobs.length > 0) {
     // Order by date desc
-    blobs.sort(
+    filmBlobs.sort(
       (a, b) =>
         new Date(b.properties.createdOn) - new Date(a.properties.createdOn)
     );
-    content = <Mosaic blobs={blobs} />;
+    content = <Mosaic filmBlobs={filmBlobs} thumbnailBlobs={thumbnailBlobs} />;
   }
 
   return (
