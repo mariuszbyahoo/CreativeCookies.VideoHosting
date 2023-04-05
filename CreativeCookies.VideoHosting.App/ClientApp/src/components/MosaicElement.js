@@ -16,7 +16,7 @@ const fetchSasToken = async (title) => {
   return data.sasToken;
 };
 
-const fetchBlob = async (blobName, sasToken) => {
+const fetchBlob = async (blobNameArray, sasToken) => {
   const blobServiceClient = new BlobServiceClient(
     `https://${process.env.REACT_APP_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/?${sasToken}`
   );
@@ -24,7 +24,7 @@ const fetchBlob = async (blobName, sasToken) => {
   const containerClient = blobServiceClient.getContainerClient(
     process.env.REACT_APP_CONTAINER_NAME
   );
-  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+  const blockBlobClient = containerClient.getBlockBlobClient(blobNameArray[0]);
   try {
     const response = await blockBlobClient.download(0);
     const imageBlob = await response.blobBody;
