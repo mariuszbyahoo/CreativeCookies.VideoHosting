@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import styles from "./FilmsList.module.css";
 import { NavLink } from "react-router-dom";
+import Mosaic from "./FilmsMosaic";
 
 const FilmsList = () => {
   const [blobs, setBlobs] = useState([]);
@@ -70,15 +71,7 @@ const FilmsList = () => {
       (a, b) =>
         new Date(b.properties.createdOn) - new Date(a.properties.createdOn)
     );
-    content = (
-      <ul>
-        {blobs.map((blob, index) => (
-          <li key={index}>
-            <NavLink to={"/player/" + blob.name}>{blob.name}</NavLink>
-          </li>
-        ))}
-      </ul>
-    );
+    content = <Mosaic blobs={blobs} />;
   }
 
   return (
