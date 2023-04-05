@@ -38,9 +38,6 @@ const fetchBlob = async (blobNameArray, sasToken) => {
 const MosaicElement = (props) => {
   const [blobImage, setBlobImage] = useState(undefined);
 
-  // HACK: Infrastruktura Azure zwraca błędy dla każdego obrazka z uwagi
-  // na błędy wyskakujące głównie z powodu tytułu filmu
-
   useEffect(() => {
     fetchSasToken(props.thumbnail).then((sasToken) => {
       const blob = fetchBlob(props.thumbnail, sasToken).then((blob) => {
@@ -49,10 +46,12 @@ const MosaicElement = (props) => {
     });
   }, [props.thumbnail]);
 
+  const filmTitle = props.film.name.slice(0, props.film.name.lastIndexOf("."));
+
   return (
     <Link to={"/player/" + props.film.name} style={styles.linkImage}>
       <img src={blobImage} alt="thumbnail" />
-      <p className={styles.videoTitle}>{props.film.name}</p>
+      <p className={styles.videoTitle}>{filmTitle}</p>
     </Link>
   );
 };

@@ -1,4 +1,4 @@
-﻿import { useParams } from "react-router-dom";
+﻿import { useNavigate, useParams } from "react-router-dom";
 import styles from "./Player.module.css";
 import "plyr-react/plyr.css";
 import Plyr from "plyr-react";
@@ -7,8 +7,11 @@ import { useEffect, useRef, useState } from "react";
 const Player = (props) => {
   const [videoUrl, setVideoUrl] = useState("");
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   const params = useParams();
   const ref = useRef(null);
+
+  if (params.title === ":title") navigate("/films-list");
 
   useEffect(() => {
     setLoading(true);
