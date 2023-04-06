@@ -47,6 +47,34 @@ const uploadFilm = async (file) => {
   }
 
   await blobClient.commitBlockList(blockIds);
+
+  const length = await getVideoDuration(file);
+
+  const metadata = {
+    length: length.toFixed(0), // length in seconds
+  };
+
+  await blobClient.setMetadata(metadata);
+};
+
+const getVideoDuration = (file) => {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement("video");
+    const url = URL.createObjectURL(file);
+
+    video.preload = "metadata";
+    video.src = url;
+
+    video.onloadedmetadata = () => {
+      URL.revokeObjectURL(url);
+      resolve(video.duration);
+    };
+
+    video.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Error loading video metadata"));
+    };
+  });
 };
 
 const FilmUpload = (props) => {
@@ -65,8 +93,9 @@ const FilmUpload = (props) => {
       return;
     }
 
-    uploadFilm(file);
-    alert("DONE!");
+    uploadFilm(file).then((res) => {
+      alert("DONE!");
+    });
   };
 
   return (
