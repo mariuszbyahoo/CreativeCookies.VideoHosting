@@ -10,6 +10,7 @@ const Mosaic = (props) => {
           thumbnail={props.thumbnailBlobs.filter((b) =>
             b.includes(blob.name.slice(0, blob.name.length - 4))
           )}
+          duration={blob.metadata.length}
           key={index}
         />
       ))}

@@ -56,6 +56,9 @@ const FilmsList = () => {
     const containerClient = blobServiceClient.getContainerClient(containerName);
     const blobs = [];
     for await (const blob of containerClient.listBlobsFlat()) {
+      const blockBlobClient = containerClient.getBlockBlobClient(blob.name);
+      const propertiesResponse = await blockBlobClient.getProperties();
+      blob.metadata = propertiesResponse.metadata;
       blobs.push(blob);
     }
     return blobs;

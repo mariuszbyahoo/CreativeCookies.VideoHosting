@@ -75,7 +75,7 @@ namespace CreativeCookies.VideoHosting.App.Controllers
                     StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
                     ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(30),
                 };
-                sasBuilder.SetPermissions(BlobSasPermissions.List);
+                sasBuilder.SetPermissions(BlobSasPermissions.List | BlobSasPermissions.Read);
             }
             else 
             {

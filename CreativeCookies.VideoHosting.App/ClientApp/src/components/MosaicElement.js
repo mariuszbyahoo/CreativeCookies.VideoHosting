@@ -52,7 +52,7 @@ const MosaicElement = (props) => {
     <Link to={"/player/" + props.film.name} className={styles.linkImage}>
       <div className={styles.imageContainer}>
         <img src={blobImage} alt="thumbnail" className={styles.thumbnail} />
-        <div className={styles.badge}>{"00:00"}</div>
+        <div className={styles.badge}>{props.duration + " s"}</div>
       </div>
       <p className={styles.videoTitle}>{filmTitle}</p>
     </Link>
