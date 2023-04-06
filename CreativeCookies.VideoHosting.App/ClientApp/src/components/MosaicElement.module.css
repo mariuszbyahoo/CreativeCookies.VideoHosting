@@ -12,3 +12,30 @@ a {
     color: #343a40;
     font-weight: 500;
 }
+
+.linkImage {
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .imageContainer {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .thumbnail {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  
+  .badge {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.6); /* Adjust background color and opacity as needed */
+    color: white;
+    padding: 4px 8px;
+    font-size: 14px;
+    border-radius: 4px;
+  }

@@ -49,10 +49,17 @@ const MosaicElement = (props) => {
   const filmTitle = props.film.name.slice(0, props.film.name.lastIndexOf("."));
 
   return (
-    <Link to={"/player/" + props.film.name} style={styles.linkImage}>
-      <img src={blobImage} alt="thumbnail" />
+    <Link to={"/player/" + props.film.name} className={styles.linkImage}>
+      <div className={styles.imageContainer}>
+        <img src={blobImage} alt="thumbnail" className={styles.thumbnail} />
+        <div className={styles.badge}>{"00:00"}</div>
+      </div>
       <p className={styles.videoTitle}>{filmTitle}</p>
     </Link>
+    // <Link to={"/player/" + props.film.name} style={styles.linkImage}>
+    //   <img src={blobImage} alt="thumbnail" />
+    //   <p className={styles.videoTitle}>{filmTitle}</p>
+    // </Link>
   );
 };
 
