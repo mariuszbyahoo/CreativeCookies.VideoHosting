@@ -80,11 +80,14 @@ const getVideoDuration = (file) => {
 const FilmUpload = (props) => {
   const [file, setFile] = useState();
 
-  const description = `https://${process.env.REACT_APP_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${process.env.REACT_APP_CONTAINER_NAME}/`;
-
   const fileChangeHandler = (e) => {
     if (e.target.files) {
-      setFile(e.target.files[0]);
+      if (e.target.files[0].name.includes(".mp4")) {
+        setFile(e.target.files[0]);
+      } else {
+        setFile(undefined);
+        alert("Only mp4!");
+      }
     }
   };
 
@@ -98,28 +101,36 @@ const FilmUpload = (props) => {
     });
   };
 
+  let description = file ? `Selected file: ${file.name}` : "No file selected";
+
   return (
     <div className={styles.container}>
-      <label for="select-film" className={styles["custom-file-upload"]}>
-        <Search />
-        Select...
-      </label>
-      <Input
-        id="select-film"
-        type="file"
-        placeholder="MUI - select film to upload"
-        onChange={fileChangeHandler}
-      />{" "}
-      <Button
-        variant="contained"
-        endIcon={<UploadFile />}
-        onClick={fileUploadHandler}
-      >
-        Upload
-      </Button>
-      <br />
-      <br />
-      {file && <p>Title of the uploaded film: {file.name}</p>}
+      <div className="row">
+        <div className="row">
+          <div className="col-6">
+            <label for="select-film" className={styles["custom-file-upload"]}>
+              <Search />
+              Select mp4 file
+            </label>
+            <Input
+              id="select-film"
+              type="file"
+              placeholder="MUI - select film to upload"
+              onChange={fileChangeHandler}
+            />
+          </div>
+          <div className="col-6">
+            <span className={styles.description}>{description}</span>
+          </div>
+        </div>
+        <Button
+          variant="contained"
+          endIcon={<UploadFile />}
+          onClick={fileUploadHandler}
+        >
+          Upload
+        </Button>
+      </div>
     </div>
   );
 };

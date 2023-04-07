@@ -15,5 +15,24 @@ input[type="file"] {
     border-radius: 4px;
     display: inline-block;
     padding: 6px 12px;
+    margin-top: 1%;
+    margin-bottom: 1%;
+    margin-left:1%;
+    margin-right:1%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 80%; /* or any desired height */
     cursor: pointer;
+}
+
+.description {
+    margin-top:1%;
+    margin-bottom:1%;
+    margin-left:1%;
+    margin-right:1%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100%; /* or any desired height */
 }
