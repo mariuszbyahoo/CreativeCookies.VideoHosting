@@ -150,7 +150,6 @@ const FilmUpload = (props) => {
             <span className={styles.description}>{videoInputDescription}</span>
           </div>
         </div>
-        <hr />
         <div className="row">
           <div className="col-6">
             <label
