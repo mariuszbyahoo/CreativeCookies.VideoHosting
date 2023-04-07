@@ -1,10 +1,11 @@
 ﻿import { BlobServiceClient } from "@azure/storage-blob";
 import { useCallback, useEffect, useState } from "react";
 import styles from "./FilmsList.module.css";
-import { NavLink } from "react-router-dom";
+import Mosaic from "./Mosaic";
 
 const FilmsList = () => {
-  const [blobs, setBlobs] = useState([]);
+  const [filmBlobs, setFilmBlobs] = useState([]);
+  const [thumbnailBlobs, setThumbnailBlobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState();
 
@@ -15,7 +16,10 @@ const FilmsList = () => {
       .then((token) => {
         listBlobs(process.env.REACT_APP_CONTAINER_NAME, token)
           .then((blobs) => {
-            setBlobs(blobs);
+            setFilmBlobs(blobs.filter((b) => b.name.includes(".mp4")));
+            setThumbnailBlobs(
+              blobs.filter((b) => b.name.includes(".png")).map((b) => b.name)
+            );
             setLoading(false);
           })
           .catch((error) => {
@@ -52,7 +56,10 @@ const FilmsList = () => {
     const containerClient = blobServiceClient.getContainerClient(containerName);
     const blobs = [];
     for await (const blob of containerClient.listBlobsFlat()) {
-      blobs.push(blob.name);
+      const blockBlobClient = containerClient.getBlockBlobClient(blob.name);
+      const propertiesResponse = await blockBlobClient.getProperties();
+      blob.metadata = propertiesResponse.metadata;
+      blobs.push(blob);
     }
     return blobs;
   }
@@ -64,16 +71,14 @@ const FilmsList = () => {
   if (error) {
     content = <h4>An error occured, while fetching the API: {error}</h4>;
   }
-  if (blobs.length > 0) {
-    content = (
-      <ul>
-        {blobs.map((blobTitle, index) => (
-          <li key={index}>
-            <NavLink to={"/player/" + blobTitle}>{blobTitle}</NavLink>
-          </li>
-        ))}
-      </ul>
+
+  if (filmBlobs.length > 0) {
+    // Order by date desc
+    filmBlobs.sort(
+      (a, b) =>
+        new Date(b.properties.createdOn) - new Date(a.properties.createdOn)
     );
+    content = <Mosaic filmBlobs={filmBlobs} thumbnailBlobs={thumbnailBlobs} />;
   }
 
   return (

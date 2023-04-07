@@ -39,6 +39,18 @@ namespace CreativeCookies.VideoHosting.App.Controllers
             return Ok(new { sasToken });
         }
 
+        [HttpGet("thumbnail/{blobTitle}")]
+        public IActionResult GetSasTokenForThumbnail(string blobTitle)
+        {
+            if (string.IsNullOrEmpty(blobTitle))
+            {
+                return BadRequest($"Field: string blobTitle is mandatory!");
+            }
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+            var sasToken = GenerateSasToken(containerClient, EndpointType.Film, blobTitle);
+            return Ok(new { sasToken });
+        }
+
         [HttpGet("film-upload/{blobTitle}")]
         public IActionResult GetSasTokenForFilmUpload(string blobTitle)
         {
@@ -63,7 +75,7 @@ namespace CreativeCookies.VideoHosting.App.Controllers
                     StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
                     ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(30),
                 };
-                sasBuilder.SetPermissions(BlobSasPermissions.List);
+                sasBuilder.SetPermissions(BlobSasPermissions.List | BlobSasPermissions.Read);
             }
             else 
             {
