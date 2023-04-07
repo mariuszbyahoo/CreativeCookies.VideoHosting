@@ -2,6 +2,17 @@
 import { useCallback, useEffect, useState } from "react";
 import styles from "./FilmsList.module.css";
 import Mosaic from "./Mosaic";
+import {
+  FormControl,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  OutlinedInput,
+  Select,
+  TextField,
+} from "@mui/material";
+import { Search } from "@mui/icons-material";
 
 const FilmsList = () => {
   const [filmBlobs, setFilmBlobs] = useState([]);
@@ -64,6 +75,14 @@ const FilmsList = () => {
     return blobs;
   }
 
+  const filterInputChangeHandler = (e) => {
+    console.log(e.target.value);
+  };
+
+  const filterByChangeHandler = (e) => {
+    console.log(e.target.value);
+  };
+
   let content = <p>Upload a movie to get started!</p>;
   if (loading) {
     content = <p>Loading...</p>;
@@ -83,7 +102,44 @@ const FilmsList = () => {
 
   return (
     <div className={styles.container}>
-      <h1>Blobs in the Azure Blob Storage Container:</h1>
+      <div className="row">
+        <div className="col-6">
+          <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
+            <TextField
+              label="Filter"
+              id="filter-search"
+              onChange={filterInputChangeHandler}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search />
+                  </InputAdornment>
+                ),
+              }}
+              variant="filled"
+            />
+          </FormControl>
+        </div>
+        <div className="col-6">
+          <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
+            <InputLabel id="demo-simple-select-standard-label">Age</InputLabel>
+            <Select
+              labelId="demo-simple-select-standard-label"
+              id="demo-simple-select-standard"
+              value={20}
+              onChange={filterByChangeHandler}
+              label="Age"
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              <MenuItem value={10}>Ten</MenuItem>
+              <MenuItem value={20}>Twenty</MenuItem>
+              <MenuItem value={30}>Thirty</MenuItem>
+            </Select>
+          </FormControl>
+        </div>
+      </div>
       {content}
     </div>
   );
