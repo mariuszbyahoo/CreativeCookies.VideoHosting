@@ -34,11 +34,20 @@ const MosaicElement = (props) => {
   const [blobImage, setBlobImage] = useState(undefined);
 
   useEffect(() => {
-    fetchSasToken(props.thumbnail).then((sasToken) => {
-      const blob = fetchBlob(props.thumbnail, sasToken).then((blob) => {
-        setBlobImage(URL.createObjectURL(blob));
+    if (
+      props.thumbnail == null ||
+      props.thumbnail == undefined ||
+      (props.thumbnail && props.thumbnail.length == 0)
+    ) {
+      console.log("No thumbnail!");
+      setBlobImage(`${process.env.PUBLIC_URL}/blank_thumbnail.png`); // Set the path to the default image
+    } else {
+      fetchSasToken(props.thumbnail).then((sasToken) => {
+        const blob = fetchBlob(props.thumbnail, sasToken).then((blob) => {
+          setBlobImage(URL.createObjectURL(blob));
+        });
       });
-    });
+    }
   }, [props.thumbnail]);
 
   const filmTitle = props.film.name.slice(0, props.film.name.lastIndexOf("."));
