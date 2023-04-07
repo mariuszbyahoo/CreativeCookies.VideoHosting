@@ -61,15 +61,17 @@ const MosaicElement = (props) => {
   };
 
   return (
-    <Link to={"/player/" + props.film.name} className={styles.linkImage}>
-      <div className={styles.imageContainer}>
-        <img src={blobImage} alt="thumbnail" className={styles.thumbnail} />
-        <div className={styles.badge}>
-          {videoDurationToString(props.duration)}
+    <div className={styles.boxShadowCard}>
+      <Link to={"/player/" + props.film.name} className={styles.linkImage}>
+        <div className={styles.imageContainer}>
+          <img src={blobImage} alt="thumbnail" className={styles.thumbnail} />
+          <div className={styles.badge}>
+            {videoDurationToString(props.duration)}
+          </div>
         </div>
-      </div>
-      <p className={styles.videoTitle}>{filmTitle}</p>
-    </Link>
+        <p className={styles.videoTitle}>{filmTitle}</p>
+      </Link>
+    </div>
   );
 };
 
