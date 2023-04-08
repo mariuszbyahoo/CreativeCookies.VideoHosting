@@ -60,7 +60,7 @@ namespace CreativeCookies.VideoHosting.App.Controllers
             {
                 return BadRequest($"Field: string blobTitle is mandatory!");
             }
-            var containerClient = _blobServiceClient.GetBlobContainerClient(_filmsContainerName);
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_thumbnailsContainerName);
             var sasToken = GenerateSasToken(containerClient, EndpointType.BlobRead, blobTitle);
             return Ok(new { sasToken });
         }

@@ -5,21 +5,25 @@ import { BlobServiceClient } from "@azure/storage-blob";
 
 const fetchSasToken = async (title) => {
   const response = await fetch(
-    `https://${process.env.REACT_APP_API_ADDRESS}/api/sas/thumbnail/${title}`
+    `https://${process.env.REACT_APP_API_ADDRESS}/api/sas/thumbnail/${title}.jpg`
   );
   const data = await response.json();
   return data.sasToken;
 };
 
 const fetchBlob = async (blobNameArray, sasToken) => {
+  console.log("fetching blobs, with namesArray: ", blobNameArray);
+  console.log("and SAS token: ", sasToken);
   const blobServiceClient = new BlobServiceClient(
-    `https://${process.env.REACT_APP_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/?${sasToken}`
+    `https://${process.env.REACT_APP_STORAGE_ACCOUNT_NAME}.blob.core.windows.net?${sasToken}`
   );
 
   const containerClient = blobServiceClient.getContainerClient(
-    process.env.REACT_APP_CONTAINER_NAME
+    process.env.REACT_APP_THUMBNAILS_CONTAINER_NAME
   );
-  const blockBlobClient = containerClient.getBlockBlobClient(blobNameArray[0]);
+  const blockBlobClient = containerClient.getBlockBlobClient(
+    `${blobNameArray[0]}.jpg`
+  );
   try {
     const response = await blockBlobClient.download(0);
     const imageBlob = await response.blobBody;
@@ -39,7 +43,7 @@ const MosaicElement = (props) => {
       props.thumbnail == undefined ||
       (props.thumbnail && props.thumbnail.length == 0)
     ) {
-      setBlobImage(`${process.env.PUBLIC_URL}/blank_thumbnail.png`); // Set the path to the default image
+      setBlobImage(`${process.env.PUBLIC_URL}/blank_thumbnail.jpg`); // Set the path to the default image
     } else {
       fetchSasToken(props.thumbnail).then((sasToken) => {
         const blob = fetchBlob(props.thumbnail, sasToken).then((blob) => {

@@ -17,7 +17,7 @@ import { Search } from "@mui/icons-material";
 const FilmsList = () => {
   const [filmBlobs, setFilmBlobs] = useState([]);
   const [filteredFilmBlobs, setFilteredFilmBlobs] = useState([]);
-  const [thumbnailBlobs, setThumbnailBlobs] = useState([]);
+  const [thumbnailBlobsNames, setThumbnailBlobNames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState();
 
@@ -31,8 +31,8 @@ const FilmsList = () => {
             const filmBlobs = blobs.filter((b) => b.name.includes(".mp4"));
             setFilmBlobs(filmBlobs);
             setFilteredFilmBlobs(filmBlobs); // Set the filteredFilmBlobs here
-            setThumbnailBlobs(
-              blobs.filter((b) => b.name.includes(".png")).map((b) => b.name)
+            setThumbnailBlobNames(
+              blobs.map((b) => b.name.slice(0, b.name.lastIndexOf(".")))
             );
             setLoading(false);
           })
@@ -98,7 +98,10 @@ const FilmsList = () => {
         new Date(b.properties.createdOn) - new Date(a.properties.createdOn)
     );
     content = (
-      <Mosaic filmBlobs={filteredFilmBlobs} thumbnailBlobs={thumbnailBlobs} />
+      <Mosaic
+        filmBlobs={filteredFilmBlobs}
+        thumbnailBlobs={thumbnailBlobsNames}
+      />
     );
   }
 
