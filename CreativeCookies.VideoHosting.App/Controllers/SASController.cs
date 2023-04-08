@@ -20,7 +20,7 @@ namespace CreativeCookies.VideoHosting.App.Controllers
             _filmsContainerName = "films";
             _thumbnailsContainerName = "thumbnails";
         }
-        // MyIpAddress: 79.191.57.150
+
         [HttpGet("filmsList")]
         public IActionResult GetSasTokenForContainer()
         {
@@ -73,7 +73,7 @@ namespace CreativeCookies.VideoHosting.App.Controllers
                 return BadRequest($"Field: string blobTitle is mandatory!");
             }
             var containerClient = _blobServiceClient.GetBlobContainerClient(_thumbnailsContainerName);
-            var sasToken = GenerateSasToken(containerClient, EndpointType.BlobRead, blobTitle);
+            var sasToken = GenerateSasToken(containerClient, EndpointType.BlobUpload, blobTitle);
             return Ok(new { sasToken });
         }
 

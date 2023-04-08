@@ -11,12 +11,15 @@ import { Search, UploadFile, InsertPhoto } from "@mui/icons-material";
 
 const uploadBlob = async (file, blobName, isVideo) => {
   const account = process.env.REACT_APP_STORAGE_ACCOUNT_NAME;
-  const containerName = process.env.REACT_APP_CONTAINER_NAME;
+  const filmContainerName = process.env.REACT_APP_FILMS_CONTAINER_NAME;
+  const thumbnailContainerName =
+    process.env.REACT_APP_THUMBNAILS_CONTAINER_NAME;
   const apiAddress = process.env.REACT_APP_API_ADDRESS;
 
-  const response = await fetch(
-    `https://${apiAddress}/api/SAS/film-upload/${blobName}`
-  );
+  const fetchUrl = isVideo
+    ? `https://${apiAddress}/api/SAS/film-upload/${blobName}`
+    : `https://${apiAddress}/api/SAS/thumbnail-upload/${blobName}`;
+  const response = await fetch(fetchUrl);
   const data = await response.json();
   const sasToken = data.sasToken;
 
@@ -30,10 +33,10 @@ const uploadBlob = async (file, blobName, isVideo) => {
     return Base64.encode(idBytes);
   });
 
-  const blobURL = `https://${account}.blob.core.windows.net/${containerName}/${encodeURIComponent(
-    blobName
-  )}?${sasToken}`;
-
+  const blobURL = `https://${account}.blob.core.windows.net/${
+    isVideo ? filmContainerName : thumbnailContainerName
+  }/${encodeURIComponent(blobName)}?${sasToken}`;
+  debugger;
   const pipeline = newPipeline(new AnonymousCredential());
   const blobClient = new BlockBlobClient(blobURL, pipeline);
 
@@ -95,11 +98,11 @@ const FilmUpload = (props) => {
 
   const thumbnailChangeHandler = (e) => {
     if (e.target.files) {
-      if (e.target.files[0].name.includes(".png")) {
+      if (e.target.files[0].name.includes(".jpg")) {
         setThumbnail(e.target.files[0]);
       } else {
         setThumbnail(undefined);
-        alert("Only png!");
+        alert("Only jpg!");
       }
     }
   };
@@ -113,15 +116,23 @@ const FilmUpload = (props) => {
       let thumbnailName = `${video.name.slice(
         0,
         video.name.lastIndexOf(".")
-      )}.png`;
-      uploadBlob(thumbnail, thumbnailName, false).then((res) => {
-        alert("Thumbnail uploaded!");
-      });
+      )}.jpg`;
+      uploadBlob(thumbnail, thumbnailName, false)
+        .then((res) => {
+          setThumbnail(undefined);
+        })
+        .catch((error) => {
+          console.log("Error while uploading thumbnail: ", error);
+        });
     }
 
-    uploadBlob(video, video.name, true).then((res) => {
-      alert("Video Uploaded!");
-    });
+    uploadBlob(video, video.name, true)
+      .then((res) => {
+        setVideo(undefined);
+      })
+      .catch((error) => {
+        console.log("Error while uploading video: ", error);
+      });
   };
 
   let videoInputDescription = video

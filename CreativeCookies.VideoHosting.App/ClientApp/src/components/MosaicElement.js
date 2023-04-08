@@ -24,14 +24,9 @@ const fetchBlob = async (blobNameArray, sasToken) => {
   const blockBlobClient = containerClient.getBlockBlobClient(
     `${blobNameArray[0]}.jpg`
   );
-  try {
-    const response = await blockBlobClient.download(0);
-    const imageBlob = await response.blobBody;
-    return imageBlob;
-  } catch (error) {
-    console.error("Error fetching image blob:", error);
-    return null;
-  }
+  const response = await blockBlobClient.download(0);
+  const imageBlob = await response.blobBody;
+  return imageBlob;
 };
 
 const MosaicElement = (props) => {
@@ -46,9 +41,14 @@ const MosaicElement = (props) => {
       setBlobImage(`${process.env.PUBLIC_URL}/blank_thumbnail.jpg`); // Set the path to the default image
     } else {
       fetchSasToken(props.thumbnail).then((sasToken) => {
-        const blob = fetchBlob(props.thumbnail, sasToken).then((blob) => {
-          setBlobImage(URL.createObjectURL(blob));
-        });
+        const blob = fetchBlob(props.thumbnail, sasToken)
+          .then((blob) => {
+            setBlobImage(URL.createObjectURL(blob));
+          })
+          .catch((error) => {
+            console.log("error while fetching thumbnail: ", error);
+            setBlobImage(`${process.env.PUBLIC_URL}/blank_thumbnail.jpg`);
+          });
       });
     }
   }, [props.thumbnail]);
