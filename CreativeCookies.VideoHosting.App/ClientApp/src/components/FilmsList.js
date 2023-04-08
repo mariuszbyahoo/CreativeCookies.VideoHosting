@@ -26,7 +26,7 @@ const FilmsList = () => {
     setError(null);
     fetchSasToken()
       .then((token) => {
-        listBlobs(process.env.REACT_APP_CONTAINER_NAME, token)
+        listBlobs(process.env.REACT_APP_FILMS_CONTAINER_NAME, token)
           .then((blobs) => {
             const filmBlobs = blobs.filter((b) => b.name.includes(".mp4"));
             setFilmBlobs(filmBlobs);
@@ -53,7 +53,7 @@ const FilmsList = () => {
 
   async function fetchSasToken() {
     const response = await fetch(
-      `https://${process.env.REACT_APP_API_ADDRESS}/api/SAS/container/`
+      `https://${process.env.REACT_APP_API_ADDRESS}/api/SAS/filmsList/`
     );
     const data = await response.json();
     return data.sasToken;
