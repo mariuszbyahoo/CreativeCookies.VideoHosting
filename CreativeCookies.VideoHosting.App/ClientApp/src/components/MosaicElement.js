@@ -39,7 +39,6 @@ const MosaicElement = (props) => {
       props.thumbnail == undefined ||
       (props.thumbnail && props.thumbnail.length == 0)
     ) {
-      console.log("No thumbnail!");
       setBlobImage(`${process.env.PUBLIC_URL}/blank_thumbnail.png`); // Set the path to the default image
     } else {
       fetchSasToken(props.thumbnail).then((sasToken) => {
