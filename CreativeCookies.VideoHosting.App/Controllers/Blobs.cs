@@ -22,7 +22,7 @@ namespace CreativeCookies.VideoHosting.App.Controllers
         }
 
         [Route("films")]
-        public async Task<IActionResult> GetFilms([FromQuery] string search = "", int pageNumber = 1, int pageSize = 30)
+        public async Task<IActionResult> GetFilms([FromQuery] string search = "", int pageNumber = 1, int pageSize = 48)
         {
             var result = new List<string>();
 
