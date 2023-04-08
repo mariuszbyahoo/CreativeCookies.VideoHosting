@@ -9,21 +9,23 @@ namespace CreativeCookies.VideoHosting.App.Controllers
     public class SASController : ControllerBase
     {
         private readonly BlobServiceClient _blobServiceClient;
-        private readonly string _containerName;
+        private readonly string _filmsContainerName;
+        private readonly string _thumbnailsContainerName;
         private readonly StorageSharedKeyCredential _storageSharedKeyCredential;
 
         public SASController(BlobServiceClient blobServiceClient, StorageSharedKeyCredential storageSharedKeyCredential)
         {
             _blobServiceClient = blobServiceClient;
             _storageSharedKeyCredential = storageSharedKeyCredential;
-            _containerName = "films";
+            _filmsContainerName = "films";
+            _thumbnailsContainerName = "thumbnails";
         }
-        // MyIpAddress: 79.191.57.150
-        [HttpGet("container")]
+
+        [HttpGet("filmsList")]
         public IActionResult GetSasTokenForContainer()
         {
-            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-            var sasToken = GenerateSasToken(containerClient, EndpointType.Container);
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_filmsContainerName);
+            var sasToken = GenerateSasToken(containerClient, EndpointType.ListBlobs);
             return Ok(new { sasToken });
         }
 
@@ -34,20 +36,8 @@ namespace CreativeCookies.VideoHosting.App.Controllers
             {
                 return BadRequest($"Field: string blobTitle is mandatory!");
             }
-            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-            var sasToken = GenerateSasToken(containerClient, EndpointType.Film, blobTitle);
-            return Ok(new { sasToken });
-        }
-
-        [HttpGet("thumbnail/{blobTitle}")]
-        public IActionResult GetSasTokenForThumbnail(string blobTitle)
-        {
-            if (string.IsNullOrEmpty(blobTitle))
-            {
-                return BadRequest($"Field: string blobTitle is mandatory!");
-            }
-            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-            var sasToken = GenerateSasToken(containerClient, EndpointType.Film, blobTitle);
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_filmsContainerName);
+            var sasToken = GenerateSasToken(containerClient, EndpointType.BlobRead, blobTitle);
             return Ok(new { sasToken });
         }
 
@@ -58,15 +48,39 @@ namespace CreativeCookies.VideoHosting.App.Controllers
             {
                 return BadRequest($"Field: string blobTitle is mandatory!");
             }
-            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-            var sasToken = GenerateSasToken(containerClient, EndpointType.FilmUpload, blobTitle);
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_filmsContainerName);
+            var sasToken = GenerateSasToken(containerClient, EndpointType.BlobUpload, blobTitle);
+            return Ok(new { sasToken });
+        }
+
+        [HttpGet("thumbnail/{blobTitle}")]
+        public IActionResult GetSasTokenForThumbnail(string blobTitle)
+        {
+            if (string.IsNullOrEmpty(blobTitle))
+            {
+                return BadRequest($"Field: string blobTitle is mandatory!");
+            }
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_thumbnailsContainerName);
+            var sasToken = GenerateSasToken(containerClient, EndpointType.BlobRead, blobTitle);
+            return Ok(new { sasToken });
+        }
+
+        [HttpGet("thumbnail-upload/{blobTitle}")]
+        public IActionResult GetSasTokenForThumbnailUpload(string blobTitle)
+        {
+            if (string.IsNullOrEmpty(blobTitle))
+            {
+                return BadRequest($"Field: string blobTitle is mandatory!");
+            }
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_thumbnailsContainerName);
+            var sasToken = GenerateSasToken(containerClient, EndpointType.BlobUpload, blobTitle);
             return Ok(new { sasToken });
         }
 
         private string GenerateSasToken(BlobContainerClient containerClient, EndpointType endpointType, string blobTitle = "")
         {
             BlobSasBuilder sasBuilder = null;
-            if (endpointType == EndpointType.Container)
+            if (endpointType == EndpointType.ListBlobs)
             {
                 sasBuilder = new BlobSasBuilder
                 {
@@ -87,7 +101,7 @@ namespace CreativeCookies.VideoHosting.App.Controllers
                     StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
                     ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(6000),
                 };
-                if (endpointType == EndpointType.FilmUpload)
+                if (endpointType == EndpointType.BlobUpload)
                 {
                     sasBuilder.SetPermissions(BlobSasPermissions.Create | BlobSasPermissions.Write);
                 }
@@ -103,8 +117,8 @@ namespace CreativeCookies.VideoHosting.App.Controllers
 
     public enum EndpointType
     {
-        Container = 0,
-        Film = 1,
-        FilmUpload = 2
+        ListBlobs = 0,
+        BlobRead = 1,
+        BlobUpload = 2
     }
 }
