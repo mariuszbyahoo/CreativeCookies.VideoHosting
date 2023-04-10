@@ -7,11 +7,31 @@ import { ErrorBoundary } from "react-error-boundary";
 
 function fallbackRender({ error, resetErrorBoundary }) {
   // Call resetErrorBoundary() to reset the error boundary and retry the render.
+  let errorSendingStatus = "sending...";
+
+  fetch(`https://${process.env.REACT_APP_API_ADDRESS}/api/error/`, {
+    method: "POST",
+    mode: "cors",
+    cache: "no-cache",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      errorLog: JSON.stringify({
+        error: {
+          message: error.message,
+          stack: error.stack,
+        },
+      }),
+    }),
+  }).then((errorSendingStatus = "Error sent, contact the site Admin"));
 
   return (
     <div role="alert">
       <p>Something went wrong:</p>
       <pre style={{ color: "red" }}>{error.message}</pre>
+      <p>{errorSendingStatus}</p>
     </div>
   );
 }
