@@ -35,6 +35,22 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
+- task: ArchiveFiles@1
+  displayName: 'Archive files'
+  inputs:
+    rootFolderOrFile: '$(Build.SourcesDirectory)' # Adjust this path to match your application's root folder
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/MyApp.zip'
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/MyApp.zip'
+    replaceExistingArchive: true
+    verbose: true
+
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Zip Package'
   inputs:
