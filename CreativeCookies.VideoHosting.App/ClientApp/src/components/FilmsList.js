@@ -1,18 +1,10 @@
-﻿import { BlobServiceClient } from "@azure/storage-blob";
+﻿"use client";
+
+import { BlobServiceClient } from "@azure/storage-blob";
 import { useCallback, useEffect, useState } from "react";
 import styles from "./FilmsList.module.css";
 import Mosaic from "./Mosaic";
-import {
-  Button,
-  FormControl,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  MenuItem,
-  OutlinedInput,
-  Select,
-  TextField,
-} from "@mui/material";
+import { Button, FormControl, InputAdornment, TextField } from "@mui/material";
 import { Search } from "@mui/icons-material";
 
 const FilmsList = () => {
@@ -38,7 +30,6 @@ const FilmsList = () => {
         )
           .then((response) => response.json())
           .then((data) => {
-            console.log("data: ", data);
             setFilmBlobs((prevFilmBlobs) => [...prevFilmBlobs, ...data.films]);
             setTotalPages(data.totalPages);
             setHasMore(data.hasMore);
@@ -138,6 +129,7 @@ const FilmsList = () => {
           />
         </FormControl>
       </div>
+
       {content}
       {loadBtn}
     </div>
