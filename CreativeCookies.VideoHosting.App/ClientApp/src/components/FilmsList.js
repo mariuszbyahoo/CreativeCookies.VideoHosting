@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import styles from "./FilmsList.module.css";
 import Mosaic from "./Mosaic";
 import {
+  Button,
   FormControl,
   IconButton,
   InputAdornment,
@@ -17,23 +18,31 @@ import { Search } from "@mui/icons-material";
 const FilmsList = () => {
   const [filmBlobs, setFilmBlobs] = useState([]);
   const [filteredFilmBlobs, setFilteredFilmBlobs] = useState([]);
-  const [thumbnailBlobsNames, setThumbnailBlobNames] = useState([]);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState();
 
-  const fetchMoviesHandler = useCallback(() => {
+  const fetchMoviesHandler = useCallback(async () => {
+    if (!hasMore) return; // Don't fetch if there are no more items
+
     setLoading(true);
     setError(null);
+
     fetchSasToken()
       .then((token) => {
-        listBlobs(process.env.REACT_APP_FILMS_CONTAINER_NAME, token)
-          .then((blobs) => {
-            const filmBlobs = blobs.filter((b) => b.name.includes(".mp4"));
-            setFilmBlobs(filmBlobs);
-            setFilteredFilmBlobs(filmBlobs); // Set the filteredFilmBlobs here
-            setThumbnailBlobNames(
-              blobs.map((b) => b.name.slice(0, b.name.lastIndexOf(".")))
-            );
+        fetch(
+          `https://${process.env.REACT_APP_API_ADDRESS}/api/blobs/films?search=&pageNumber=${pageNumber}&pageSize=24`
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("data: ", data);
+            setFilmBlobs((prevFilmBlobs) => [...prevFilmBlobs, ...data.films]);
+            setTotalPages(data.totalPages);
+            setHasMore(data.hasMore);
+            setPageNumber((prevPage) => prevPage + 1);
             setLoading(false);
           })
           .catch((error) => {
@@ -45,11 +54,11 @@ const FilmsList = () => {
         setError(error);
         setLoading(false);
       });
-  }, []);
+  }, [hasMore, pageNumber]);
 
   useEffect(() => {
     fetchMoviesHandler();
-  }, [fetchMoviesHandler]); // Empty array to run the effect only once, when the component mounts.
+  }, []);
 
   async function fetchSasToken() {
     const response = await fetch(
@@ -58,6 +67,13 @@ const FilmsList = () => {
     const data = await response.json();
     return data.sasToken;
   }
+
+  const loadMoreHandler = () => {
+    setPageNumber((prevPage) => {
+      return prevPage + 1;
+    });
+    fetchMoviesHandler();
+  };
 
   async function listBlobs(containerName, sasToken) {
     const blobServiceClient = new BlobServiceClient(
@@ -91,19 +107,17 @@ const FilmsList = () => {
     content = <h4>An error occured, while fetching the API: {error}</h4>;
   }
 
-  if (filteredFilmBlobs.length > 0) {
+  if (filmBlobs.length > 0) {
     // Order by date desc
-    filteredFilmBlobs.sort(
-      (a, b) =>
-        new Date(b.properties.createdOn) - new Date(a.properties.createdOn)
-    );
-    content = (
-      <Mosaic
-        filmBlobs={filteredFilmBlobs}
-        thumbnailBlobs={thumbnailBlobsNames}
-      />
-    );
+    filmBlobs.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
+    content = <Mosaic filmBlobs={filmBlobs} />;
   }
+
+  let loadBtn = hasMore && (
+    <Button variant="outlined" onClick={loadMoreHandler}>
+      Load more
+    </Button>
+  );
 
   return (
     <div className={styles.container}>
@@ -125,6 +139,7 @@ const FilmsList = () => {
         </FormControl>
       </div>
       {content}
+      {loadBtn}
     </div>
   );
 };

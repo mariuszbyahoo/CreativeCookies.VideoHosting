@@ -2,17 +2,14 @@ import styles from "./Mosaic.module.css";
 import MosaicElement from "./MosaicElement";
 
 const Mosaic = (props) => {
-  console.log("filmsBlobs in Mosaic element: ", props.filmBlobs);
-  console.log("thumbnailBlobs in Mosaic element: ", props.thumbnailBlobs);
   return (
     <div className={styles["mosaic-wrapper"]}>
       {props.filmBlobs.map((blob, index) => (
         <MosaicElement
-          film={blob}
-          thumbnail={props.thumbnailBlobs.filter((b) =>
-            b.includes(blob.name.slice(0, blob.name.length - 4))
-          )}
-          duration={blob.metadata.length}
+          film={blob.name}
+          thumbnail={blob.thumbnailName}
+          duration={blob.length}
+          createdOn={blob.createdOn}
           key={index}
         />
       ))}
