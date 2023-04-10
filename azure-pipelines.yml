@@ -42,14 +42,6 @@ steps:
     includeRootFolder: false
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/MyApp.zip'
-- task: ArchiveFiles@2
-  inputs:
-    rootFolderOrFile: '$(Build.BinariesDirectory)'
-    includeRootFolder: true
-    archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/MyApp.zip'
-    replaceExistingArchive: true
-    verbose: true
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Zip Package'
@@ -64,7 +56,7 @@ steps:
     azureSubscription: 'MyTubeConnection'
     appType: 'webApp'
     WebAppName: 'streambeacon-test'
-    packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
+    packageForLinux: '$(System.ArtifactStagingDirectory)/*.zip'
     
 - task: PowerShell@2
   displayName: 'List contents of System.DefaultWorkingDirectory'
