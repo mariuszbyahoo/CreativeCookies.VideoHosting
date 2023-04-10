@@ -41,14 +41,7 @@ steps:
     rootFolderOrFile: '$(Build.SourcesDirectory)' # Adjust this path to match your application's root folder
     includeRootFolder: false
     archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/MyApp.zip'
-
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Zip Package'
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/MyApp.zip'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+    archiveFile: 'D:\a\1\a\MyApp.zip'
 
 - task: AzureRmWebAppDeployment@4
   inputs:
@@ -56,11 +49,5 @@ steps:
     azureSubscription: 'MyTubeConnection'
     appType: 'webApp'
     WebAppName: 'streambeacon-test'
-    packageForLinux: '$(System.ArtifactStagingDirectory)/*.zip'
+    packageForLinux: 'D:\a\1\a\MyApp.zip'
     
-- task: PowerShell@2
-  displayName: 'List contents of System.DefaultWorkingDirectory'
-  inputs:
-    targetType: 'inline'
-    script: |
-      Get-ChildItem -Path "$(System.DefaultWorkingDirectory)" -Recurse
