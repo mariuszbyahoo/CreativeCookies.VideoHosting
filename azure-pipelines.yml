@@ -38,7 +38,7 @@ steps:
 - task: AzureRmWebAppDeployment@4
   inputs:
     ConnectionType: 'AzureRM'
-    azureSubscription: 'MyTubeSubscription (6fff56f5-221e-4a40-a5a1-075069992b7d)'
+    azureSubscription: 'MyTubeConnection'
     appType: 'webApp'
     WebAppName: 'streambeacon-test'
     packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
