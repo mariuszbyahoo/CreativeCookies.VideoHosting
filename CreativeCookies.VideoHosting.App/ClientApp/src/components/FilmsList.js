@@ -39,10 +39,9 @@ const FilmsList = () => {
         )
           .then((response) => response.json())
           .then((data) => {
+            console.log("data: ", data);
             setFilmBlobs((prevFilmBlobs) => [...prevFilmBlobs, ...data.films]);
-            setThumbnailBlobNames(
-              filmBlobs.map((b) => b.name.slice(0, b.name.lastIndexOf(".")))
-            );
+            setThumbnailBlobNames(data.films.map((b) => b.thumbnailName));
             setTotalPages(data.totalPages);
             setHasMore(data.hasMore);
             setPageNumber((prevPage) => prevPage + 1);

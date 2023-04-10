@@ -28,37 +28,47 @@ namespace CreativeCookies.VideoHosting.App.Controllers
             var filmsClient  = _blobServiceClient.GetBlobContainerClient(_filmsContainerName);
             var thumbnailsClient  = _blobServiceClient.GetBlobContainerClient(_thumbnailsContainerName);
 
-            List<BlobItem> blobs = new List<BlobItem>();
+            List<BlobItem> filmBlobs = new List<BlobItem>();
+            List<BlobItem> thumbnailBlobs = new List<BlobItem>();
             await foreach (BlobItem blob in filmsClient.GetBlobsAsync())
             {
-                blobs.Add(blob);
+                filmBlobs.Add(blob);
+            }
+            await foreach (BlobItem blob in thumbnailsClient.GetBlobsAsync())
+            {
+                thumbnailBlobs.Add(blob);
             }
 
             // Filter the blobs based on the search term (if provided)
             if (!string.IsNullOrEmpty(search))
             {
-                blobs = blobs.Where(b => b.Name.ToLower().Contains(search.ToLower())).ToList();
+                filmBlobs = filmBlobs.Where(b => b.Name.ToLower().Contains(search.ToLower())).ToList();
             }
 
-            blobs = blobs.OrderByDescending(b => b.Properties.CreatedOn).ToList();
-
-            // HACK: should this return also binary images?
+            filmBlobs = filmBlobs.OrderByDescending(b => b.Properties.CreatedOn).ToList();
 
             // Paginate the blobs
-            int totalBlobs = blobs.Count;
-            var paginatedBlobs = blobs.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+            int totalBlobs = filmBlobs.Count;
+            var paginatedBlobs = filmBlobs.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+
             var result = new List<FilmDto>();
             foreach (var blob in paginatedBlobs)
             {
-                var blobClient = filmsClient.GetBlobClient(blob.Name);
-                var properties = await blobClient.GetPropertiesAsync();
-                var length = properties.Value.Metadata.Count > 0 ? properties.Value.Metadata["length"] : "";
-                var name = blob.Name;
-                var thumbnailName = blob.Name.Substring(0, blob.Name.LastIndexOf('.'));
-                var createdOn = blob.Properties?.CreatedOn?.ToString();
-                result.Add(new FilmDto() { Name = name, ThumbnailName = thumbnailName, Length = length, CreatedOn = createdOn });
+                try
+                {
+                    var blobClient = filmsClient.GetBlobClient(blob.Name);
+                    var properties = await blobClient.GetPropertiesAsync();
+                    var length = properties.Value.Metadata.Count > 0 ? properties.Value.Metadata["length"] : "";
+                    var name = blob.Name;
+                    var createdOn = blob.Properties?.CreatedOn?.ToString();
+                    var imageBlob = thumbnailBlobs.FirstOrDefault(b => b.Name.Substring(0, b.Name.LastIndexOf('.')).Equals(name.Substring(0, name.LastIndexOf('.')), StringComparison.OrdinalIgnoreCase));
+                    result.Add(new FilmDto() { Name = name, ThumbnailName = imageBlob?.Name, Length = length, CreatedOn = createdOn });
+                }
+                catch(Exception ex)
+                {
+                    throw new Exception($"Exception thrown for blob: {blob.Name}", ex);
+                }
             }
-
 
             return Ok(new
             {

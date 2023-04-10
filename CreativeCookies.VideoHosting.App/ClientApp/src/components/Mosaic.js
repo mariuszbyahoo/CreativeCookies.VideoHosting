@@ -2,8 +2,6 @@ import styles from "./Mosaic.module.css";
 import MosaicElement from "./MosaicElement";
 
 const Mosaic = (props) => {
-  console.log("filmsBlobs in Mosaic element: ", props.filmBlobs);
-  console.log("thumbnailBlobs in Mosaic element: ", props.thumbnailBlobs);
   return (
     <div className={styles["mosaic-wrapper"]}>
       {props.filmBlobs.map((blob, index) => (
