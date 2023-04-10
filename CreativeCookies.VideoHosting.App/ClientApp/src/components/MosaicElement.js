@@ -12,8 +12,6 @@ const fetchSasToken = async (title) => {
 };
 
 const fetchBlob = async (blobNameArray, sasToken) => {
-  console.log("fetching blobs, with namesArray: ", blobNameArray);
-  console.log("and SAS token: ", sasToken);
   const blobServiceClient = new BlobServiceClient(
     `https://${process.env.REACT_APP_STORAGE_ACCOUNT_NAME}.blob.core.windows.net?${sasToken}`
   );
@@ -46,7 +44,10 @@ const MosaicElement = (props) => {
             setBlobImage(URL.createObjectURL(blob));
           })
           .catch((error) => {
-            console.log("error while fetching thumbnail: ", error);
+            console.log(
+              "error while fetching thumbnail for name: ",
+              props.thumbnail
+            );
             setBlobImage(`${process.env.PUBLIC_URL}/blank_thumbnail.jpg`);
           });
       });

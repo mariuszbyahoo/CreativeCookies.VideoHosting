@@ -2,6 +2,7 @@
 using Azure.Storage;
 using Microsoft.AspNetCore.Mvc;
 using Azure.Storage.Blobs.Models;
+using CreativeCookies.VideoHosting.App.Models;
 
 namespace CreativeCookies.VideoHosting.App.Controllers
 {
@@ -22,10 +23,8 @@ namespace CreativeCookies.VideoHosting.App.Controllers
         }
 
         [Route("films")]
-        public async Task<IActionResult> GetFilms([FromQuery] string search = "", int pageNumber = 1, int pageSize = 48)
+        public async Task<IActionResult> GetFilms([FromQuery] string search = "", int pageNumber = 1, int pageSize = 24)
         {
-            var result = new List<string>();
-
             var filmsClient  = _blobServiceClient.GetBlobContainerClient(_filmsContainerName);
             var thumbnailsClient  = _blobServiceClient.GetBlobContainerClient(_thumbnailsContainerName);
 
@@ -43,13 +42,27 @@ namespace CreativeCookies.VideoHosting.App.Controllers
 
             blobs = blobs.OrderByDescending(b => b.Properties.CreatedOn).ToList();
 
+            // HACK: should this return also binary images?
+
             // Paginate the blobs
             int totalBlobs = blobs.Count;
             var paginatedBlobs = blobs.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+            var result = new List<FilmDto>();
+            foreach (var blob in paginatedBlobs)
+            {
+                var blobClient = filmsClient.GetBlobClient(blob.Name);
+                var properties = await blobClient.GetPropertiesAsync();
+                var length = properties.Value.Metadata.Count > 0 ? properties.Value.Metadata["length"] : "";
+                var name = blob.Name;
+                var thumbnailName = blob.Name.Substring(0, blob.Name.LastIndexOf('.'));
+                var createdOn = blob.Properties?.CreatedOn?.ToString();
+                result.Add(new FilmDto() { Name = name, ThumbnailName = thumbnailName, Length = length, CreatedOn = createdOn });
+            }
+
 
             return Ok(new
             {
-                films = paginatedBlobs,
+                films = result,
                 currentPage = pageNumber,
                 totalPages = (int)Math.Ceiling((double)totalBlobs / pageSize),
                 hasMore = pageNumber * pageSize < totalBlobs

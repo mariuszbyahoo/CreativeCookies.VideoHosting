@@ -35,7 +35,7 @@ const FilmsList = () => {
     fetchSasToken()
       .then((token) => {
         fetch(
-          `https://${process.env.REACT_APP_API_ADDRESS}/api/blobs/films?search=&pageNumber=${pageNumber}&pageSize=60`
+          `https://${process.env.REACT_APP_API_ADDRESS}/api/blobs/films?search=&pageNumber=${pageNumber}&pageSize=24`
         )
           .then((response) => response.json())
           .then((data) => {
@@ -112,10 +112,7 @@ const FilmsList = () => {
 
   if (filmBlobs.length > 0) {
     // Order by date desc
-    filmBlobs.sort(
-      (a, b) =>
-        new Date(b.properties.createdOn) - new Date(a.properties.createdOn)
-    );
+    filmBlobs.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
     content = (
       <Mosaic filmBlobs={filmBlobs} thumbnailBlobs={thumbnailBlobsNames} />
     );
