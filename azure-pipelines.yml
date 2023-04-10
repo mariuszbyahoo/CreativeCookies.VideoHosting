@@ -35,6 +35,13 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Zip Package'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/MyApp.zip'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+
 - task: AzureRmWebAppDeployment@4
   inputs:
     ConnectionType: 'AzureRM'
