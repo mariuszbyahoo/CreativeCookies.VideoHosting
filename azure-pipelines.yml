@@ -22,13 +22,6 @@ steps:
   inputs:
     restoreSolution: '$(solution)'
 
-- task: PowerShell@2
-  displayName: 'List contents of System.DefaultWorkingDirectory'
-  inputs:
-    targetType: 'inline'
-    script: |
-      Get-ChildItem -Path "$(System.DefaultWorkingDirectory)" -Recurse
-
 - task: VSBuild@1
   inputs:
     solution: '$(solution)'
@@ -49,3 +42,10 @@ steps:
     appType: 'webApp'
     WebAppName: 'streambeacon-test'
     packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
+    
+- task: PowerShell@2
+  displayName: 'List contents of System.DefaultWorkingDirectory'
+  inputs:
+    targetType: 'inline'
+    script: |
+      Get-ChildItem -Path "$(System.DefaultWorkingDirectory)" -Recurse
