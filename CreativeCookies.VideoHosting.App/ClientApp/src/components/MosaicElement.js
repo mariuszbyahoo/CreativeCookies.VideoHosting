@@ -5,13 +5,13 @@ import { BlobServiceClient } from "@azure/storage-blob";
 
 const fetchSasToken = async (title) => {
   const response = await fetch(
-    `https://${process.env.REACT_APP_API_ADDRESS}/api/sas/thumbnail/${title}.jpg`
+    `https://${process.env.REACT_APP_API_ADDRESS}/api/sas/thumbnail/${title}`
   );
   const data = await response.json();
   return data.sasToken;
 };
 
-const fetchBlob = async (blobNameArray, sasToken) => {
+const fetchBlob = async (blobName, sasToken) => {
   const blobServiceClient = new BlobServiceClient(
     `https://${process.env.REACT_APP_STORAGE_ACCOUNT_NAME}.blob.core.windows.net?${sasToken}`
   );
@@ -19,9 +19,7 @@ const fetchBlob = async (blobNameArray, sasToken) => {
   const containerClient = blobServiceClient.getContainerClient(
     process.env.REACT_APP_THUMBNAILS_CONTAINER_NAME
   );
-  const blockBlobClient = containerClient.getBlockBlobClient(
-    `${blobNameArray[0]}.jpg`
-  );
+  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
   const response = await blockBlobClient.download(0);
   const imageBlob = await response.blobBody;
   return imageBlob;
