@@ -1,6 +1,7 @@
 ﻿using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
+using CreativeCookies.VideoHosting.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CreativeCookies.VideoHosting.App.Controllers
@@ -113,12 +114,5 @@ namespace CreativeCookies.VideoHosting.App.Controllers
             var sasQueryParameters = sasBuilder.ToSasQueryParameters(_storageSharedKeyCredential);
             return sasQueryParameters.ToString();
         }
-    }
-
-    public enum EndpointType
-    {
-        ListBlobs = 0,
-        BlobRead = 1,
-        BlobUpload = 2
     }
 }
