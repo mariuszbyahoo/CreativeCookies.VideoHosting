@@ -6,11 +6,10 @@ const Mosaic = (props) => {
     <div className={styles["mosaic-wrapper"]}>
       {props.filmBlobs.map((blob, index) => (
         <MosaicElement
-          film={blob}
-          thumbnail={props.thumbnailBlobs.filter((b) =>
-            b.includes(blob.name.slice(0, blob.name.length - 4))
-          )}
+          film={blob.name}
+          thumbnail={blob.thumbnailName}
           duration={blob.length}
+          createdOn={blob.createdOn}
           key={index}
         />
       ))}

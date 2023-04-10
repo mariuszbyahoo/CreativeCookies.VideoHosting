@@ -54,7 +54,7 @@ const MosaicElement = (props) => {
     }
   }, [props.thumbnail]);
 
-  const filmTitle = props.film.name.slice(0, props.film.name.lastIndexOf("."));
+  const filmTitle = props.film.slice(0, props.film.lastIndexOf("."));
 
   const videoDurationToString = (seconds) => {
     const hours = Math.floor(seconds / 3600);
@@ -75,7 +75,7 @@ const MosaicElement = (props) => {
 
   return (
     <div className={styles.boxShadowCard}>
-      <Link to={"/player/" + props.film.name} className={styles.linkImage}>
+      <Link to={"/player/" + props.film} className={styles.linkImage}>
         <div className={styles.imageContainer}>
           <img src={blobImage} alt="thumbnail" className={styles.thumbnail} />
           <div className={styles.badge}>

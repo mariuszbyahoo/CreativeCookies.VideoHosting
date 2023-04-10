@@ -18,7 +18,6 @@ import { Search } from "@mui/icons-material";
 const FilmsList = () => {
   const [filmBlobs, setFilmBlobs] = useState([]);
   const [filteredFilmBlobs, setFilteredFilmBlobs] = useState([]);
-  const [thumbnailBlobsNames, setThumbnailBlobNames] = useState([]);
   const [pageNumber, setPageNumber] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,7 +40,6 @@ const FilmsList = () => {
           .then((data) => {
             console.log("data: ", data);
             setFilmBlobs((prevFilmBlobs) => [...prevFilmBlobs, ...data.films]);
-            setThumbnailBlobNames(data.films.map((b) => b.thumbnailName));
             setTotalPages(data.totalPages);
             setHasMore(data.hasMore);
             setPageNumber((prevPage) => prevPage + 1);
@@ -112,12 +110,10 @@ const FilmsList = () => {
   if (filmBlobs.length > 0) {
     // Order by date desc
     filmBlobs.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
-    content = (
-      <Mosaic filmBlobs={filmBlobs} thumbnailBlobs={thumbnailBlobsNames} />
-    );
+    content = <Mosaic filmBlobs={filmBlobs} />;
   }
 
-  let loadBtn = (
+  let loadBtn = hasMore && (
     <Button variant="outlined" onClick={loadMoreHandler}>
       Load more
     </Button>
