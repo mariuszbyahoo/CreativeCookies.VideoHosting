@@ -24,8 +24,7 @@ namespace CreativeCookies.VideoHosting.App
             });
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
+
 
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
@@ -34,14 +33,6 @@ namespace CreativeCookies.VideoHosting.App
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
-
-            builder.Services.AddIdentityServer()
-                .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
-
-            builder.Services.AddAuthentication()
-                .AddIdentityServerJwt();
             var accountName = builder.Configuration.GetValue<string>("Storage:AccountName");
             var accountKey = builder.Configuration.GetValue<string>("Storage:AccountKey");
             var blobServiceUrl = builder.Configuration.GetValue<string>("Storage:BlobServiceUrl");
@@ -50,9 +41,7 @@ namespace CreativeCookies.VideoHosting.App
             builder.Services.AddSingleton(x => new StorageSharedKeyCredential(accountName, accountKey));
             builder.Services.AddSingleton(x => new BlobServiceClient(new Uri(blobServiceUrl), x.GetRequiredService<StorageSharedKeyCredential>()));
 
-            builder.Services.AddControllersWithViews();
-            builder.Services.AddRazorPages();
-
+            builder.Services.AddControllers();
 
             var app = builder.Build();
 
@@ -71,16 +60,11 @@ namespace CreativeCookies.VideoHosting.App
             app.UseStaticFiles();
             app.UseRouting();
 
-            app.UseAuthentication();
-            app.UseIdentityServer();
-            app.UseAuthorization();
-
             app.UseCors();
 
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller}/{action=Index}/{id?}");
-            app.MapRazorPages();
 
             app.MapFallbackToFile("index.html");
 
