@@ -2,7 +2,6 @@ import styles from "./Mosaic.module.css";
 import MosaicElement from "./MosaicElement";
 
 const Mosaic = (props) => {
-  throw new Error("Hardcoded");
   return (
     <div className={styles["mosaic-wrapper"]}>
       {props.filmBlobs.map((blob, index) => (

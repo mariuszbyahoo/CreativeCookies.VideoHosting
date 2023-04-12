@@ -1,4 +1,3 @@
-import ApiAuthorzationRoutes from "./components/api-authorization/ApiAuthorizationRoutes";
 import FilmsList from "./components/FilmsList";
 import FilmUpload from "./components/FilmUpload";
 import { Home } from "./components/Home";
@@ -37,7 +36,7 @@ function fallbackRender({ error, resetErrorBoundary }) {
 }
 const AppRoutes = [
   {
-    index: true,
+    index: false,
     element: (
       <ErrorBoundary
         fallbackRender={fallbackRender}
@@ -64,7 +63,7 @@ const AppRoutes = [
   },
   {
     path: "/player/:title",
-    requireAuth: true,
+    requireAuth: false,
     element: (
       <ErrorBoundary
         fallbackRender={fallbackRender}
@@ -78,7 +77,7 @@ const AppRoutes = [
   },
   {
     path: "/films-upload",
-    requireAuth: true,
+    requireAuth: false,
     element: (
       <ErrorBoundary
         fallbackRender={fallbackRender}
@@ -89,8 +88,7 @@ const AppRoutes = [
         <FilmUpload />
       </ErrorBoundary>
     ),
-  },
-  ...ApiAuthorzationRoutes,
+    }
 ];
 
 export default AppRoutes;
