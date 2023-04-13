@@ -24,8 +24,20 @@ function fallbackRender({ error, resetErrorBoundary }) {
         },
       }),
     }),
-  }).then((errorSendingStatus = "Error sent, contact the site Admin"));
-
+  })
+      .then((errorSendingStatus = "Error sent, contact the site Admin"))
+      .catch((error) => {
+          let strError = JSON.stringify({
+              error: {
+                  message: error.message,
+                  stack: error.stack,
+              },
+          });
+          console.log(
+              "Error when sending the error message to the API: ",
+              strError
+          );
+      });
   return (
     <div role="alert">
       <p>Something went wrong:</p>
