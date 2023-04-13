@@ -29,19 +29,19 @@ const FilmsList = () => {
           `https://${process.env.REACT_APP_API_ADDRESS}/api/blobs/films?search=&pageNumber=${pageNumber}&pageSize=24`
         )
           .then((response) => response.json())
-          .then((data) => {
+            .then((data) => {
             setFilmBlobs((prevFilmBlobs) => [...prevFilmBlobs, ...data.films]);
             setTotalPages(data.totalPages);
             setHasMore(data.hasMore);
             setPageNumber((prevPage) => prevPage + 1);
             setLoading(false);
           })
-          .catch((error) => {
+            .catch((error) => {
             setError(error);
             setLoading(false);
           });
       })
-      .catch((error) => {
+        .catch((error) => {
         setError(error);
         setLoading(false);
       });

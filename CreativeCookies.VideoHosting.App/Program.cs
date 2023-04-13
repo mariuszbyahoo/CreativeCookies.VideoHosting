@@ -4,7 +4,9 @@ using CreativeCookies.VideoHosting.App.Data;
 using CreativeCookies.VideoHosting.App.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.SpaServices;
+using Microsoft.Extensions.FileProviders;
 
 namespace CreativeCookies.VideoHosting.App
 {
@@ -49,11 +51,23 @@ namespace CreativeCookies.VideoHosting.App
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();
+                app.UseSpa(spa =>
+                {
+                    spa.UseProxyToSpaDevelopmentServer("http://localhost:3000");
+                });
             }
             else
             {
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
+
+                // Configure the app to use the production build of your React app
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    FileProvider = new PhysicalFileProvider(
+                        Path.Combine(Directory.GetCurrentDirectory(), "ClientApp", "build")),
+                    RequestPath = new PathString("")
+                });
             }
 
             app.UseHttpsRedirection();
