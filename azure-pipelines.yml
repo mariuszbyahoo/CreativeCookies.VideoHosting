@@ -32,6 +32,13 @@ steps:
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+    
+- task: CmdLine@2
+  inputs:
+    script: |
+      cd CreativeCookies.VideoHosting.App/ClientApp
+      npm install
+      npm run build
 
 
 - task: PublishBuildArtifacts@1
@@ -39,3 +46,4 @@ steps:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
     publishLocation: 'Container'
+    FileCopyOptions: 
