@@ -53,14 +53,13 @@ namespace CreativeCookies.VideoHosting.App
                 app.UseMigrationsEndPoint();
                 app.UseSpa(spa =>
                 {
-                    spa.UseProxyToSpaDevelopmentServer("http://localhost:3000");
+                    spa.UseProxyToSpaDevelopmentServer("https://localhost:7237");
                 });
             }
             else
             {
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
-
                 // Configure the app to use the production build of your React app
                 app.UseStaticFiles(new StaticFileOptions
                 {
