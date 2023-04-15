@@ -1,30 +1,29 @@
 ﻿using Azure.Storage.Blobs.Models;
-using Azure.Storage.Blobs;
-using Azure.Storage;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using CreativeCookies.VideoHosting.Contracts.Azure;
+using CreativeCookies.VideoHosting.Contracts.ModelContracts;
+using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Domain.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.API.Controllers
+namespace CreativeCookies.VideoHosting.Domain.Repositories
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class BlobsController : ControllerBase
+    public class FilmsRepository : IFilmsRepository
     {
-        private readonly BlobServiceClient _blobServiceClient;
         private readonly string _filmsContainerName;
         private readonly string _thumbnailsContainerName;
+        private readonly IBlobServiceClientWrapper _blobServiceClient;
 
-        public BlobsController(BlobServiceClient blobServiceClient)
+        public FilmsRepository() 
         {
-            _blobServiceClient = blobServiceClient;
             _filmsContainerName = "films";
             _thumbnailsContainerName = "thumbnails";
         }
 
-        [HttpGet]
-        [Route("films")]
-        public async Task<IActionResult> GetFilms([FromQuery] string search = "", int pageNumber = 1, int pageSize = 24)
+        public async Task<IFilmsPaginatedResult> GetFilmsPaginatedResult(string search, int pageNumber, int pageSize)
         {
             var filmsClient = _blobServiceClient.GetBlobContainerClient(_filmsContainerName);
             var thumbnailsClient = _blobServiceClient.GetBlobContainerClient(_thumbnailsContainerName);
@@ -52,7 +51,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             int totalBlobs = filmBlobs.Count;
             var paginatedBlobs = filmBlobs.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
 
-            var result = new List<FilmTile>();
+            var filmTiles = new List<FilmTile>();
             foreach (var blob in paginatedBlobs)
             {
                 try
@@ -63,21 +62,20 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     var name = blob.Name;
                     var createdOn = blob.Properties?.CreatedOn?.ToString() ?? string.Empty;
                     var imageBlob = thumbnailBlobs.FirstOrDefault(b => b.Name.Substring(0, b.Name.LastIndexOf('.')).Equals(name.Substring(0, name.LastIndexOf('.')), StringComparison.OrdinalIgnoreCase));
-                    result.Add(new FilmTile() { Name = name, ThumbnailName = imageBlob?.Name, Length = length, CreatedOn = createdOn });
+                    filmTiles.Add(new FilmTile() { Name = name, ThumbnailName = imageBlob?.Name, Length = length, CreatedOn = createdOn });
                 }
                 catch (Exception ex)
                 {
                     throw new Exception($"Exception thrown for blob: {blob.Name}", ex);
                 }
             }
-
-            return Ok(new
-            {
-                films = result,
-                currentPage = pageNumber,
-                totalPages = (int)Math.Ceiling((double)totalBlobs / pageSize),
-                hasMore = pageNumber * pageSize < totalBlobs
-            });
+            var result = new FilmsPaginatedResult() {
+                Films = filmTiles,
+                CurrentPage = pageNumber,
+                TotalPages = (int)Math.Ceiling((double)totalBlobs / pageSize),
+                HasMore = pageNumber * pageSize < totalBlobs
+            };
+            return result as IFilmsPaginatedResult;
         }
     }
 }
