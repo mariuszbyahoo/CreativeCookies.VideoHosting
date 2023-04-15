@@ -18,10 +18,39 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
     {
         private readonly IBlobServiceClientWrapper _blobServiceClientWrapper;
         private readonly StorageSharedKeyCredential _storageSharedKeyCredential;
+
         public ISasTokenResult GetSasTokenForContainer(string containerName)
         {
             var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(containerName);
             var sasToken = GenerateSasToken(containerClient, EndpointType.ListBlobs);
+            return new SasTokenResult(sasToken);
+        }
+
+        public ISasTokenResult GetSasTokenForFilm(string filmName, string containerName)
+        {
+            var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(containerName);
+            var sasToken = GenerateSasToken(containerClient, EndpointType.BlobRead, filmName);
+            return new SasTokenResult(sasToken);
+        }
+
+        public ISasTokenResult GetSasTokenForFilmUpload(string filmName, string containerName)
+        {
+            var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(containerName);
+            var sasToken = GenerateSasToken(containerClient, EndpointType.BlobUpload, filmName);
+            return new SasTokenResult(sasToken);
+        }
+
+        public ISasTokenResult GetSasTokenForThumbnail(string thumbnailName, string containerName)
+        {
+            var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(containerName);
+            var sasToken = GenerateSasToken(containerClient, EndpointType.BlobRead, thumbnailName);
+            return new SasTokenResult(sasToken);
+        }
+
+        public ISasTokenResult GetSasTokenForThumbnailUpload(string thumbnailName, string containerName)
+        {
+            var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(containerName);
+            var sasToken = GenerateSasToken(containerClient, EndpointType.BlobUpload, thumbnailName);
             return new SasTokenResult(sasToken);
         }
 
@@ -58,7 +87,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
                     sasBuilder.SetPermissions(BlobSasPermissions.Read);
                 }
             }
-            var sasQueryParameters = sasBuilder.ToSasQueryParameters(storageSharedKeyCredentialWrapper);
+            var sasQueryParameters = sasBuilder.ToSasQueryParameters(_storageSharedKeyCredential);
             return sasQueryParameters.ToString();
         }
 
