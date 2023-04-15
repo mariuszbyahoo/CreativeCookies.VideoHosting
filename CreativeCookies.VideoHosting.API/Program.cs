@@ -1,8 +1,10 @@
 
 using Azure.Storage;
 using Azure.Storage.Blobs;
+using CreativeCookies.VideoHosting.Contracts.Azure;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.Contexts;
+using CreativeCookies.VideoHosting.Domain.Azure;
 using CreativeCookies.VideoHosting.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,7 +39,12 @@ namespace CreativeCookies.VideoHosting.API
 
             builder.Services.AddSingleton(x => new StorageSharedKeyCredential(accountName, accountKey));
             builder.Services.AddSingleton(x => new BlobServiceClient(new Uri(blobServiceUrl), x.GetRequiredService<StorageSharedKeyCredential>()));
-
+            builder.Services.AddSingleton<IBlobServiceClientWrapper>(sp =>
+            {
+                var blobServiceClient = sp.GetRequiredService<BlobServiceClient>();
+                return new BlobServiceClientWrapper(blobServiceClient);
+            });
+            builder.Services.AddSingleton<IFilmsRepository, FilmsRepository>();
             builder.Services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
 
             builder.Services.AddControllers();

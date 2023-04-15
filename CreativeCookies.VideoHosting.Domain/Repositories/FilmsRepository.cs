@@ -17,10 +17,11 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
         private readonly string _thumbnailsContainerName;
         private readonly IBlobServiceClientWrapper _blobServiceClient;
 
-        public FilmsRepository() 
+        public FilmsRepository(IBlobServiceClientWrapper wrapper) 
         {
             _filmsContainerName = "films";
             _thumbnailsContainerName = "thumbnails";
+            _blobServiceClient = wrapper;
         }
 
         public async Task<IFilmsPaginatedResult> GetFilmsPaginatedResult(string search, int pageNumber, int pageSize)
@@ -75,7 +76,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
                 TotalPages = (int)Math.Ceiling((double)totalBlobs / pageSize),
                 HasMore = pageNumber * pageSize < totalBlobs
             };
-            return result as IFilmsPaginatedResult;
+            return result;
         }
     }
 }
