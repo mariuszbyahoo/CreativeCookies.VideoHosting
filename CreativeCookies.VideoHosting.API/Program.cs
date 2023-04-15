@@ -25,7 +25,16 @@ namespace CreativeCookies.VideoHosting.API
                 });
             });
             // Add services to the container.
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            var connectionString = "";
+
+            if (builder.Environment.IsDevelopment())
+            {
+                connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            }
+            else if (builder.Environment.IsProduction()) 
+            {
+                connectionString = builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
+            }
 
 
             builder.Services.AddDbContext<AppDbContext>(options =>
