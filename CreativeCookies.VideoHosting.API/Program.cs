@@ -62,6 +62,9 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            var context = builder.Services.BuildServiceProvider().GetService<AppDbContext>();
+            context.Database.Migrate();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
