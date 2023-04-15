@@ -52,6 +52,12 @@ const FilmsList = () => {
   }, []);
 
   async function fetchSasToken() {
+    console.log("process.env", process.env);
+    console.log("process.env.NODE_ENV", process.env.NODE_ENV);
+    console.log(
+      "process.env.REACT_APP_API_ADDRESS",
+      process.env.REACT_APP_API_ADDRESS
+    );
     const response = await fetch(
       `https://${process.env.REACT_APP_API_ADDRESS}/api/SAS/filmsList/`
     );
@@ -65,22 +71,6 @@ const FilmsList = () => {
     });
     fetchMoviesHandler();
   };
-
-  async function listBlobs(containerName, sasToken) {
-    const blobServiceClient = new BlobServiceClient(
-      `https://${process.env.REACT_APP_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/?${sasToken}`
-    );
-
-    const containerClient = blobServiceClient.getContainerClient(containerName);
-    const blobs = [];
-    for await (const blob of containerClient.listBlobsFlat()) {
-      const blockBlobClient = containerClient.getBlockBlobClient(blob.name);
-      const propertiesResponse = await blockBlobClient.getProperties();
-      blob.metadata = propertiesResponse.metadata;
-      blobs.push(blob);
-    }
-    return blobs;
-  }
 
   const filterInputChangeHandler = (e) => {
     setFilteredFilmBlobs(
