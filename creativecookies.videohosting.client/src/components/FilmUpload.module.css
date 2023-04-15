@@ -1,0 +1,31 @@
+.container {
+    text-align: center;
+    margin-top: 1vmax;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.custom-file-upload {
+    border: 1px solid #1565c0;
+    background-color: transparent;
+    color: #1565c0;
+    font-weight: bold;
+    border-radius: 4px;
+    display: inline-block;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 80%; /* or any desired height */
+    cursor: pointer;
+}
+
+.description {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-size: larger;
+    height: 100%; /* or any desired height */
+}
