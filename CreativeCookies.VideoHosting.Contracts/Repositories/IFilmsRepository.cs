@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Domain.Models
+namespace CreativeCookies.VideoHosting.Contracts.Repositories
 {
-    public class ErrorLogRequest
+    public interface IFilmsRepository
     {
-        public string ErrorLog { get; set; }
     }
 }

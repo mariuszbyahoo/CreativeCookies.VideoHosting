@@ -1,4 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.API.Utils;
+using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DTOs;
@@ -12,11 +13,13 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     [ApiController]
     public class ErrorController : ControllerBase
     {
+        private readonly IErrorLogsRepository _repo;
         private AppDbContext _context;
 
-        public ErrorController(AppDbContext context)
+        public ErrorController(AppDbContext context, IErrorLogsRepository repo)
         {
             _context = context;
+            _repo = repo;
         }
 
         [HttpGet]
@@ -28,19 +31,24 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         [HttpPost]
         [Consumes("application/json")]
-        public async Task<IActionResult> LogNewError([FromBody] ErrorLogRequest errorLogRequest)
+        public async Task<IActionResult> LogNewError([FromBody] ErrorLog errorLogRequest)
         {
             // Check if the errorLog property is null or empty
-            if (string.IsNullOrEmpty(errorLogRequest.ErrorLog))
+            if (string.IsNullOrEmpty(errorLogRequest.Log))
             {
                 return BadRequest("ErrorLog cannot be null or empty.");
             }
 
-            var newError = new ClientException() { Id = Guid.NewGuid(), ErrorLog = errorLogRequest.ErrorLog };
+            var newError = await _repo.LogNewError(errorLogRequest.Log);
 
-            await _context.AddAsync(newError);
-            await _context.SaveChangesAsync();
-            return new CreatedObjectResult(newError);
+            if (newError != null)
+            {
+                return new CreatedObjectResult(newError);
+            }
+            else
+            {
+                throw new InvalidOperationException("IErrorLogsRepository returned null with valid input");
+            }
         }
     }
 }

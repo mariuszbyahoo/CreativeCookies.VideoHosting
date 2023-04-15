@@ -10,4 +10,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CreativeCookies.VideoHosting.Contracts\CreativeCookies.VideoHosting.Contracts.csproj" />
+    <ProjectReference Include="..\CreativeCookies.VideoHosting.DAL\CreativeCookies.VideoHosting.DAL.csproj" />
+  </ItemGroup>
+
 </Project>
