@@ -17,12 +17,13 @@ namespace CreativeCookies.VideoHosting.API
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddCors(options =>
             {
-                options.AddDefaultPolicy(builder =>
-                {
-                    builder.AllowAnyOrigin()
-                        .AllowAnyHeader()
-                        .AllowAnyMethod();
-                });
+                options.AddPolicy("AllowAllOriginsPolicy",
+                    builder =>
+                    {
+                        builder.AllowAnyOrigin()
+                               .AllowAnyMethod()
+                               .AllowAnyHeader();
+                    });
             });
             // Add services to the container.
             var connectionString = "";
@@ -76,8 +77,9 @@ namespace CreativeCookies.VideoHosting.API
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            app.UseCors("AllowAllOriginsPolicy");
 
+            app.UseAuthorization();
 
             app.MapControllers();
 
