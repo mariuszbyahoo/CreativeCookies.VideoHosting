@@ -18,6 +18,16 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
     {
         private readonly IBlobServiceClientWrapper _blobServiceClientWrapper;
         private readonly StorageSharedKeyCredential _storageSharedKeyCredential;
+        private readonly string _filmsContainerName;
+        private readonly string _thumbnailsContainerName;
+
+        public SasTokenRepository(IBlobServiceClientWrapper blobServiceClientWrapper, StorageSharedKeyCredential storageSharedKeyCredential)
+        {
+            _blobServiceClientWrapper = blobServiceClientWrapper;
+            _storageSharedKeyCredential = storageSharedKeyCredential;
+            _filmsContainerName = "films";
+            _thumbnailsContainerName = "thumbnails";
+        }
 
         public ISasTokenResult GetSasTokenForContainer(string containerName)
         {
@@ -26,30 +36,30 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             return new SasTokenResult(sasToken);
         }
 
-        public ISasTokenResult GetSasTokenForFilm(string filmName, string containerName)
+        public ISasTokenResult GetSasTokenForFilm(string filmName)
         {
-            var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(containerName);
+            var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(_filmsContainerName);
             var sasToken = GenerateSasToken(containerClient, EndpointType.BlobRead, filmName);
             return new SasTokenResult(sasToken);
         }
 
-        public ISasTokenResult GetSasTokenForFilmUpload(string filmName, string containerName)
+        public ISasTokenResult GetSasTokenForFilmUpload(string filmName)
         {
-            var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(containerName);
+            var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(_filmsContainerName);
             var sasToken = GenerateSasToken(containerClient, EndpointType.BlobUpload, filmName);
             return new SasTokenResult(sasToken);
         }
 
-        public ISasTokenResult GetSasTokenForThumbnail(string thumbnailName, string containerName)
+        public ISasTokenResult GetSasTokenForThumbnail(string thumbnailName)
         {
-            var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(containerName);
+            var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(_thumbnailsContainerName);
             var sasToken = GenerateSasToken(containerClient, EndpointType.BlobRead, thumbnailName);
             return new SasTokenResult(sasToken);
         }
 
-        public ISasTokenResult GetSasTokenForThumbnailUpload(string thumbnailName, string containerName)
+        public ISasTokenResult GetSasTokenForThumbnailUpload(string thumbnailName)
         {
-            var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(containerName);
+            var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(_thumbnailsContainerName);
             var sasToken = GenerateSasToken(containerClient, EndpointType.BlobUpload, thumbnailName);
             return new SasTokenResult(sasToken);
         }
