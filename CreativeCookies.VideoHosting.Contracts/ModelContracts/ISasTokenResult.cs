@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Contracts.Repositories
+namespace CreativeCookies.VideoHosting.Contracts.ModelContracts
 {
-    public interface ISasTokensRepository
+    public interface ISasTokenResult
     {
+        string SasToken { get; }
     }
 }
