@@ -44,10 +44,3 @@ steps:
 - task: CmdLine@2
   inputs:
     script: dir $(Build.ArtifactStagingDirectory) /s
-
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact'
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/publish'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
