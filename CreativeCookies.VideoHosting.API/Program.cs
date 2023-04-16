@@ -17,15 +17,25 @@ namespace CreativeCookies.VideoHosting.API
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddCors(options =>
             {
-                options.AddDefaultPolicy(builder =>
-                {
-                    builder.AllowAnyOrigin()
-                        .AllowAnyHeader()
-                        .AllowAnyMethod();
-                });
+                options.AddPolicy("AllowAllOriginsPolicy",
+                    builder =>
+                    {
+                        builder.AllowAnyOrigin()
+                               .AllowAnyMethod()
+                               .AllowAnyHeader();
+                    });
             });
             // Add services to the container.
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            var connectionString = "";
+
+            if (builder.Environment.IsDevelopment())
+            {
+                connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            }
+            else if (builder.Environment.IsProduction()) 
+            {
+                connectionString = builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
+            }
 
 
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -53,6 +63,9 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            var context = builder.Services.BuildServiceProvider().GetService<AppDbContext>();
+            context.Database.Migrate();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -64,8 +77,9 @@ namespace CreativeCookies.VideoHosting.API
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            app.UseCors("AllowAllOriginsPolicy");
 
+            app.UseAuthorization();
 
             app.MapControllers();
 
