@@ -41,6 +41,14 @@ steps:
     ArtifactName: 'drop'
     publishLocation: 'Container'
 
+- task: DotNetCoreCLI@2
+  displayName: 'Publish'
+  inputs:
+    command: 'publish'
+    publishWebProjects: true
+    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)/site/wwwroot'
+    zipAfterPublish: true
+
 - task: CmdLine@2
   inputs:
     script: dir $(Build.ArtifactStagingDirectory) /s
