@@ -10,7 +10,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         [HttpGet]
         public ActionResult<string> GetIndex()
         {
-            return Ok("And my new Release pipeline works!!! - This was non existent prior CI&CD");
+            return Ok("At last at 17.41 I've managed to set it up!");
         }
     }
 }
