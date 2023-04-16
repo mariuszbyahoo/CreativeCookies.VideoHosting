@@ -20,6 +20,9 @@ steps:
 - task: NuGetCommand@2
   inputs:
     restoreSolution: '$(solution)'
+- task: CmdLine@2
+  inputs:
+    script: dir $(Build.ArtifactStagingDirectory) /s
 
 - task: VSBuild@1
   inputs:
@@ -40,6 +43,8 @@ steps:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
     publishLocation: 'Container'
+
+    
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact'
