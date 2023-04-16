@@ -33,3 +33,13 @@ steps:
     appName: 'streambeacon-api'
     package: '$(System.DefaultWorkingDirectory)/**/*.zip'
     runtimeStack: 'DOTNETCORE|7.0'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+
+- task: CmdLine@2
+  inputs:
+    script: dir $(Build.ArtifactStagingDirectory) /s
