@@ -21,6 +21,11 @@ steps:
   inputs:
     command: 'publish'
     publishWebProjects: true
+
+- task: CmdLine@2
+  inputs:
+    script: dir $(Build.ArtifactStagingDirectory) /s
+
 - task: AzureWebApp@1
   inputs:
     azureSubscription: 'MyTubeSubscription (6fff56f5-221e-4a40-a5a1-075069992b7d)'
@@ -28,7 +33,3 @@ steps:
     appName: 'streambeacon-api'
     package: '$(System.DefaultWorkingDirectory)/**/*.zip'
     runtimeStack: 'DOTNETCORE|7.0'
-
-- task: CmdLine@2
-  inputs:
-    script: dir $(Build.ArtifactStagingDirectory) /s
