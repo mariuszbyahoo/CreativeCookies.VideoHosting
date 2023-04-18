@@ -6,6 +6,7 @@ using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.Domain.Azure;
 using CreativeCookies.VideoHosting.Domain.Repositories;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace CreativeCookies.VideoHosting.API
@@ -42,6 +43,9 @@ namespace CreativeCookies.VideoHosting.API
             {
                 options.UseSqlServer(connectionString);
             });
+
+            builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddEntityFrameworkStores<AppDbContext>();
 
             var accountName = builder.Configuration.GetValue<string>("Storage:AccountName");
             var accountKey = builder.Configuration.GetValue<string>("Storage:AccountKey");
