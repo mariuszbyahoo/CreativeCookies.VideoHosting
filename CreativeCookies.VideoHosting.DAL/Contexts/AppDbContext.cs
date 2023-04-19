@@ -1,4 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.DAL.DTOs;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CreativeCookies.VideoHosting.DAL.Contexts
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext
     {
         public DbSet<ClientException> ClientErrors { get; set; }
 
