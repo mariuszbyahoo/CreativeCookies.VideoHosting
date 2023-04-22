@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.DAL.DTOs.OAuth
+namespace CreativeCookies.VideoHosting.DAL.DAOs.OAuth
 {
-    public class AllowedScope
+    public class AllowedScope 
     {
         public Guid Id { get; set; }
         public string Scope { get; set; }

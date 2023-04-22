@@ -1,4 +1,4 @@
-﻿using CreativeCookies.VideoHosting.Contracts.ModelContracts;
+﻿using CreativeCookies.VideoHosting.Contracts.DTOs;
 
 namespace CreativeCookies.VideoHosting.Domain.Models
 {

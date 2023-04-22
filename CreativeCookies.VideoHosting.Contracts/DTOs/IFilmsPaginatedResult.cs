@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Contracts.ModelContracts
+namespace CreativeCookies.VideoHosting.Contracts.DTOs
 {
     public interface IFilmsPaginatedResult
     {

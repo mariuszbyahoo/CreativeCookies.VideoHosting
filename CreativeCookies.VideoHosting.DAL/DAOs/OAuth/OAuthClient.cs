@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.DAL.DTOs.OAuth
+namespace CreativeCookies.VideoHosting.DAL.DAOs.OAuth
 {
     public class OAuthClient
     {

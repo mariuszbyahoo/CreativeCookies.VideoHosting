@@ -1,5 +1,5 @@
-﻿using CreativeCookies.VideoHosting.DAL.DTOs;
-using CreativeCookies.VideoHosting.DAL.DTOs.OAuth;
+﻿using CreativeCookies.VideoHosting.DAL.DAOs;
+using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;

@@ -1,6 +1,6 @@
-﻿using CreativeCookies.VideoHosting.Contracts.ModelContracts;
+﻿using CreativeCookies.VideoHosting.Contracts.DTOs;
 
-namespace CreativeCookies.VideoHosting.DAL.DTOs
+namespace CreativeCookies.VideoHosting.DAL.DAOs
 {
     public class ClientException : IErrorLog
     {

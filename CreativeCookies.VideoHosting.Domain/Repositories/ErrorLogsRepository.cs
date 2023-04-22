@@ -1,7 +1,7 @@
-﻿using CreativeCookies.VideoHosting.Contracts.ModelContracts;
+﻿using CreativeCookies.VideoHosting.Contracts.DTOs;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.Contexts;
-using CreativeCookies.VideoHosting.DAL.DTOs;
+using CreativeCookies.VideoHosting.DAL.DAOs;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
