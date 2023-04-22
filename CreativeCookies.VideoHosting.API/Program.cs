@@ -2,9 +2,12 @@
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using CreativeCookies.VideoHosting.Contracts.Azure;
+using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.Contexts;
+using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using CreativeCookies.VideoHosting.Domain.Azure;
+using CreativeCookies.VideoHosting.Domain.OAuth;
 using CreativeCookies.VideoHosting.Domain.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +49,7 @@ namespace CreativeCookies.VideoHosting.API
 
             builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<AppDbContext>();
+            builder.Services.AddScoped<IClientStore, ClientStore>();
 
             var accountName = builder.Configuration.GetValue<string>("Storage:AccountName");
             var accountKey = builder.Configuration.GetValue<string>("Storage:AccountKey");
