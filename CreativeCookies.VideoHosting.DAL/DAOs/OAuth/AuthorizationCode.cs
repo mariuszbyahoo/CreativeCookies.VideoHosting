@@ -8,6 +8,7 @@ namespace CreativeCookies.VideoHosting.DAL.DAOs.OAuth
 {
     public class AuthorizationCode
     {
+        public Guid Id { get; set; }
         public string Code { get; set; }
         public string ClientId { get; set; }
         public string UserId { get; set; }

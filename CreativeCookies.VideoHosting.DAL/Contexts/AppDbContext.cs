@@ -32,6 +32,12 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
                 o.Property(e => e.Id).HasDefaultValueSql("newsequentialid()");
             });
 
+            builder.Entity<AuthorizationCode>(o =>
+            {
+                o.HasKey(o => o.Id);
+                o.Property(c => c.Id).HasDefaultValueSql("newsequentialid()");
+            });
+
             builder.Entity<AllowedScope>(o =>
             {
                 o.HasKey(o => o.Id);

@@ -47,8 +47,12 @@ namespace CreativeCookies.VideoHosting.API
                 options.UseSqlServer(connectionString);
             });
 
-            builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>();
+
+            builder.Services.AddRazorPages(); // Add Razor Pages support
+
             builder.Services.AddScoped<IClientStore, ClientStore>();
 
             var accountName = builder.Configuration.GetValue<string>("Storage:AccountName");
@@ -85,11 +89,14 @@ namespace CreativeCookies.VideoHosting.API
 
             app.UseHttpsRedirection();
 
+            app.UseStaticFiles(); 
             app.UseCors("AllowAllOriginsPolicy");
 
+            app.UseAuthentication(); 
             app.UseAuthorization();
 
             app.MapControllers();
+            app.MapRazorPages(); 
 
             app.Run();
         }

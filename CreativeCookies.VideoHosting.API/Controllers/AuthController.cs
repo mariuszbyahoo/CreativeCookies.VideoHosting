@@ -39,9 +39,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
             if (!redirect_uri.Equals(lookup.RedirectUri)) return BadRequest("Invalid redirect_uri");
 
-            if(!User.Identity.IsAuthenticated)
+            if (!User.Identity.IsAuthenticated)
             {
-                throw new NotImplementedException("Add a login page!");
+                // Redirect the user to the login page and include the necessary parameters
+                var loginUrl = Url.Page("/Login", new { client_id, redirect_uri, response_type, scope, state, code_challenge, code_challenge_method });
+                return Redirect(loginUrl);
             }
 
             // Optional - display a screen to get user's permissions (if necessary)
