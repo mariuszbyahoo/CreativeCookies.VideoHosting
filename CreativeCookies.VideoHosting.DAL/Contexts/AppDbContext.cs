@@ -15,6 +15,7 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
         public DbSet<ClientException> ClientErrors { get; set; }
         public DbSet<OAuthClient> OAuthClients { get; set; }
         public DbSet<AllowedScope> AllowedScopes { get; set; }
+        public DbSet<AuthorizationCode> AuthorizationCodes { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
