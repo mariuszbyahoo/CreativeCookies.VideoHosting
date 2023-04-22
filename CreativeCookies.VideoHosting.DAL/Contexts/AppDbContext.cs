@@ -1,4 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.DAL.DTOs;
+using CreativeCookies.VideoHosting.DAL.DTOs.OAuth;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,6 +14,7 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
     {
         public DbSet<ClientException> ClientErrors { get; set; }
         public DbSet<OAuthClient> OAuthClients { get; set; }
+        public DbSet<AllowedScope> AllowedScopes { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -27,6 +29,16 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
             {
                 o.HasKey(o => o.Id);
                 o.Property(e => e.Id).HasDefaultValueSql("newsequentialid()");
+            });
+
+            builder.Entity<AllowedScope>(o =>
+            {
+                o.HasKey(o => o.Id);
+                o.Property(e => e.Id).HasDefaultValueSql("newsequentialid()");
+
+                o.HasOne(a => a.OAuthClient)
+                    .WithMany(a => a.AllowedScopes)
+                    .HasForeignKey(a => a.OAuthClientId);
             });
         }
     }
