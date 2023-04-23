@@ -2,6 +2,8 @@
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
+using System.Net;
 using System.Security.Claims;
 using System.Web;
 
@@ -13,7 +15,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     {
         private readonly IClientStore _store;
 
-        public AuthController(IClientStore store)
+        public AuthController(IClientStore store, IWebHostEnvironment env)
         {
             _store = store;
         }
@@ -41,8 +43,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
             if (!User.Identity.IsAuthenticated)
             {
-                // Redirect the user to the login page and include the necessary parameters
-                var loginUrl = Url.Page("/Login", new { client_id, redirect_uri, response_type, scope, state, code_challenge, code_challenge_method });
+                // HACK: Below is unreliable due to the problems with redirection from the API controller to the Razor page with UrlHelper.
+                var returnUrl = $"/api/auth?client_id={client_id}&redirect_uri={redirect_uri}&response_type={response_type}&scope={scope}&state={state}&code_challenge={code_challenge}&code_challenge_method={code_challenge_method}";
+                var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+                var loginUrl = $"{baseUrl}/Identity/Account/Login?returnUrl={WebUtility.UrlEncode(returnUrl)}";
+
                 return Redirect(loginUrl);
             }
 

@@ -1,6 +1,7 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
+using CreativeCookies.VideoHosting.Domain.OAuth.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -20,8 +21,30 @@ namespace CreativeCookies.VideoHosting.Domain.OAuth
         }
         public async Task<IOAuthClient> FindByClientIdAsync(string clientId)
         {
-            IOAuthClient entity = (await _ctx.OAuthClients.FirstOrDefaultAsync(c => c.ClientId == clientId)) as IOAuthClient;
-            return entity;
+            var client = await _ctx.OAuthClients
+                        .Include(c => c.AllowedScopes)
+                        .FirstOrDefaultAsync(c => c.ClientId.Equals(clientId));
+            if (client == null)
+            {
+                return null;
+            }
+            else
+            {
+                var clientDto = new OAuthClientDto
+                {
+                    ClientId = client.ClientId,
+                    ClientSecret = client.ClientSecret,
+                    RedirectUri = client.RedirectUri,
+                    AllowedScopes = client.AllowedScopes.Select(scope => new AllowedScopeDto 
+                    { 
+                        Id = scope.Id,
+                        OAuthClientId = scope.OAuthClientId,
+                        Scope = scope.Scope
+                    }).Cast<IAllowedScope>().ToList(),
+                    Id = client.Id
+                };
+                return clientDto;
+            }
         }
 
         public async Task<string> GetAuthorizationCode (string client_id, string userId, string redirect_uri, string code_challenge, string code_challenge_method)
@@ -31,6 +54,7 @@ namespace CreativeCookies.VideoHosting.Domain.OAuth
             {
                 ClientId = client_id,
                 UserId = userId,
+                Code = authorizationCode,
                 RedirectUri = redirect_uri,
                 CodeChallenge = code_challenge,
                 CodeChallengeMethod = code_challenge_method,

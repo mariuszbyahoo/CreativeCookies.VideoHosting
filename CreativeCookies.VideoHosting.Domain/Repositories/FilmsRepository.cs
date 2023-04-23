@@ -2,7 +2,7 @@
 using CreativeCookies.VideoHosting.Contracts.Azure;
 using CreativeCookies.VideoHosting.Contracts.DTOs;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
-using CreativeCookies.VideoHosting.Domain.Models;
+using CreativeCookies.VideoHosting.Domain.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;

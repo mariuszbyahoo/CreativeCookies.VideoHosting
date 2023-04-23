@@ -1,7 +1,7 @@
 ﻿using CreativeCookies.VideoHosting.API.Utils;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.Contexts;
-using CreativeCookies.VideoHosting.Domain.Models;
+using CreativeCookies.VideoHosting.Domain.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

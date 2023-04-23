@@ -1,19 +1,18 @@
-﻿using System;
+﻿using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.DAL.DAOs.OAuth
+namespace CreativeCookies.VideoHosting.Domain.OAuth.DTOs
 {
-    public class OAuthClient 
+    public class OAuthClientDto : IOAuthClient
     {
         public Guid Id { get; set; }
         public string ClientId { get; set; }
         public string ClientSecret { get; set; }
         public string RedirectUri { get; set; }
-        public ICollection<AllowedScope> AllowedScopes { get; set; }
+        public ICollection<IAllowedScope> AllowedScopes { get; set; }
     }
 }

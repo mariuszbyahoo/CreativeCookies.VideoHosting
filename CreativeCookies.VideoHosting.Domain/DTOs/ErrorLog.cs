@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Domain.Models
+namespace CreativeCookies.VideoHosting.Domain.DTOs
 {
     public class ErrorLog : IErrorLog
     {

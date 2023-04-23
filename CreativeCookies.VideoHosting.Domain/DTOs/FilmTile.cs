@@ -1,6 +1,6 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.DTOs;
 
-namespace CreativeCookies.VideoHosting.Domain.Models
+namespace CreativeCookies.VideoHosting.Domain.DTOs
 {
     public class FilmTile : IFilmTile
     {

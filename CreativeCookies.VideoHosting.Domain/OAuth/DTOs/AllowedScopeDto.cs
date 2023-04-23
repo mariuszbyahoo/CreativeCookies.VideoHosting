@@ -5,14 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.DAL.DAOs.OAuth
+namespace CreativeCookies.VideoHosting.Domain.OAuth.DTOs
 {
-    public class AllowedScope 
+    public class AllowedScopeDto : IAllowedScope
     {
         public Guid Id { get; set; }
-        public string Scope { get; set; }
+        public string Scope {get;set; }
         public Guid OAuthClientId { get; set; }
-        public OAuthClient OAuthClient { get; set; }
+        public IOAuthClient OAuthClient { get; set; }
     }
-
 }
