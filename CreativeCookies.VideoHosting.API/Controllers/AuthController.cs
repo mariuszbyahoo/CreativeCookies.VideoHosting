@@ -25,7 +25,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             [FromQuery] string response_type, [FromQuery] string scope, [FromQuery] string state,
             [FromQuery] string code_challenge, [FromQuery] string code_challenge_method)
         {
+            Guid clientId;
             if(string.IsNullOrWhiteSpace(client_id)) return BadRequest("No empty client_id");
+            if (!Guid.TryParse(client_id, out clientId)) return BadRequest("client_id should be a valid GUID");
             if(string.IsNullOrWhiteSpace(redirect_uri)) return BadRequest("No empty redirect_uri");
             if(string.IsNullOrWhiteSpace(response_type)) return BadRequest("No empty response_type");
             if(string.IsNullOrWhiteSpace(scope)) return BadRequest("No empty scope");
@@ -35,7 +37,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
             if(!response_type.Equals("code")) return BadRequest("Invalid response_type");
 
-            var lookup = await _store.FindByClientIdAsync(client_id);
+            var lookup = await _store.FindByClientIdAsync(clientId);
 
             if (lookup == null) return NotFound("Client not registered");
 

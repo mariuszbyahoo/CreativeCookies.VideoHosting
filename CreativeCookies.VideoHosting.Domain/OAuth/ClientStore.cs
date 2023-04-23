@@ -19,11 +19,11 @@ namespace CreativeCookies.VideoHosting.Domain.OAuth
         {
             _ctx = ctx;
         }
-        public async Task<IOAuthClient> FindByClientIdAsync(string clientId)
+        public async Task<IOAuthClient> FindByClientIdAsync(Guid clientId)
         {
             var client = await _ctx.OAuthClients
                         .Include(c => c.AllowedScopes)
-                        .FirstOrDefaultAsync(c => c.ClientId.Equals(clientId));
+                        .FirstOrDefaultAsync(c => c.Id.Equals(clientId));
             if (client == null)
             {
                 return null;
@@ -32,7 +32,6 @@ namespace CreativeCookies.VideoHosting.Domain.OAuth
             {
                 var clientDto = new OAuthClientDto
                 {
-                    ClientId = client.ClientId,
                     ClientSecret = client.ClientSecret,
                     RedirectUri = client.RedirectUri,
                     AllowedScopes = client.AllowedScopes.Select(scope => new AllowedScopeDto 

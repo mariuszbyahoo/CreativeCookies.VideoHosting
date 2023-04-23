@@ -11,7 +11,6 @@ namespace CreativeCookies.VideoHosting.DAL.DAOs.OAuth
     public class OAuthClient 
     {
         public Guid Id { get; set; }
-        public string ClientId { get; set; }
         public string ClientSecret { get; set; }
         public string RedirectUri { get; set; }
         public ICollection<AllowedScope> AllowedScopes { get; set; }

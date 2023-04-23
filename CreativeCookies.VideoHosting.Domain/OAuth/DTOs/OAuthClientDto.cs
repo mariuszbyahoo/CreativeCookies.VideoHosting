@@ -10,7 +10,6 @@ namespace CreativeCookies.VideoHosting.Domain.OAuth.DTOs
     public class OAuthClientDto : IOAuthClient
     {
         public Guid Id { get; set; }
-        public string ClientId { get; set; }
         public string ClientSecret { get; set; }
         public string RedirectUri { get; set; }
         public ICollection<IAllowedScope> AllowedScopes { get; set; }
