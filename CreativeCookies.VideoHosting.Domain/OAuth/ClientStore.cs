@@ -45,24 +45,5 @@ namespace CreativeCookies.VideoHosting.Domain.OAuth
                 return clientDto;
             }
         }
-
-        public async Task<string> GetAuthorizationCode (string client_id, string userId, string redirect_uri, string code_challenge, string code_challenge_method)
-        {
-            var authorizationCode = AuthCodeGenerator.GenerateAuthorizationCode();
-            var codeEntry = new AuthorizationCode()
-            {
-                ClientId = client_id,
-                UserId = userId,
-                Code = authorizationCode,
-                RedirectUri = redirect_uri,
-                CodeChallenge = code_challenge,
-                CodeChallengeMethod = code_challenge_method,
-                Expiration = DateTime.UtcNow.AddMinutes(10)
-            };
-
-            _ctx.AuthorizationCodes.Add(codeEntry);
-            await _ctx.SaveChangesAsync();
-            return authorizationCode;
-        }
     }
 }

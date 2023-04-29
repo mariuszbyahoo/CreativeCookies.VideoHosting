@@ -1,4 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
+using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +15,12 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IClientStore _store;
+        private readonly IAuthorizationCodeRepository _codesRepo;
 
-        public AuthController(IClientStore store, IWebHostEnvironment env)
+        public AuthController(IClientStore store, IAuthorizationCodeRepository codesRepo,IWebHostEnvironment env)
         {
             _store = store;
+            _codesRepo = codesRepo;
         }
 
         [HttpGet("authorize")]
@@ -53,8 +56,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
 
             // Optional - display a screen to get user's permissions (if necessary)
-
-            var authorizationCode = await _store.GetAuthorizationCode(client_id, User.FindFirstValue(ClaimTypes.NameIdentifier), redirect_uri, code_challenge, code_challenge_method);
+            // HACK: Clear expired Authorization codes
+            var authorizationCode = await _codesRepo.GetAuthorizationCode(client_id, User.FindFirstValue(ClaimTypes.NameIdentifier), redirect_uri, code_challenge, code_challenge_method);
 
             var redirectUriBuilder = new UriBuilder(redirect_uri);
             var queryParameters = HttpUtility.ParseQueryString(redirectUriBuilder.Query);

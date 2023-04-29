@@ -54,6 +54,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddRazorPages(); // Add Razor Pages support
 
             builder.Services.AddScoped<IClientStore, ClientStore>();
+            builder.Services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
 
             var accountName = builder.Configuration.GetValue<string>("Storage:AccountName");
             var accountKey = builder.Configuration.GetValue<string>("Storage:AccountKey");
