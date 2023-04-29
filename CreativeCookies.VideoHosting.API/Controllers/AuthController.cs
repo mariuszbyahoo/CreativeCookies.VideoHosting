@@ -20,7 +20,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _store = store;
         }
 
-        [HttpGet]
+        [HttpGet("authenticate")]
         public async Task<IActionResult> Authenticate([FromQuery]string client_id, [FromQuery] string redirect_uri, 
             [FromQuery] string response_type, [FromQuery] string scope, [FromQuery] string state,
             [FromQuery] string code_challenge, [FromQuery] string code_challenge_method)
