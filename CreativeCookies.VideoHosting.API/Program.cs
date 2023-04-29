@@ -21,6 +21,7 @@ namespace CreativeCookies.VideoHosting.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
             builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
             {
                 var env = hostingContext.HostingEnvironment;
@@ -31,11 +32,15 @@ namespace CreativeCookies.VideoHosting.API
 
                 if (env.IsDevelopment())
                 {
-                    loggerConfiguration.WriteTo.File(new Serilog.Formatting.Compact.RenderedCompactJsonFormatter(),
-                                                      $"logs/logs{DateTime.UtcNow.ToShortDateString()}.json",
+                    loggerConfiguration.WriteTo.File(new Serilog.Formatting.Display.MessageTemplateTextFormatter("{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", null),
+                                                      "logs/log-.txt",
                                                       rollingInterval: RollingInterval.Day,
                                                       retainedFileCountLimit: 7,
                                                       restrictedToMinimumLevel: LogEventLevel.Information);
+                }
+                else
+                {
+                    // Can I use it somehow on Prod (Azure Web App Service)?
                 }
             });
 
