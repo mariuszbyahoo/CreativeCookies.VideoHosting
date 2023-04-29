@@ -20,8 +20,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _store = store;
         }
 
-        [HttpGet("authenticate")]
-        public async Task<IActionResult> Authenticate([FromQuery]string client_id, [FromQuery] string redirect_uri, 
+        [HttpGet("authorize")]
+        public async Task<IActionResult> Authorize([FromQuery]string client_id, [FromQuery] string redirect_uri, 
             [FromQuery] string response_type, [FromQuery] string scope, [FromQuery] string state,
             [FromQuery] string code_challenge, [FromQuery] string code_challenge_method)
         {
@@ -45,8 +45,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
             if (!User.Identity.IsAuthenticated)
             {
-                // HACK: Below is unreliable due to the problems with redirection from the API controller to the Razor page with UrlHelper.
-                var returnUrl = $"/api/auth?client_id={client_id}&redirect_uri={redirect_uri}&response_type={response_type}&scope={scope}&state={state}&code_challenge={code_challenge}&code_challenge_method={code_challenge_method}";
+                var returnUrl = $"/api/auth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type={response_type}&scope={scope}&state={state}&code_challenge={code_challenge}&code_challenge_method={code_challenge_method}";
                 var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
                 var loginUrl = $"{baseUrl}/Identity/Account/Login?returnUrl={WebUtility.UrlEncode(returnUrl)}";
 
