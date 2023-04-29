@@ -5,13 +5,14 @@ using CreativeCookies.VideoHosting.Contracts.Azure;
 using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.Contexts;
-using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using CreativeCookies.VideoHosting.Domain.Azure;
 using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
 using CreativeCookies.VideoHosting.Domain.OAuth;
 using CreativeCookies.VideoHosting.Domain.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.Events;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -20,6 +21,24 @@ namespace CreativeCookies.VideoHosting.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
+            {
+                var env = hostingContext.HostingEnvironment;
+
+                loggerConfiguration
+                    .ReadFrom.Configuration(hostingContext.Configuration)
+                    .Enrich.FromLogContext();
+
+                if (env.IsDevelopment())
+                {
+                    loggerConfiguration.WriteTo.File(new Serilog.Formatting.Compact.RenderedCompactJsonFormatter(),
+                                                      $"logs/logs{DateTime.UtcNow.ToShortDateString()}.json",
+                                                      rollingInterval: RollingInterval.Day,
+                                                      retainedFileCountLimit: 7,
+                                                      restrictedToMinimumLevel: LogEventLevel.Information);
+                }
+            });
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAllOriginsPolicy",
