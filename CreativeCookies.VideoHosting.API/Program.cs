@@ -7,6 +7,7 @@ using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using CreativeCookies.VideoHosting.Domain.Azure;
+using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
 using CreativeCookies.VideoHosting.Domain.OAuth;
 using CreativeCookies.VideoHosting.Domain.Repositories;
 using Microsoft.AspNetCore.Identity;
@@ -70,6 +71,9 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddSingleton<IFilmsRepository, FilmsRepository>();
             builder.Services.AddSingleton<ISasTokenRepository, SasTokenRepository>();
             builder.Services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
+            builder.Services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
+
+            builder.Services.AddHostedService<TokenCleanupWorker>();
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

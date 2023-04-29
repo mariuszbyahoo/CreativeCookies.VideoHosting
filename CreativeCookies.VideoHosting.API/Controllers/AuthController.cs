@@ -56,7 +56,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
 
             // Optional - display a screen to get user's permissions (if necessary)
-            // HACK: Clear expired Authorization codes
+            
             var authorizationCode = await _codesRepo.GetAuthorizationCode(client_id, User.FindFirstValue(ClaimTypes.NameIdentifier), redirect_uri, code_challenge, code_challenge_method);
 
             var redirectUriBuilder = new UriBuilder(redirect_uri);

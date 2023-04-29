@@ -17,9 +17,13 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
         {
             _ctx = ctx;
         }
-        public Task ClearExpiredAuthorizationCodes()
+        public async Task ClearExpiredAuthorizationCodes()
         {
-            throw new NotImplementedException();
+            var expiredCodes = _ctx.AuthorizationCodes.Where(ac => ac.Expiration < DateTime.UtcNow).ToList();
+            // HACK TODO: ADD LOGGER AND LOG DELETED Codes!
+            // HACK TODO: Log eventual exceptions
+            _ctx.AuthorizationCodes.RemoveRange(expiredCodes);
+            await _ctx.SaveChangesAsync();
         }
 
         public async Task<string> GetAuthorizationCode(string client_id, string userId, string redirect_uri, string code_challenge, string code_challenge_method)
