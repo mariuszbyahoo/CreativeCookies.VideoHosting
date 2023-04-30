@@ -34,7 +34,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         {
             try
             {
-                var validationResult = await ValidateParameters(redirect_uri, client_id, state, response_type, scope, code_challenge, code_challenge_method);
+                var validationResult = await ValidateAuthRequestParameters(redirect_uri, client_id, state, response_type, scope, code_challenge, code_challenge_method);
                 if (validationResult != null)
                 {
                     return validationResult;
@@ -68,12 +68,48 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
         }
 
-        private async Task<IActionResult?> ValidateParameters(string redirect_uri, string client_id, string state, string response_type, string scope, string code_challenge, string code_challenge_method)
+        [HttpPost("token")]
+        public async Task<IActionResult> Token([FromForm] string? grant_type, [FromForm] string? code, [FromForm] string? redirect_uri, [FromForm] string? client_id, [FromForm] string? code_verifier)
         {
-            var crucialParamsErrors = await ValidateRedirectUriAndClientId(redirect_uri, client_id, state, response_type, scope, code_challenge, code_challenge_method);
-            if (crucialParamsErrors != null)
+            if (!string.IsNullOrWhiteSpace(grant_type) && grant_type.Equals("authorization_code"))
             {
-                return crucialParamsErrors;
+                // Validate the required parameters for the authorization_code grant type
+                var clientIdRedirectUrlErrorResponse = await ValidateRedirectUriAndClientId(redirect_uri, client_id);
+                if (clientIdRedirectUrlErrorResponse != null)
+                {
+                    return clientIdRedirectUrlErrorResponse;
+                }
+                if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(code_verifier))
+                {
+                    return RedirectToError(redirect_uri, "invalid_request");
+                }
+
+                // Verify the code, client_id, redirect_uri, and code_verifier
+                // If valid, generate an access token and a refresh token
+
+                // Return the access token and refresh token as a JSON object
+                return Ok(new
+                {
+                    access_token = "your_access_token",
+                    token_type = "Bearer",
+                    expires_in = 3600, // One hour
+                    refresh_token = "your_refresh_token"
+                });
+            }
+            else
+            {
+                // Unsupported grant type
+                return BadRequest(new { error = "unsupported_grant_type", error_description = "The specified grant type is not supported." });
+            }
+        }
+
+
+        private async Task<IActionResult?> ValidateAuthRequestParameters(string redirect_uri, string client_id, string state, string response_type, string scope, string code_challenge, string code_challenge_method)
+        {
+            var clientIdRedirectUrlErrorResponse = await ValidateRedirectUriAndClientId(redirect_uri, client_id, state);
+            if (clientIdRedirectUrlErrorResponse != null)
+            {
+                return clientIdRedirectUrlErrorResponse;
             }
             if (string.IsNullOrWhiteSpace(response_type)) return RedirectToError(redirect_uri, "unsupported_response_type", state);
             if (string.IsNullOrWhiteSpace(scope)) return RedirectToError(redirect_uri, "invalid_scope", state); // HACK: VALIDATE SCOPE
@@ -86,7 +122,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             return null;
         }
         private async Task<IActionResult?> ValidateRedirectUriAndClientId(
-            string redirect_uri, string client_id, string state, string response_type, string scope, string code_challenge, string code_challenge_method)
+            string redirect_uri, string client_id, string state = "")
         {
                 var redirectUriError = await ValidateRedirectUri(redirect_uri);
                 if (redirectUriError != null && redirectUriError.HasValue)
@@ -95,14 +131,14 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     switch (redirectUriError.Value)
                     {
                         case OAuthErrorResponses.InvalidRedirectUri:
-                            _logger.LogDebug($"Received invalid request with an invalid redirect_uri, and params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}");
+                            _logger.LogDebug($"Received invalid request with an invalid redirect_uri, and params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}");
                             return BadRequest("Invalid redirect_uri");
                         case OAuthErrorResponses.InvalidRequest:
-                            _logger.LogDebug($"Received invalid request with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}");
+                            _logger.LogDebug($"Received invalid request with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}");
                             errorResponse = "invalid_request";
                             return RedirectToError(redirect_uri, errorResponse, state);
                         default:
-                            _logger.LogError($"Unexpected OAuth error response with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}", redirectUriError.Value);
+                            _logger.LogError($"Unexpected OAuth error response with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}", redirectUriError.Value);
                             errorResponse = "server_error";
                             return RedirectToError(redirect_uri, errorResponse, state);
                     }
@@ -114,15 +150,15 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     switch (clientIdError.Value)
                     {
                         case OAuthErrorResponses.InvalidRequest:
-                            _logger.LogDebug($"Received invalid request with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}");
+                            _logger.LogDebug($"Received invalid request with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}");
                             errorResponse = "invalid_request";
                             return RedirectToError(redirect_uri, errorResponse, state);
                         case OAuthErrorResponses.UnauthorisedClient:
-                            _logger.LogDebug($"Received invalid request with an unauthorised client, and params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}");
+                            _logger.LogDebug($"Received invalid request with an unauthorised client, and params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}");
                             errorResponse = "unauthorised_client";
                             return RedirectToError(redirect_uri, errorResponse, state);
                         default:
-                            _logger.LogError($"Unexpected OAuth error response with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}", clientIdError.Value);
+                            _logger.LogError($"Unexpected OAuth error response with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}", clientIdError.Value);
                             errorResponse = "server_error";
                             return RedirectToError(redirect_uri, errorResponse, state);
                     }
@@ -155,7 +191,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
             return OAuthErrorResponses.InvalidRedirectUri;
         }
-        private IActionResult RedirectToError(string redirectUri, string error, string state, string errorDescription = "")
+        private IActionResult RedirectToError(string redirectUri, string error, string state = "", string errorDescription = "")
         {
             var uriBuilder = new UriBuilder(redirectUri);
             var queryParameters = HttpUtility.ParseQueryString(uriBuilder.Query);
