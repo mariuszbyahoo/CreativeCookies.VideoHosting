@@ -45,5 +45,12 @@ namespace CreativeCookies.VideoHosting.Domain.OAuth
                 return clientDto;
             }
         }
+        public async Task<bool> IsRedirectUriPresentInDatabase(string redirectUri)
+        {
+            var client = await _ctx.OAuthClients.FirstOrDefaultAsync(c => c.RedirectUri.Equals(redirectUri));
+            if (client == null) return false;
+            else return true;
+        }
+
     }
 }

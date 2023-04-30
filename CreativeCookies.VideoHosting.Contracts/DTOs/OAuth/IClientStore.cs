@@ -9,5 +9,6 @@ namespace CreativeCookies.VideoHosting.Contracts.DTOs.OAuth
     public interface IClientStore
     {
         Task<IOAuthClient> FindByClientIdAsync(Guid clientId);
+        Task<bool> IsRedirectUriPresentInDatabase(string redirectUri);
     }
 }
