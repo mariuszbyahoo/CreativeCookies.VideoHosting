@@ -32,19 +32,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             [FromQuery] string response_type, [FromQuery] string scope, [FromQuery] string state,
             [FromQuery] string code_challenge, [FromQuery] string code_challenge_method)
         {
-            var validationResult = await ValidateRedirectUriAndClientId(redirect_uri, client_id, state, response_type, scope, code_challenge, code_challenge_method);
+            var validationResult = await ValidateParameters(redirect_uri, client_id, state, response_type, scope, code_challenge, code_challenge_method);
             if (validationResult != null) 
             {
                 return validationResult;
             }
-
-            if (string.IsNullOrWhiteSpace(response_type)) return BadRequest("No empty response_type");
-            if(string.IsNullOrWhiteSpace(scope)) return BadRequest("No empty scope");
-            if(string.IsNullOrWhiteSpace(state)) return BadRequest("No empty state");
-            if(string.IsNullOrWhiteSpace(code_challenge)) return BadRequest("No empty code_challenge");
-            if(string.IsNullOrWhiteSpace(code_challenge_method)) return BadRequest("No empty code_challenge_method");
-
-            if(!response_type.Equals("code")) return BadRequest("Invalid response_type");
 
             if (!User.Identity.IsAuthenticated)
             {
@@ -67,23 +59,23 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
             return Redirect(redirectUriBuilder.ToString());
         }
-        private IActionResult RedirectToError(string redirectUri, string error, string state, string errorDescription = "")
+
+        private async Task<IActionResult?> ValidateParameters(string redirect_uri, string client_id, string state, string response_type, string scope, string code_challenge, string code_challenge_method)
         {
-            var uriBuilder = new UriBuilder(redirectUri);
-            var queryParameters = HttpUtility.ParseQueryString(uriBuilder.Query);
-
-            queryParameters["error"] = error;
-            if (!string.IsNullOrWhiteSpace(errorDescription))
+            var crucialParamsErrors = await ValidateRedirectUriAndClientId(redirect_uri, client_id, state, response_type, scope, code_challenge, code_challenge_method);
+            if (crucialParamsErrors != null)
             {
-                queryParameters["error_description"] = errorDescription;
+                return crucialParamsErrors;
             }
-            if (!string.IsNullOrWhiteSpace(state))
-            {
-                queryParameters["state"] = state;
-            }
-            uriBuilder.Query = queryParameters.ToString();
+            if (string.IsNullOrWhiteSpace(response_type)) return RedirectToError(redirect_uri, "unsupported_response_type", state);
+            if (string.IsNullOrWhiteSpace(scope)) return RedirectToError(redirect_uri, "invalid_scope", state);
+            if (string.IsNullOrWhiteSpace(state)) return RedirectToError(redirect_uri, "invalid_request", state);
+            if (string.IsNullOrWhiteSpace(code_challenge)) return RedirectToError(redirect_uri, "invalid_request", state);
+            if (string.IsNullOrWhiteSpace(code_challenge_method)) return RedirectToError(redirect_uri, "invalid_request", state);
+            if (!response_type.Equals("code")) return RedirectToError(redirect_uri, "invalid_request", state);
 
-            return Redirect(uriBuilder.ToString());
+            // all good
+            return null;
         }
         private async Task<IActionResult?> ValidateRedirectUriAndClientId(
             string redirect_uri, string client_id, string state, string response_type, string scope, string code_challenge, string code_challenge_method)
@@ -160,5 +152,24 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
             return OAuthErrorResponses.InvalidRedirectUri;
         }
+        private IActionResult RedirectToError(string redirectUri, string error, string state, string errorDescription = "")
+        {
+            var uriBuilder = new UriBuilder(redirectUri);
+            var queryParameters = HttpUtility.ParseQueryString(uriBuilder.Query);
+
+            queryParameters["error"] = error;
+            if (!string.IsNullOrWhiteSpace(errorDescription))
+            {
+                queryParameters["error_description"] = errorDescription;
+            }
+            if (!string.IsNullOrWhiteSpace(state))
+            {
+                queryParameters["state"] = state;
+            }
+            uriBuilder.Query = queryParameters.ToString();
+
+            return Redirect(uriBuilder.ToString());
+        }
+
     }
 }
