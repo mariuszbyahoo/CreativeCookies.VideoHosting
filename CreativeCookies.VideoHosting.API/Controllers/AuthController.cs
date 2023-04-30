@@ -73,18 +73,16 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         {
             if (!string.IsNullOrWhiteSpace(grant_type) && grant_type.Equals("authorization_code"))
             {
-                // Validate the required parameters for the authorization_code grant type
                 var clientIdRedirectUrlErrorResponse = await ValidateRedirectUriAndClientId(redirect_uri, client_id);
                 if (clientIdRedirectUrlErrorResponse != null)
                 {
                     return clientIdRedirectUrlErrorResponse;
                 }
-                if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(code_verifier))
+                var codeAndCodeVerifierErrorResponse = await ValidateCodeAndCodeVerifier(code, code_verifier, client_id, redirect_uri);
+                if (codeAndCodeVerifierErrorResponse != null)
                 {
-                    return RedirectToError(redirect_uri, "invalid_request");
+                    return codeAndCodeVerifierErrorResponse;
                 }
-
-                // Verify the code, client_id, redirect_uri, and code_verifier
                 // If valid, generate an access token and a refresh token
 
                 // Return the access token and refresh token as a JSON object
@@ -98,11 +96,20 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
             else
             {
-                // Unsupported grant type
+                // Change this to redirection to the client with an appropriate error_message (in the case client_id is valid, if not, just return the below BadRequest)
                 return BadRequest(new { error = "unsupported_grant_type", error_description = "The specified grant type is not supported." });
             }
         }
 
+        private async Task<IActionResult> ValidateCodeAndCodeVerifier(string code, string code_verifier, string client_id, string redirect_uri)
+        {
+            if(await _store.WasAuthCodeIssued(code, client_id))
+            {
+                // HACK TODO Implement Code verification with regards to PKCE standard.
+                throw new NotImplementedException();
+            }
+            return RedirectToError(redirect_uri, "invalid_request");
+        }
 
         private async Task<IActionResult?> ValidateAuthRequestParameters(string redirect_uri, string client_id, string state, string response_type, string scope, string code_challenge, string code_challenge_method)
         {
@@ -124,48 +131,52 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private async Task<IActionResult?> ValidateRedirectUriAndClientId(
             string redirect_uri, string client_id, string state = "")
         {
-                var redirectUriError = await ValidateRedirectUri(redirect_uri);
-                if (redirectUriError != null && redirectUriError.HasValue)
+            var redirectUriError = await ValidateRedirectUri(redirect_uri);
+            if (redirectUriError != null && redirectUriError.HasValue)
+            {
+                var errorResponse = string.Empty;
+                switch (redirectUriError.Value)
                 {
-                    var errorResponse = string.Empty;
-                    switch (redirectUriError.Value)
-                    {
-                        case OAuthErrorResponses.InvalidRedirectUri:
-                            _logger.LogDebug($"Received invalid request with an invalid redirect_uri, and params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}");
-                            return BadRequest("Invalid redirect_uri");
-                        case OAuthErrorResponses.InvalidRequest:
-                            _logger.LogDebug($"Received invalid request with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}");
-                            errorResponse = "invalid_request";
-                            return RedirectToError(redirect_uri, errorResponse, state);
-                        default:
-                            _logger.LogError($"Unexpected OAuth error response with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}", redirectUriError.Value);
-                            errorResponse = "server_error";
-                            return RedirectToError(redirect_uri, errorResponse, state);
-                    }
+                    case OAuthErrorResponses.InvalidRedirectUri:
+                        _logger.LogDebug($"Received invalid request with an invalid redirect_uri, and params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}");
+                        return BadRequest("Invalid redirect_uri");
+                    case OAuthErrorResponses.InvalidRequest:
+                        _logger.LogDebug($"Received invalid request with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}");
+                        errorResponse = "invalid_request";
+                        return RedirectToError(redirect_uri, errorResponse, state);
+                    default:
+                        _logger.LogError($"Unexpected OAuth error response with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}", redirectUriError.Value);
+                        errorResponse = "server_error";
+                        return RedirectToError(redirect_uri, errorResponse, state);
                 }
-                var clientIdError = await ValidateClientId(client_id);
-                if (clientIdError != null && clientIdError.HasValue)
+            }
+            var clientIdError = await ValidateClientId(client_id);
+            if (clientIdError != null && clientIdError.HasValue)
+            {
+                var errorResponse = string.Empty;
+                switch (clientIdError.Value)
                 {
-                    var errorResponse = string.Empty;
-                    switch (clientIdError.Value)
-                    {
-                        case OAuthErrorResponses.InvalidRequest:
-                            _logger.LogDebug($"Received invalid request with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}");
-                            errorResponse = "invalid_request";
-                            return RedirectToError(redirect_uri, errorResponse, state);
-                        case OAuthErrorResponses.UnauthorisedClient:
-                            _logger.LogDebug($"Received invalid request with an unauthorised client, and params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}");
-                            errorResponse = "unauthorised_client";
-                            return RedirectToError(redirect_uri, errorResponse, state);
-                        default:
-                            _logger.LogError($"Unexpected OAuth error response with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}", clientIdError.Value);
-                            errorResponse = "server_error";
-                            return RedirectToError(redirect_uri, errorResponse, state);
-                    }
+                    case OAuthErrorResponses.InvalidRequest:
+                        _logger.LogDebug($"Received invalid request with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}");
+                        errorResponse = "invalid_request";
+                        return RedirectToError(redirect_uri, errorResponse, state);
+                    case OAuthErrorResponses.UnauthorisedClient:
+                        _logger.LogDebug($"Received invalid request with an unauthorised client, and params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}");
+                        errorResponse = "unauthorised_client";
+                        return RedirectToError(redirect_uri, errorResponse, state);
+                    default:
+                        _logger.LogError($"Unexpected OAuth error response with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}", clientIdError.Value);
+                        errorResponse = "server_error";
+                        return RedirectToError(redirect_uri, errorResponse, state);
                 }
+            }
 
-            // all good, no errors to return 
-            return null;
+            if (await _store.WasRedirectUriRegisteredToClient(redirect_uri, client_id))
+            {
+                // all good, no errors to return 
+                return null;
+            }
+            else return BadRequest("Invalid redirect_uri");
         }
         private async Task<OAuthErrorResponses?> ValidateClientId(string inputClientId)
         {

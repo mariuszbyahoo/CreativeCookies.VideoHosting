@@ -52,5 +52,20 @@ namespace CreativeCookies.VideoHosting.Domain.OAuth
             else return true;
         }
 
+        public async Task<bool> WasAuthCodeIssued(string code, string client_id)
+        {
+            var entry = await _ctx.AuthorizationCodes.Where(c => c.Code.Equals(code)).FirstOrDefaultAsync();
+            if (entry == null) return false;
+            if (!entry.ClientId.Equals(client_id)) return false;
+            return true;
+        }
+
+        public async Task<bool> WasRedirectUriRegisteredToClient(string redirect_uri, string client_id)
+        {
+            var entry = await _ctx.OAuthClients.FirstOrDefaultAsync(c => c.Id.ToString().Equals(client_id));
+            if (entry == null) return false;
+            else if (entry.RedirectUri.Equals(redirect_uri)) return true;
+            else return false;
+        }
     }
 }

@@ -10,5 +10,7 @@ namespace CreativeCookies.VideoHosting.Contracts.DTOs.OAuth
     {
         Task<IOAuthClient> FindByClientIdAsync(Guid clientId);
         Task<bool> IsRedirectUriPresentInDatabase(string redirectUri);
+        Task<bool> WasAuthCodeIssued(string code, string client_id);
+        Task<bool> WasRedirectUriRegisteredToClient(string redirect_uri, string client_id);
     }
 }
