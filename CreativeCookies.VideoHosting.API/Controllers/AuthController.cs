@@ -28,9 +28,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpGet("authorize")]
-        public async Task<IActionResult> Authorize([FromQuery]string client_id, [FromQuery] string redirect_uri, 
-            [FromQuery] string response_type, [FromQuery] string scope, [FromQuery] string state,
-            [FromQuery] string code_challenge, [FromQuery] string code_challenge_method)
+        public async Task<IActionResult> Authorize([FromQuery]string? client_id, [FromQuery] string? redirect_uri, 
+            [FromQuery] string? response_type, [FromQuery] string? scope, [FromQuery] string? state,
+            [FromQuery] string? code_challenge, [FromQuery] string? code_challenge_method)
         {
             var validationResult = await ValidateParameters(redirect_uri, client_id, state, response_type, scope, code_challenge, code_challenge_method);
             if (validationResult != null) 
@@ -141,11 +141,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
         private async Task<OAuthErrorResponses?> ValidateRedirectUri(string inputRedirectUri)
         {
-            if (string.IsNullOrWhiteSpace(inputRedirectUri))
-            {
-                return OAuthErrorResponses.InvalidRequest;
-            }
-            if (await _store.IsRedirectUriPresentInDatabase(inputRedirectUri))
+            if (!string.IsNullOrWhiteSpace(inputRedirectUri) && await _store.IsRedirectUriPresentInDatabase(inputRedirectUri))
             {
                 return null;
             }
