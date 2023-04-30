@@ -9,6 +9,7 @@ using CreativeCookies.VideoHosting.Domain.Azure;
 using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
 using CreativeCookies.VideoHosting.Domain.OAuth;
 using CreativeCookies.VideoHosting.Domain.Repositories;
+using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -40,7 +41,8 @@ namespace CreativeCookies.VideoHosting.API
                 }
                 else
                 {
-                    // Can I use it somehow on Prod (Azure Web App Service)?
+                    var instrumentationKey = hostingContext.Configuration["ApplicationInsights:InstrumentationKey"];
+                    loggerConfiguration.WriteTo.ApplicationInsights(new TelemetryClient(new Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration(instrumentationKey)), TelemetryConverter.Traces);
                 }
             });
 
@@ -69,7 +71,13 @@ namespace CreativeCookies.VideoHosting.API
 
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseSqlServer(connectionString);
+                options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
+                {
+                    sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5, // Number of times to retry before giving up
+                        maxRetryDelay: TimeSpan.FromSeconds(30), // Maximum delay between retries
+                        errorNumbersToAdd: null); // You can add custom error numbers to be considered transient errors
+                });
             });
 
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
