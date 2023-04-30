@@ -52,11 +52,13 @@ namespace CreativeCookies.VideoHosting.Domain.OAuth
             else return true;
         }
 
-        public async Task<bool> WasAuthCodeIssued(string code, string client_id)
+        public async Task<bool> IsCodeValid(string code, string client_id)
         {
             var entry = await _ctx.AuthorizationCodes.Where(c => c.Code.Equals(code)).FirstOrDefaultAsync();
             if (entry == null) return false;
             if (!entry.ClientId.Equals(client_id)) return false;
+            if (entry.Expiration < DateTime.UtcNow) return false;
+            throw new NotImplementedException("HACK TODO Implement Code verification with regards to PKCE standard.");
             return true;
         }
 

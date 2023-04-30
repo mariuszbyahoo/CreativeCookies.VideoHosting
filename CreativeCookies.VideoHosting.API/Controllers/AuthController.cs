@@ -101,12 +101,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
         }
 
-        private async Task<IActionResult> ValidateCodeAndCodeVerifier(string code, string code_verifier, string client_id, string redirect_uri)
+        private async Task<IActionResult?> ValidateCodeAndCodeVerifier(string code, string code_verifier, string client_id, string redirect_uri)
         {
-            if(await _store.WasAuthCodeIssued(code, client_id))
+            if(await _store.IsCodeValid(code, client_id))
             {
-                // HACK TODO Implement Code verification with regards to PKCE standard.
-                throw new NotImplementedException();
+                return null;
             }
             return RedirectToError(redirect_uri, "invalid_request");
         }
