@@ -1,4 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
+using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using Microsoft.AspNetCore.Http;
@@ -16,11 +17,13 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     {
         private readonly IClientStore _store;
         private readonly IAuthorizationCodeRepository _codesRepo;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IClientStore store, IAuthorizationCodeRepository codesRepo,IWebHostEnvironment env)
+        public AuthController(IClientStore store, IAuthorizationCodeRepository codesRepo, ILogger<AuthController> logger)
         {
             _store = store;
             _codesRepo = codesRepo;
+            _logger = logger;
         }
 
         [HttpGet("authorize")]
@@ -28,10 +31,25 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             [FromQuery] string response_type, [FromQuery] string scope, [FromQuery] string state,
             [FromQuery] string code_challenge, [FromQuery] string code_challenge_method)
         {
-            Guid clientId;
-            if(string.IsNullOrWhiteSpace(client_id)) return BadRequest("No empty client_id");
-            if (!Guid.TryParse(client_id, out clientId)) return BadRequest("client_id should be a valid GUID");
-            if(string.IsNullOrWhiteSpace(redirect_uri)) return BadRequest("No empty redirect_uri");
+            var error = await ValidateClientIdAndRedirectUri(client_id, redirect_uri);
+            if (error != null && error.HasValue)
+            {
+                switch(error.Value)
+                {
+                    case OAuthErrorResponses.InvalidRequest:
+                        _logger.LogDebug($"Received invalid request with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}");
+                        throw new NotImplementedException("return invalid_request");
+                    case OAuthErrorResponses.InvalidRedirectUri:
+                        _logger.LogDebug($"Received invalid request with invalid redirect uri, and params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}");
+                        throw new NotImplementedException("return BadRequest");
+                    case OAuthErrorResponses.UnauthorisedClient:
+                        _logger.LogDebug($"Received invalid request with an unauthorised client, and params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}");
+                        throw new NotImplementedException("return unauthorised_client");
+                    default:
+                        _logger.LogWarning("Unexpected behavior happen: inside switch block after validating client id and redirect uri gone to default path");
+                        break;
+                }
+            }
             if(string.IsNullOrWhiteSpace(response_type)) return BadRequest("No empty response_type");
             if(string.IsNullOrWhiteSpace(scope)) return BadRequest("No empty scope");
             if(string.IsNullOrWhiteSpace(state)) return BadRequest("No empty state");
@@ -39,12 +57,6 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             if(string.IsNullOrWhiteSpace(code_challenge_method)) return BadRequest("No empty code_challenge_method");
 
             if(!response_type.Equals("code")) return BadRequest("Invalid response_type");
-
-            var lookup = await _store.FindByClientIdAsync(clientId);
-
-            if (lookup == null) return NotFound("Client not registered");
-
-            if (!redirect_uri.Equals(lookup.RedirectUri)) return BadRequest("Invalid redirect_uri");
 
             if (!User.Identity.IsAuthenticated)
             {
@@ -66,6 +78,24 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             redirectUriBuilder.Query = queryParameters.ToString();
 
             return Redirect(redirectUriBuilder.ToString());
+        }
+
+
+        private async Task<OAuthErrorResponses?> ValidateClientIdAndRedirectUri(string inputClientId, string inputRedirectUri)
+        {
+            Guid clientId;
+            var parsedSuccessfully = Guid.TryParse(inputClientId, out clientId);
+            if (parsedSuccessfully && Guid.Empty != clientId)
+            {
+                var lookup = await _store.FindByClientIdAsync(clientId);
+                if (lookup == null) return OAuthErrorResponses.UnauthorisedClient;
+                else
+                {
+                    if (inputRedirectUri.Equals(lookup.RedirectUri)) return null; // all valid
+                    else return OAuthErrorResponses.InvalidRedirectUri;
+                }
+            }
+            return OAuthErrorResponses.InvalidRequest;
         }
     }
 }
