@@ -32,32 +32,40 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             [FromQuery] string? response_type, [FromQuery] string? scope, [FromQuery] string? state,
             [FromQuery] string? code_challenge, [FromQuery] string? code_challenge_method)
         {
-            var validationResult = await ValidateParameters(redirect_uri, client_id, state, response_type, scope, code_challenge, code_challenge_method);
-            if (validationResult != null) 
+            try
             {
-                return validationResult;
-            }
+                var validationResult = await ValidateParameters(redirect_uri, client_id, state, response_type, scope, code_challenge, code_challenge_method);
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
-            if (!User.Identity.IsAuthenticated)
+                if (!User.Identity.IsAuthenticated)
+                {
+                    var returnUrl = $"/api/auth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type={response_type}&scope={scope}&state={state}&code_challenge={code_challenge}&code_challenge_method={code_challenge_method}";
+                    var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+                    var loginUrl = $"{baseUrl}/Identity/Account/Login?returnUrl={WebUtility.UrlEncode(returnUrl)}";
+
+                    return Redirect(loginUrl);
+                }
+
+                // Optional - display a screen to get user's permissions (if necessary)
+
+                var authorizationCode = await _codesRepo.GetAuthorizationCode(client_id, User.FindFirstValue(ClaimTypes.NameIdentifier), redirect_uri, code_challenge, code_challenge_method);
+
+                var redirectUriBuilder = new UriBuilder(redirect_uri);
+                var queryParameters = HttpUtility.ParseQueryString(redirectUriBuilder.Query);
+                queryParameters["code"] = authorizationCode;
+                queryParameters["state"] = state;
+                redirectUriBuilder.Query = queryParameters.ToString();
+
+                return Redirect(redirectUriBuilder.ToString());
+            }
+            catch(Exception ex)
             {
-                var returnUrl = $"/api/auth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type={response_type}&scope={scope}&state={state}&code_challenge={code_challenge}&code_challenge_method={code_challenge_method}";
-                var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
-                var loginUrl = $"{baseUrl}/Identity/Account/Login?returnUrl={WebUtility.UrlEncode(returnUrl)}";
-
-                return Redirect(loginUrl);
+                _logger.LogError($"Unexpected exception when ran Authenticate call with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}", ex);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Unexpected error occured, try again later or if the issue persists, contact support");
             }
-
-            // Optional - display a screen to get user's permissions (if necessary)
-            
-            var authorizationCode = await _codesRepo.GetAuthorizationCode(client_id, User.FindFirstValue(ClaimTypes.NameIdentifier), redirect_uri, code_challenge, code_challenge_method);
-
-            var redirectUriBuilder = new UriBuilder(redirect_uri);
-            var queryParameters = HttpUtility.ParseQueryString(redirectUriBuilder.Query);
-            queryParameters["code"] = authorizationCode;
-            queryParameters["state"] = state;
-            redirectUriBuilder.Query = queryParameters.ToString();
-
-            return Redirect(redirectUriBuilder.ToString());
         }
 
         private async Task<IActionResult?> ValidateParameters(string redirect_uri, string client_id, string state, string response_type, string scope, string code_challenge, string code_challenge_method)
@@ -80,46 +88,45 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private async Task<IActionResult?> ValidateRedirectUriAndClientId(
             string redirect_uri, string client_id, string state, string response_type, string scope, string code_challenge, string code_challenge_method)
         {
-            // first validate the redirect uri, if no supplied or invalid one supplied - will just return BadRequest
-            var redirectUriError = await ValidateRedirectUri(redirect_uri);
-            if (redirectUriError != null && redirectUriError.HasValue)
-            {
-                var errorResponse = string.Empty;
-                switch (redirectUriError.Value)
+                var redirectUriError = await ValidateRedirectUri(redirect_uri);
+                if (redirectUriError != null && redirectUriError.HasValue)
                 {
-                    case OAuthErrorResponses.InvalidRedirectUri:
-                        _logger.LogDebug($"Received invalid request with an invalid redirect_uri, and params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}");
-                        return BadRequest("Invalid redirect_uri");
-                    case OAuthErrorResponses.InvalidRequest:
-                        _logger.LogDebug($"Received invalid request with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}");
-                        errorResponse = "invalid_request";
-                        return RedirectToError(redirect_uri, errorResponse, state);
-                    default:
-                        _logger.LogError($"Unexpected OAuth error response with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}", redirectUriError.Value);
-                        errorResponse = "server_error";
-                        return RedirectToError(redirect_uri, errorResponse, state);
+                    var errorResponse = string.Empty;
+                    switch (redirectUriError.Value)
+                    {
+                        case OAuthErrorResponses.InvalidRedirectUri:
+                            _logger.LogDebug($"Received invalid request with an invalid redirect_uri, and params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}");
+                            return BadRequest("Invalid redirect_uri");
+                        case OAuthErrorResponses.InvalidRequest:
+                            _logger.LogDebug($"Received invalid request with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}");
+                            errorResponse = "invalid_request";
+                            return RedirectToError(redirect_uri, errorResponse, state);
+                        default:
+                            _logger.LogError($"Unexpected OAuth error response with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}", redirectUriError.Value);
+                            errorResponse = "server_error";
+                            return RedirectToError(redirect_uri, errorResponse, state);
+                    }
                 }
-            }
-            var clientIdError = await ValidateClientId(client_id);
-            if (clientIdError != null && clientIdError.HasValue)
-            {
-                var errorResponse = string.Empty;
-                switch (clientIdError.Value)
+                var clientIdError = await ValidateClientId(client_id);
+                if (clientIdError != null && clientIdError.HasValue)
                 {
-                    case OAuthErrorResponses.InvalidRequest:
-                        _logger.LogDebug($"Received invalid request with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}");
-                        errorResponse = "invalid_request";
-                        return RedirectToError(redirect_uri, errorResponse, state);
-                    case OAuthErrorResponses.UnauthorisedClient:
-                        _logger.LogDebug($"Received invalid request with an unauthorised client, and params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}");
-                        errorResponse = "unauthorised_client";
-                        return RedirectToError(redirect_uri, errorResponse, state);
-                    default:
-                        _logger.LogError($"Unexpected OAuth error response with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}", clientIdError.Value);
-                        errorResponse = "server_error";
-                        return RedirectToError(redirect_uri, errorResponse, state);
+                    var errorResponse = string.Empty;
+                    switch (clientIdError.Value)
+                    {
+                        case OAuthErrorResponses.InvalidRequest:
+                            _logger.LogDebug($"Received invalid request with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}");
+                            errorResponse = "invalid_request";
+                            return RedirectToError(redirect_uri, errorResponse, state);
+                        case OAuthErrorResponses.UnauthorisedClient:
+                            _logger.LogDebug($"Received invalid request with an unauthorised client, and params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}");
+                            errorResponse = "unauthorised_client";
+                            return RedirectToError(redirect_uri, errorResponse, state);
+                        default:
+                            _logger.LogError($"Unexpected OAuth error response with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(response_type)}: {response_type}, {nameof(scope)}: {scope}, {nameof(state)}: {state}, {nameof(code_challenge)}: {code_challenge}, {nameof(code_challenge_method)}: {code_challenge_method}", clientIdError.Value);
+                            errorResponse = "server_error";
+                            return RedirectToError(redirect_uri, errorResponse, state);
+                    }
                 }
-            }
 
             // all good, no errors to return 
             return null;
