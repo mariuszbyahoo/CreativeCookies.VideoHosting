@@ -68,10 +68,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 return crucialParamsErrors;
             }
             if (string.IsNullOrWhiteSpace(response_type)) return RedirectToError(redirect_uri, "unsupported_response_type", state);
-            if (string.IsNullOrWhiteSpace(scope)) return RedirectToError(redirect_uri, "invalid_scope", state);
+            if (string.IsNullOrWhiteSpace(scope)) return RedirectToError(redirect_uri, "invalid_scope", state); // HACK: VALIDATE SCOPE
             if (string.IsNullOrWhiteSpace(state)) return RedirectToError(redirect_uri, "invalid_request", state);
-            if (string.IsNullOrWhiteSpace(code_challenge)) return RedirectToError(redirect_uri, "invalid_request", state);
-            if (string.IsNullOrWhiteSpace(code_challenge_method)) return RedirectToError(redirect_uri, "invalid_request", state);
+            if (string.IsNullOrWhiteSpace(code_challenge)) return RedirectToError(redirect_uri, "invalid_request", state); // HACK: VALIDATE CODE_CHALLENGE FOR PKCE
+            if (string.IsNullOrWhiteSpace(code_challenge_method)) return RedirectToError(redirect_uri, "invalid_request", state); // // HACK: VALIDATE CODE_CHALLENGE_METHOD FOR PKCE
             if (!response_type.Equals("code")) return RedirectToError(redirect_uri, "invalid_request", state);
 
             // all good
