@@ -1,7 +1,11 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
+﻿using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
+using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
+using CreativeCookies.VideoHosting.Domain.DTOs.OAuth;
 using CreativeCookies.VideoHosting.Domain.OAuth;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,6 +47,22 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             _ctx.AuthorizationCodes.Add(codeEntry);
             await _ctx.SaveChangesAsync();
             return authorizationCode;
+        }
+
+        public async Task<IMyHubUser> GetUserByAuthCodeAsync(string code)
+        {
+            var codeEntry = await _ctx.AuthorizationCodes.Where(c => c.Code.Equals(code)).FirstOrDefaultAsync();
+            if (codeEntry == null) 
+            { 
+                return null; 
+            }
+            else
+            {
+                var user = await _ctx.Users.Where(u => u.Id.Equals(codeEntry.UserId))
+                    .Select<IdentityUser, IMyHubUser>(r => new MyHubUser(Guid.Parse(r.Id), r.NormalizedEmail))
+                    .FirstOrDefaultAsync();
+                return user;
+            }
         }
     }
 }

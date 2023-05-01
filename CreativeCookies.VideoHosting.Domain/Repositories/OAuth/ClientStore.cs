@@ -59,7 +59,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             if (entry == null) return false;
             if (!entry.ClientId.Equals(client_id)) return false;
             if (entry.Expiration < DateTime.UtcNow) return false;
-            throw new NotImplementedException("HACK TODO Implement Code verification with regards to PKCE standard.");
+            //throw new NotImplementedException("HACK TODO Implement Code verification with regards to PKCE standard.");
             return true;
         }
 

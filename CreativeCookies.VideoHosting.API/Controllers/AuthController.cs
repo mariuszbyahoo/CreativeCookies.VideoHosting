@@ -20,13 +20,18 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly IAuthorizationCodeRepository _codesRepo;
         private readonly ILogger<AuthController> _logger;
         private readonly IConfiguration _configuration;
+        private readonly IJWTRepository _jwtRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthController(IClientStore store, IAuthorizationCodeRepository codesRepo, ILogger<AuthController> logger, IConfiguration configuration)
+        public AuthController(IClientStore store, IAuthorizationCodeRepository codesRepo, IJWTRepository jwtRepository, 
+            ILogger<AuthController> logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _store = store;
             _codesRepo = codesRepo;
             _logger = logger;
             _configuration = configuration;
+            _jwtRepository = jwtRepository;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpGet("authorize")]
@@ -85,20 +90,30 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 {
                     return codeAndCodeVerifierErrorResponse;
                 }
-                if (!string.IsNullOrWhiteSpace(grant_type) && grant_type.Equals("authorization_code"))
+                if (string.IsNullOrWhiteSpace(grant_type) || (!string.IsNullOrWhiteSpace(grant_type) && !grant_type.Equals("authorization_code")))
                 {
                     return RedirectToError(redirect_uri, "unsupported_grant_type");
                 }
 
-                var jwtSecretKey = _configuration["JWTSecretKey"];
+                var request = _httpContextAccessor.HttpContext.Request;
+                var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
 
-                
-                // If valid, generate an access token and a refresh token
+                var extractedUser = await _codesRepo.GetUserByAuthCodeAsync(code);
+                if(extractedUser == null)
+                {
+                    _logger.LogError($"Codes repo returned null for GetUserByAuthCodeAsync when invoked inside Token action with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(grant_type)}: {grant_type}, {nameof(code)}: {code}, {nameof(code_verifier)}: {code_verifier}");
+                    return RedirectToError(redirect_uri, "server_error");
+                }
+
+                var access_token = _jwtRepository.GenerateAccessToken(extractedUser.Id, extractedUser.UserEmail, Guid.Parse(client_id), _configuration, baseUrl);
+
+                // HACK: Add refresh_tokens 
+                // HACK: How to implement a Role Based Access Control?
 
                 // Return the access token and refresh token as a JSON object
                 return Ok(new
                 {
-                    access_token = "your_access_token",
+                    access_token = access_token,
                     token_type = "Bearer",
                     expires_in = 3600, // One hour
                     refresh_token = "your_refresh_token"
