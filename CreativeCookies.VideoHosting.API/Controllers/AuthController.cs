@@ -110,13 +110,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
                 // HACK: Add scopes for the GenerateAccessToken in order to implement RBAC as describen in RFC6749 3.3
 
-                // Return the access token and refresh token as a JSON object
                 var response = Ok(new
                 {
                     access_token = access_token,
                     token_type = "Bearer",
-                    expires_in = 3600, // One hour
-                    refresh_token = "your_refresh_token"
+                    expires_in = 3600
                 });
                 HttpContext.Response.Headers["Cache-Control"] = "no-store";
                 return response;
