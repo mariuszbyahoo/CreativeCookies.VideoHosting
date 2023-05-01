@@ -43,6 +43,13 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
                 CodeChallengeMethod = code_challenge_method, // HACK  to do with PKCE
                 Expiration = DateTime.UtcNow.AddMinutes(10)
             };
+            var issuedAuthCodes = _ctx.AuthorizationCodes
+                .Where(c =>
+                    c.ClientId.ToLower().Equals(client_id.ToLower()) &&
+                    c.UserId.ToLower().Equals(userId.ToLower()))
+                .AsEnumerable();
+
+            _ctx.RemoveRange(issuedAuthCodes);
 
             _ctx.AuthorizationCodes.Add(codeEntry);
             await _ctx.SaveChangesAsync();
