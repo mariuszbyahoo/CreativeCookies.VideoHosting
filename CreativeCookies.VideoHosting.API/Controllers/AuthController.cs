@@ -66,6 +66,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 queryParameters["state"] = state;
                 redirectUriBuilder.Query = queryParameters.ToString();
 
+                HttpContext.Response.Headers["Cache-Control"] = "no-store";
                 return Redirect(redirectUriBuilder.ToString());
             }
             catch(Exception ex)
@@ -107,17 +108,18 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
                 var access_token = _jwtRepository.GenerateAccessToken(extractedUser.Id, extractedUser.UserEmail, Guid.Parse(client_id), _configuration, baseUrl);
 
-                // HACK: Add refresh_tokens 
-                // HACK: How to implement a Role Based Access Control?
+                // HACK: Add scopes for the GenerateAccessToken in order to implement RBAC as describen in RFC6749 3.3
 
                 // Return the access token and refresh token as a JSON object
-                return Ok(new
+                var response = Ok(new
                 {
                     access_token = access_token,
                     token_type = "Bearer",
                     expires_in = 3600, // One hour
                     refresh_token = "your_refresh_token"
                 });
+                HttpContext.Response.Headers["Cache-Control"] = "no-store";
+                return response;
             }
             catch (Exception ex)
             {
