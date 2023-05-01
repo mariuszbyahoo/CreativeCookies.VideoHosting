@@ -1,6 +1,6 @@
-﻿using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
-using CreativeCookies.VideoHosting.Contracts.Enums;
+﻿using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
+using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using CreativeCookies.VideoHosting.Domain.OAuth.DTOs;
 using Microsoft.AspNetCore.Http;
@@ -19,12 +19,14 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly IClientStore _store;
         private readonly IAuthorizationCodeRepository _codesRepo;
         private readonly ILogger<AuthController> _logger;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(IClientStore store, IAuthorizationCodeRepository codesRepo, ILogger<AuthController> logger)
+        public AuthController(IClientStore store, IAuthorizationCodeRepository codesRepo, ILogger<AuthController> logger, IConfiguration configuration)
         {
             _store = store;
             _codesRepo = codesRepo;
             _logger = logger;
+            _configuration = configuration;
         }
 
         [HttpGet("authorize")]
@@ -87,6 +89,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 {
                     return RedirectToError(redirect_uri, "unsupported_grant_type");
                 }
+
+                var jwtSecretKey = _configuration["JWTSecretKey"];
+
+                
                 // If valid, generate an access token and a refresh token
 
                 // Return the access token and refresh token as a JSON object

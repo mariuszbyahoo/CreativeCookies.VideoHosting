@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
 
-namespace CreativeCookies.VideoHosting.Contracts.DTOs.OAuth
+namespace CreativeCookies.VideoHosting.Contracts.Repositories.OAuth
 {
     public interface IClientStore
     {

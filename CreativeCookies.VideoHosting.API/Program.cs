@@ -2,13 +2,13 @@
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using CreativeCookies.VideoHosting.Contracts.Azure;
-using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
+using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.Domain.Azure;
 using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
-using CreativeCookies.VideoHosting.Domain.OAuth;
 using CreativeCookies.VideoHosting.Domain.Repositories;
+using CreativeCookies.VideoHosting.Domain.Repositories.OAuth;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

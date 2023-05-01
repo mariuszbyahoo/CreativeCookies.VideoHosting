@@ -1,4 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
+using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using CreativeCookies.VideoHosting.Domain.OAuth.DTOs;
@@ -9,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Domain.OAuth
+namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
 {
     public class ClientStore : IClientStore
     {
@@ -34,8 +35,8 @@ namespace CreativeCookies.VideoHosting.Domain.OAuth
                 {
                     ClientSecret = client.ClientSecret,
                     RedirectUri = client.RedirectUri,
-                    AllowedScopes = client.AllowedScopes.Select(scope => new AllowedScopeDto 
-                    { 
+                    AllowedScopes = client.AllowedScopes.Select(scope => new AllowedScopeDto
+                    {
                         Id = scope.Id,
                         OAuthClientId = scope.OAuthClientId,
                         Scope = scope.Scope
