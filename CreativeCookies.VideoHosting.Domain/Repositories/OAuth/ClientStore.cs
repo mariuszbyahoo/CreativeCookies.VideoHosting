@@ -1,12 +1,15 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
+using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using CreativeCookies.VideoHosting.Domain.DTOs.OAuth;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -53,15 +56,32 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             else return true;
         }
 
-        public async Task<bool> IsCodeWithVerifierValid(string code_verifier, string code, string client_id)
+        public async Task<OAuthErrorResponse?> IsCodeWithVerifierValid(string code_verifier, string code, string client_id)
         {
             var entry = await _ctx.AuthorizationCodes.Where(c => c.Code.Equals(code)).FirstOrDefaultAsync();
-            if (string.IsNullOrWhiteSpace(code_verifier)) return false;
-            if (entry == null) return false;
-            if (!entry.ClientId.Equals(client_id)) return false;
-            if (entry.Expiration < DateTime.UtcNow) return false;
-            //throw new NotImplementedException("HACK TODO Implement Code verification with regards to PKCE standard.");
-            return true;
+            if (string.IsNullOrWhiteSpace(code_verifier)) return OAuthErrorResponse.InvalidRequest;
+            if (entry == null) return OAuthErrorResponse.InvalidRequest;
+            if (!entry.ClientId.Equals(client_id)) return OAuthErrorResponse.InvalidRequest;
+            if (entry.Expiration < DateTime.UtcNow) return OAuthErrorResponse.InvalidGrant;
+
+            if (entry.CodeChallengeMethod.ToLower().Equals("s256"))
+            {
+                using var sha256 = SHA256.Create();
+                var codeVerifierBytes = Encoding.UTF8.GetBytes(code_verifier);
+                var hashedBytes = sha256.ComputeHash(codeVerifierBytes);
+                var hashedBase64Url = Convert.ToBase64String(hashedBytes).Replace('+', '-').Replace('/', '_').Replace("=", "");
+
+                if (!hashedBase64Url.Equals(entry.CodeChallengeMethod))
+                {
+                    return OAuthErrorResponse.InvalidGrant;
+                }
+            } // plain method not supported
+            else
+            {
+                return OAuthErrorResponse.InvalidRequest;
+            }
+
+            return null;
         }
 
         public async Task<bool> WasRedirectUriRegisteredToClient(string redirect_uri, string client_id)

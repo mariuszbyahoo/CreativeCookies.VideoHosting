@@ -41,6 +41,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         {
             try
             {
+                HttpContext.Response.Headers["Cache-Control"] = "no-store";
                 var validationResult = await ValidateAuthRequestParameters(redirect_uri, client_id, state, response_type, scope, code_challenge, code_challenge_method);
                 if (validationResult != null)
                 {
@@ -66,7 +67,6 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 queryParameters["state"] = state;
                 redirectUriBuilder.Query = queryParameters.ToString();
 
-                HttpContext.Response.Headers["Cache-Control"] = "no-store";
                 return Redirect(redirectUriBuilder.ToString());
             }
             catch(Exception ex)
@@ -81,6 +81,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         {
             try
             {
+                HttpContext.Response.Headers["Cache-Control"] = "no-store";
                 var clientIdRedirectUrlErrorResponse = await ValidateRedirectUriAndClientId(redirect_uri, client_id, false);
                 if (clientIdRedirectUrlErrorResponse != null)
                 {
@@ -116,7 +117,6 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     token_type = "Bearer",
                     expires_in = 3600
                 });
-                HttpContext.Response.Headers["Cache-Control"] = "no-store";
                 return response;
             }
             catch (Exception ex)
@@ -128,11 +128,18 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         private async Task<IActionResult?> ValidateCodeAndCodeVerifier(string code, string code_verifier, string client_id)
         {
-            if(await _store.IsCodeWithVerifierValid(code_verifier, code, client_id))
+            var verificationResponse = await _store.IsCodeWithVerifierValid(code_verifier, code, client_id);
+            switch (verificationResponse)
             {
-                return null;
+                case OAuthErrorResponse.InvalidRequest:
+                    return GenerateBadRequest("invalid_request");
+                case OAuthErrorResponse.InvalidGrant:
+                    return GenerateBadRequest("invalid_grant");
+                default:
+                    _logger.LogError($"Unexpected OAuth error response with params: {nameof(client_id)}: {client_id}, {nameof(code)}: {code}, {nameof(code_verifier)}: {code_verifier}");
+                    return GenerateBadRequest("server_error");
+
             }
-            return GenerateBadRequest("invalid_request");
         }
 
         private async Task<IActionResult?> ValidateAuthRequestParameters(string redirect_uri, string client_id, string state, string response_type, string scope, string code_challenge, string code_challenge_method)
@@ -161,10 +168,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 var errorResponse = string.Empty;
                 switch (redirectUriError.Value)
                 {
-                    case OAuthErrorResponses.InvalidRedirectUri:
+                    case OAuthErrorResponse.InvalidRedirectUri:
                         _logger.LogDebug($"Received invalid request with an invalid redirect_uri, and params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}");
                         return GenerateBadRequest("Invalid redirect_uri");
-                    case OAuthErrorResponses.InvalidRequest:
+                    case OAuthErrorResponse.InvalidRequest:
                         _logger.LogDebug($"Received invalid request with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}");
                         errorResponse = "invalid_request";
                         if (redirectsToClientApp) return RedirectToError(redirect_uri, errorResponse, state);
@@ -182,11 +189,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 var errorResponse = string.Empty;
                 switch (clientIdError.Value)
                 {
-                    case OAuthErrorResponses.InvalidRequest:
+                    case OAuthErrorResponse.InvalidRequest:
                         _logger.LogDebug($"Received invalid request with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}");
                         errorResponse = "invalid_request";
                         return GenerateBadRequest(errorResponse);
-                    case OAuthErrorResponses.UnauthorisedClient:
+                    case OAuthErrorResponse.UnauthorisedClient:
                         _logger.LogDebug($"Received invalid request with an unauthorised client, and params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}");
                         errorResponse = "unauthorised_client";
                         return GenerateBadRequest(errorResponse);
@@ -204,29 +211,29 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
             else return GenerateBadRequest("Invalid redirect_uri");
         }
-        private async Task<OAuthErrorResponses?> ValidateClientId(string inputClientId)
+        private async Task<OAuthErrorResponse?> ValidateClientId(string inputClientId)
         {
             Guid clientId;
             var parsedSuccessfully = Guid.TryParse(inputClientId, out clientId);
             if (string.IsNullOrWhiteSpace(inputClientId) || !parsedSuccessfully)
             {
-                return OAuthErrorResponses.InvalidRequest;
+                return OAuthErrorResponse.InvalidRequest;
             }
             if (parsedSuccessfully && Guid.Empty != clientId)
             {
                 var lookup = await _store.FindByClientIdAsync(clientId);
-                if (lookup == null) return OAuthErrorResponses.UnauthorisedClient;
+                if (lookup == null) return OAuthErrorResponse.UnauthorisedClient;
             }
             return null;
         }
-        private async Task<OAuthErrorResponses?> ValidateRedirectUri(string inputRedirectUri)
+        private async Task<OAuthErrorResponse?> ValidateRedirectUri(string inputRedirectUri)
         {
             if (!string.IsNullOrWhiteSpace(inputRedirectUri) && await _store.IsRedirectUriPresentInDatabase(inputRedirectUri))
             {
                 return null;
             }
 
-            return OAuthErrorResponses.InvalidRedirectUri;
+            return OAuthErrorResponse.InvalidRedirectUri;
         }
         private IActionResult RedirectToError(string redirectUri, string error, string state = "", string errorDescription = "")
         {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
+using CreativeCookies.VideoHosting.Contracts.Enums;
 
 namespace CreativeCookies.VideoHosting.Contracts.Repositories.OAuth
 {
@@ -11,7 +12,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories.OAuth
     {
         Task<IOAuthClient> FindByClientIdAsync(Guid clientId);
         Task<bool> IsRedirectUriPresentInDatabase(string redirectUri);
-        Task<bool> IsCodeWithVerifierValid(string code_verifier, string code, string client_id);
+        Task<OAuthErrorResponse?> IsCodeWithVerifierValid(string code_verifier, string code, string client_id);
         Task<bool> WasRedirectUriRegisteredToClient(string redirect_uri, string client_id);
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CreativeCookies.VideoHosting.Contracts.Enums
 {
-    public enum OAuthErrorResponses
+    public enum OAuthErrorResponse
     {
         /// <summary>
         /// In this case should return message with error: "invalid_request"
@@ -19,6 +19,10 @@ namespace CreativeCookies.VideoHosting.Contracts.Enums
         /// <summary>
         /// In this case should return message with error "unauthorised_client"
         /// </summary>
-        UnauthorisedClient = 2
+        UnauthorisedClient = 2,
+        /// <summary>
+        /// In this case should return message with error "invalid_grant"
+        /// </summary>
+        InvalidGrant = 3,
     }
 }
