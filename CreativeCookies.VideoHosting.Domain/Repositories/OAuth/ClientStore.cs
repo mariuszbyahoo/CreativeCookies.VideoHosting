@@ -53,9 +53,10 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             else return true;
         }
 
-        public async Task<bool> IsCodeValid(string code, string client_id)
+        public async Task<bool> IsCodeWithVerifierValid(string code_verifier, string code, string client_id)
         {
             var entry = await _ctx.AuthorizationCodes.Where(c => c.Code.Equals(code)).FirstOrDefaultAsync();
+            if (string.IsNullOrWhiteSpace(code_verifier)) return false;
             if (entry == null) return false;
             if (!entry.ClientId.Equals(client_id)) return false;
             if (entry.Expiration < DateTime.UtcNow) return false;
