@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Domain.OAuth.DTOs
+namespace CreativeCookies.VideoHosting.Domain.DTOs.OAuth
 {
     public class OAuthClientDto : IOAuthClient
     {

@@ -2,7 +2,7 @@
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
-using CreativeCookies.VideoHosting.Domain.OAuth.DTOs;
+using CreativeCookies.VideoHosting.Domain.DTOs.OAuth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;

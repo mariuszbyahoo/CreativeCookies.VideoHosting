@@ -2,7 +2,7 @@
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
-using CreativeCookies.VideoHosting.Domain.OAuth.DTOs;
+using CreativeCookies.VideoHosting.Domain.DTOs.OAuth;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
