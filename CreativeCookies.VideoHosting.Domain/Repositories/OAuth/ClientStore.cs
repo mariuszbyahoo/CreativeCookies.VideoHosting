@@ -71,7 +71,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
                 var hashedBytes = sha256.ComputeHash(codeVerifierBytes);
                 var hashedBase64Url = Convert.ToBase64String(hashedBytes).Replace('+', '-').Replace('/', '_').Replace("=", "");
 
-                if (!hashedBase64Url.Equals(entry.CodeChallengeMethod))
+                if (!hashedBase64Url.Equals(entry.CodeChallenge))
                 {
                     return OAuthErrorResponse.InvalidGrant;
                 }
