@@ -71,7 +71,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         [HttpPost("token")]
         public async Task<IActionResult> Token([FromForm] string? grant_type, [FromForm] string? code, [FromForm] string? redirect_uri, [FromForm] string? client_id, [FromForm] string? code_verifier)
         {
-            if (!string.IsNullOrWhiteSpace(grant_type) && grant_type.Equals("authorization_code"))
+            try
             {
                 var clientIdRedirectUrlErrorResponse = await ValidateRedirectUriAndClientId(redirect_uri, client_id);
                 if (clientIdRedirectUrlErrorResponse != null)
@@ -82,6 +82,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 if (codeAndCodeVerifierErrorResponse != null)
                 {
                     return codeAndCodeVerifierErrorResponse;
+                }
+                if (!string.IsNullOrWhiteSpace(grant_type) && grant_type.Equals("authorization_code"))
+                {
+                    return RedirectToError(redirect_uri, "unsupported_grant_type");
                 }
                 // If valid, generate an access token and a refresh token
 
@@ -94,10 +98,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     refresh_token = "your_refresh_token"
                 });
             }
-            else
+            catch (Exception ex)
             {
-                // Change this to redirection to the client with an appropriate error_message (in the case client_id is valid, if not, just return the below BadRequest)
-                return BadRequest(new { error = "unsupported_grant_type", error_description = "The specified grant type is not supported." });
+                _logger.LogError($"Unexpected exception when ran Authenticate call with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(grant_type)}: {grant_type}, {nameof(code)}: {code}, {nameof(code_verifier)}: {code_verifier}", ex);
+                return RedirectToError(redirect_uri, "server_error");
             }
         }
 
