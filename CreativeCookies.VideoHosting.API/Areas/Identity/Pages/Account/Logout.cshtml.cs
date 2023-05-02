@@ -16,12 +16,14 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<LogoutModel> _logger;
+        private readonly IConfiguration _configuration;
 
 
-        public LogoutModel(SignInManager<IdentityUser> signInManager, ILogger<LogoutModel> logger)
+        public LogoutModel(SignInManager<IdentityUser> signInManager, ILogger<LogoutModel> logger, IConfiguration configuration)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _configuration = configuration;
         }
 
         public async Task<IActionResult> OnGetAsync(string returnUrl = null)
@@ -34,6 +36,11 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             }
             else
             {
+                var afterLogoutRedirectUrl = _configuration["ClientUrl"];
+                if (!string.IsNullOrWhiteSpace(afterLogoutRedirectUrl))
+                {
+                    return Redirect(afterLogoutRedirectUrl);
+                }
                 // This needs to be a redirect so that the browser performs a new
                 // request and the identity for the user gets updated.
                 return RedirectToPage();
@@ -50,6 +57,11 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             }
             else
             {
+                var afterLogoutRedirectUrl = _configuration["ClientUrl"];
+                if (!string.IsNullOrWhiteSpace(afterLogoutRedirectUrl))
+                {
+                    return Redirect(afterLogoutRedirectUrl);
+                }
                 // This needs to be a redirect so that the browser performs a new
                 // request and the identity for the user gets updated.
                 return RedirectToPage();
