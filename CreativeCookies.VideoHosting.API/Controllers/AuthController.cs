@@ -135,7 +135,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     return GenerateBadRequest("invalid_request");
                 case OAuthErrorResponse.InvalidGrant:
                     return GenerateBadRequest("invalid_grant");
-                default:
+                case null: // positive route
+                    return null;
+                default: 
                     _logger.LogError($"Unexpected OAuth error response with params: {nameof(client_id)}: {client_id}, {nameof(code)}: {code}, {nameof(code_verifier)}: {code_verifier}");
                     return GenerateBadRequest("server_error");
 
