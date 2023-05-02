@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using CreativeCookies.VideoHosting.Domain.Endpoints;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
@@ -28,7 +29,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpGet("film/{blobTitle}")]
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public IActionResult GetSasTokenForFilm(string blobTitle)
         {
             if (string.IsNullOrEmpty(blobTitle))
@@ -40,7 +41,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpGet("film-upload/{blobTitle}")]
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public IActionResult GetSasTokenForFilmUpload(string blobTitle)
         {
             if (string.IsNullOrEmpty(blobTitle))
@@ -63,7 +64,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpGet("thumbnail-upload/{blobTitle}")]
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public IActionResult GetSasTokenForThumbnailUpload(string blobTitle)
         {
             if (string.IsNullOrEmpty(blobTitle))

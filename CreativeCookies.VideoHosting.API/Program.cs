@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
+using System.Text;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -66,7 +67,6 @@ namespace CreativeCookies.VideoHosting.API
                                .AllowAnyHeader();
                     });
             });
-            // Add services to the container.
             var connectionString = "";
 
             if (builder.Environment.IsDevelopment())
@@ -84,9 +84,9 @@ namespace CreativeCookies.VideoHosting.API
                 options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
                 {
                     sqlOptions.EnableRetryOnFailure(
-                        maxRetryCount: 5, // Number of times to retry before giving up
-                        maxRetryDelay: TimeSpan.FromSeconds(30), // Maximum delay between retries
-                        errorNumbersToAdd: null); // You can add custom error numbers to be considered transient errors
+                        maxRetryCount: 5, 
+                        maxRetryDelay: TimeSpan.FromSeconds(30), 
+                        errorNumbersToAdd: null); 
                 });
             });
 
@@ -123,42 +123,43 @@ namespace CreativeCookies.VideoHosting.API
             context.Database.Migrate();
             var clientId = context.OAuthClients.First().Id;
 
+            var jwtSecretKey = builder.Configuration.GetValue<string>("JWTSecretKey");
+
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
                 options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
                 options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
             })
+            .AddCookie("CookieAuthScheme") 
             .AddJwtBearer(options =>
             {
-                options.Authority = apiUrl; // Replace with your authorization server's address
-                options.Audience = clientId.ToString(); // Replace with your API's audience (client_id)
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ValidateLifetime = false,
-                    ValidateIssuerSigningKey = false,
-                };
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = apiUrl,
+                    ValidAudience = clientId.ToString(),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
+                }; // HACK: hardcoded values above prohibits usage of any other external IdPs 
             });
-
-            builder.Services.AddRazorPages(); // Add Razor Pages support
+            builder.Services.AddRazorPages(); 
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
-            //app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
 
             app.UseStaticFiles(); 
             app.UseCors("AllowAllOriginsPolicy");
