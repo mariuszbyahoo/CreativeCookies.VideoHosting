@@ -10,8 +10,10 @@ using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.Vide
 using CreativeCookies.VideoHosting.Domain.Repositories;
 using CreativeCookies.VideoHosting.Domain.Repositories.OAuth;
 using Microsoft.ApplicationInsights;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
 
@@ -92,7 +94,7 @@ namespace CreativeCookies.VideoHosting.API
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>();
 
-            builder.Services.AddRazorPages(); // Add Razor Pages support
+            var apiUrl = builder.Configuration.GetValue<string>("ApiUrl");
 
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<IClientStore, ClientStore>();
@@ -117,13 +119,35 @@ namespace CreativeCookies.VideoHosting.API
 
             builder.Services.AddHostedService<TokenCleanupWorker>();
 
+            var context = builder.Services.BuildServiceProvider().GetService<AppDbContext>();
+            context.Database.Migrate();
+            var clientId = context.OAuthClients.First().Id;
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+                options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+                options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.Authority = apiUrl; // Replace with your authorization server's address
+                options.Audience = clientId.ToString(); // Replace with your API's audience (client_id)
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = false,
+                    ValidateIssuerSigningKey = false,
+                };
+            });
+
+            builder.Services.AddRazorPages(); // Add Razor Pages support
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            var context = builder.Services.BuildServiceProvider().GetService<AppDbContext>();
-            context.Database.Migrate();
 
             var app = builder.Build();
 
@@ -134,7 +158,7 @@ namespace CreativeCookies.VideoHosting.API
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseStaticFiles(); 
             app.UseCors("AllowAllOriginsPolicy");
