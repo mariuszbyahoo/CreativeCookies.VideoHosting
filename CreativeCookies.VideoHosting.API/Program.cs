@@ -29,20 +29,28 @@ namespace CreativeCookies.VideoHosting.API
 
                 loggerConfiguration
                     .ReadFrom.Configuration(hostingContext.Configuration)
-                    .Enrich.FromLogContext();
+                    .Enrich.FromLogContext()
+                    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                    .MinimumLevel.Override("System", LogEventLevel.Warning)
+                    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Information);
 
                 if (env.IsDevelopment())
                 {
-                    loggerConfiguration.WriteTo.File(new Serilog.Formatting.Display.MessageTemplateTextFormatter("{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", null),
-                                                      "logs/log-.txt",
-                                                      rollingInterval: RollingInterval.Day,
-                                                      retainedFileCountLimit: 7,
-                                                      restrictedToMinimumLevel: LogEventLevel.Information);
+                    loggerConfiguration
+                        .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+                        .WriteTo.File(new Serilog.Formatting.Display.MessageTemplateTextFormatter("{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", null),
+                                      "logs/log-.txt",
+                                      rollingInterval: RollingInterval.Day,
+                                      retainedFileCountLimit: 7,
+                                      restrictedToMinimumLevel: LogEventLevel.Information);
                 }
                 else
                 {
                     var instrumentationKey = hostingContext.Configuration["ApplicationInsights:InstrumentationKey"];
-                    loggerConfiguration.WriteTo.ApplicationInsights(new TelemetryClient(new Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration(instrumentationKey)), TelemetryConverter.Traces);
+
+                    loggerConfiguration
+                                .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Warning)
+                                .WriteTo.ApplicationInsights(new TelemetryClient(new Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration(instrumentationKey)), TelemetryConverter.Traces);
                 }
             });
 
