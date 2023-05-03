@@ -32,8 +32,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Unexpected error occured during action: SASController.GetSasTokenForContainer: ex: {ex.ToString()}, ex.Message: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.Source: {ex.Source}");
-                throw ex;
+                _logger.LogError($"Unexpected exception occured during action: SASController.GetSasTokenForContainer: ex: {ex.ToString()}, ex.Message: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.Source: {ex.Source}");
+                return StatusCode(505, "Internal Server Error");
             }
         }
 
@@ -52,10 +52,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Unexpected error occured during action: SASController.GetSasTokenForFilm: ex: {ex.ToString()}, ex.Message: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.Source: {ex.Source}");
-                throw ex;
+                _logger.LogError($"Unexpected exception occured during action: SASController.GetSasTokenForFilm: ex: {ex.ToString()}, ex.Message: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.Source: {ex.Source}");
+                return StatusCode(505, "Internal Server Error");
             }
-}
+        }
 
         [HttpGet("film-upload/{blobTitle}")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -72,8 +72,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Unexpected error occured during action: SASController.GetSasTokenForFilmUpload: ex: {ex.ToString()}, ex.Message: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.Source: {ex.Source}");
-                throw ex;
+                _logger.LogError($"Unexpected exception occured during action: SASController.GetSasTokenForFilmUpload: ex: {ex.ToString()}, ex.Message: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.Source: {ex.Source}");
+                return StatusCode(505, "Internal Server Error");
             }
         }
 
@@ -90,8 +90,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Unexpected error occured during action: SASController.GetSasTokenForThumbnail: ex: {ex.ToString()}, ex.Message: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.Source: {ex.Source}");
-                throw ex;
+                _logger.LogError($"Unexpected exception occured during action: SASController.GetSasTokenForThumbnail: ex: {ex.ToString()}, ex.Message: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.Source: {ex.Source}");
+                return StatusCode(505, "Internal Server Error");
             }
         }
 
@@ -110,8 +110,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Unexpected error occured during action: SASController.GetSasTokenForThumbnailUpload: ex: {ex.ToString()}, ex.Message: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.Source: {ex.Source}");
-                throw ex;
+                _logger.LogError($"Unexpected exception occured during action: SASController.GetSasTokenForThumbnailUpload: ex: {ex.ToString()}, ex.Message: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.Source: {ex.Source}");
+                return StatusCode(505, "Internal Server Error");
             }
         }
     }
