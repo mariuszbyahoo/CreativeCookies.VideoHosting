@@ -49,11 +49,11 @@ namespace CreativeCookies.VideoHosting.API
                 }
                 else
                 {
-                    var instrumentationKey = hostingContext.Configuration["ApplicationInsights:InstrumentationKey"];
+                    //var instrumentationKey = hostingContext.Configuration["ApplicationInsights:InstrumentationKey"];
 
                     loggerConfiguration
-                                .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Warning)
-                                .WriteTo.ApplicationInsights(new TelemetryClient(new Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration(instrumentationKey)), TelemetryConverter.Traces);
+                                .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Warning);
+                                //.WriteTo.ApplicationInsights(new TelemetryClient(new Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration(instrumentationKey)), TelemetryConverter.Traces);
                 }
             });
 
@@ -78,15 +78,14 @@ namespace CreativeCookies.VideoHosting.API
                 connectionString = builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
             }
 
-
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
                 options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
                 {
                     sqlOptions.EnableRetryOnFailure(
-                        maxRetryCount: 5, 
-                        maxRetryDelay: TimeSpan.FromSeconds(30), 
-                        errorNumbersToAdd: null); 
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null);
                 });
             });
 
@@ -115,13 +114,10 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddSingleton<IFilmsRepository, FilmsRepository>();
             builder.Services.AddSingleton<ISasTokenRepository, SasTokenRepository>();
             builder.Services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
-            builder.Services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
 
             builder.Services.AddHostedService<TokenCleanupWorker>();
 
-            var context = builder.Services.BuildServiceProvider().GetService<AppDbContext>();
-            context.Database.Migrate();
-            var clientId = context.OAuthClients.First().Id;
+            var clientId = builder.Configuration.GetValue<string>("ClientId");
 
             var jwtSecretKey = builder.Configuration.GetValue<string>("JWTSecretKey");
 
@@ -131,7 +127,7 @@ namespace CreativeCookies.VideoHosting.API
                 options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
                 options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
             })
-            .AddCookie("CookieAuthScheme") 
+            .AddCookie("CookieAuthScheme")
             .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -150,8 +146,13 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-
             var app = builder.Build();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                db.Database.Migrate();
+            }
 
             if (app.Environment.IsDevelopment())
             {
@@ -161,14 +162,14 @@ namespace CreativeCookies.VideoHosting.API
 
             app.UseHttpsRedirection();
 
-            app.UseStaticFiles(); 
+            app.UseStaticFiles();
             app.UseCors("AllowAllOriginsPolicy");
 
-            app.UseAuthentication(); 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();
-            app.MapRazorPages(); 
+            app.MapRazorPages();
 
             app.Run();
         }
