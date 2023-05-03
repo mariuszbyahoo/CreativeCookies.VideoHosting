@@ -35,7 +35,8 @@ namespace CreativeCookies.VideoHosting.API
                     .Enrich.FromLogContext()
                     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                     .MinimumLevel.Override("System", LogEventLevel.Warning)
-                    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Information);
+                    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Information)
+                    .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Verbose);
 
                 if (env.IsDevelopment())
                 {

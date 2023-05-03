@@ -38,7 +38,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpGet("film/{blobTitle}")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public IActionResult GetSasTokenForFilm(string blobTitle)
         {
             try
@@ -58,7 +58,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpGet("film-upload/{blobTitle}")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public IActionResult GetSasTokenForFilmUpload(string blobTitle)
         {
             try 
@@ -96,7 +96,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpGet("thumbnail-upload/{blobTitle}")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public IActionResult GetSasTokenForThumbnailUpload(string blobTitle)
         {
             try
