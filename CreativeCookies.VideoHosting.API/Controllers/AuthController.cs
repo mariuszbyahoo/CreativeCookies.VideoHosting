@@ -121,7 +121,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Unexpected exception when ran Authenticate call with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(grant_type)}: {grant_type}, {nameof(code)}: {code}, {nameof(code_verifier)}: {code_verifier}", ex);
+                _logger.LogError($"Unexpected exception when ran Token call with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(grant_type)}: {grant_type}, {nameof(code)}: {code}, {nameof(code_verifier)}: {code_verifier} , ex: {ex.Message}, stackTrace: {ex.StackTrace}, source: {ex.Source}, innerException: {ex.InnerException}");
                 return RedirectToError(redirect_uri, "server_error");
             }
         }
@@ -181,8 +181,14 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     default:
                         _logger.LogError($"Unexpected OAuth error response with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}", redirectUriError.Value);
                         errorResponse = "server_error";
-                        if (redirectsToClientApp) return RedirectToError(redirect_uri, errorResponse, state);
-                        else return GenerateBadRequest(errorResponse);
+                        if (redirectsToClientApp)
+                        {
+                            return RedirectToError(redirect_uri, errorResponse, state);
+                        }
+                        else 
+                        {
+                            return GenerateBadRequest(errorResponse);
+                        }
                 }
             }
             var clientIdError = await ValidateClientId(client_id);
