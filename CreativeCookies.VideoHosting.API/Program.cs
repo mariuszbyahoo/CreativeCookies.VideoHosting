@@ -3,11 +3,20 @@ using Azure.Storage;
 using Azure.Storage.Blobs;
 using CreativeCookies.VideoHosting.Contracts.Azure;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
+using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.Domain.Azure;
+using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
 using CreativeCookies.VideoHosting.Domain.Repositories;
+using CreativeCookies.VideoHosting.Domain.Repositories.OAuth;
+using Microsoft.ApplicationInsights;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Serilog;
+using Serilog.Events;
+using System.Text;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -16,6 +25,39 @@ namespace CreativeCookies.VideoHosting.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
+            {
+                var env = hostingContext.HostingEnvironment;
+
+                loggerConfiguration
+                    .ReadFrom.Configuration(hostingContext.Configuration)
+                    .Enrich.FromLogContext()
+                    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                    .MinimumLevel.Override("System", LogEventLevel.Warning)
+                    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Information)
+                    .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Verbose);
+
+                if (env.IsDevelopment())
+                {
+                    loggerConfiguration
+                        .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+                        .WriteTo.File(new Serilog.Formatting.Display.MessageTemplateTextFormatter("{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", null),
+                                      "logs/log-.txt",
+                                      rollingInterval: RollingInterval.Day,
+                                      retainedFileCountLimit: 7,
+                                      restrictedToMinimumLevel: LogEventLevel.Information);
+                }
+                else
+                {
+                    var instrumentationKey = hostingContext.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
+
+                    loggerConfiguration
+                                .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Warning)
+                                .WriteTo.ApplicationInsights(new TelemetryClient(new Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration(instrumentationKey)), TelemetryConverter.Traces);
+                }
+            });
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAllOriginsPolicy",
@@ -26,7 +68,6 @@ namespace CreativeCookies.VideoHosting.API
                                .AllowAnyHeader();
                     });
             });
-            // Add services to the container.
             var connectionString = "";
 
             if (builder.Environment.IsDevelopment())
@@ -38,14 +79,27 @@ namespace CreativeCookies.VideoHosting.API
                 connectionString = builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
             }
 
-
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseSqlServer(connectionString);
+                options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
+                {
+                    sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null);
+                });
             });
 
-            builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>();
+
+            var apiUrl = builder.Configuration.GetValue<string>("ApiUrl");
+
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<IClientStore, ClientStore>();
+            builder.Services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
+            builder.Services.AddScoped<IJWTRepository, JWTRepository>();
 
             var accountName = builder.Configuration.GetValue<string>("Storage:AccountName");
             var accountKey = builder.Configuration.GetValue<string>("Storage:AccountKey");
@@ -62,17 +116,45 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddSingleton<ISasTokenRepository, SasTokenRepository>();
             builder.Services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
 
+            builder.Services.AddHostedService<TokenCleanupWorker>();
+
+            var clientId = builder.Configuration.GetValue<string>("ClientId");
+
+            var jwtSecretKey = builder.Configuration.GetValue<string>("JWTSecretKey");
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+                options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+                options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+            })
+            .AddCookie("CookieAuthScheme")
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = apiUrl,
+                    ValidAudience = clientId.ToString(),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
+                }; // HACK: hardcoded values above prohibits usage of any other external IdPs 
+            });
+            builder.Services.AddRazorPages(); 
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            var context = builder.Services.BuildServiceProvider().GetService<AppDbContext>();
-            context.Database.Migrate();
-
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                db.Database.Migrate();
+            }
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -81,11 +163,14 @@ namespace CreativeCookies.VideoHosting.API
 
             app.UseHttpsRedirection();
 
+            app.UseStaticFiles();
             app.UseCors("AllowAllOriginsPolicy");
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();
+            app.MapRazorPages();
 
             app.Run();
         }

@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using CreativeCookies.VideoHosting.Domain.Endpoints;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
@@ -13,61 +15,104 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     public class SASController : ControllerBase
     {
         private readonly ISasTokenRepository _sasTokenRepository;
-
-        public SASController(ISasTokenRepository sasTokenRepository)
+        private readonly ILogger<SASController> _logger;
+        public SASController(ISasTokenRepository sasTokenRepository, ILogger<SASController> logger)
         {
             _sasTokenRepository = sasTokenRepository;
+            _logger = logger;
         }
 
         [HttpGet("filmsList")]
         public IActionResult GetSasTokenForContainer()
         {
-            var res = _sasTokenRepository.GetSasTokenForContainer("films");
-            return Ok(res);
+            try
+            {
+                var res = _sasTokenRepository.GetSasTokenForContainer("films");
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected exception occured during action: SASController.GetSasTokenForContainer: ex: {ex.ToString()}, ex.Message: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.Source: {ex.Source}");
+                return StatusCode(505, "Internal Server Error");
+            }
         }
 
         [HttpGet("film/{blobTitle}")]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public IActionResult GetSasTokenForFilm(string blobTitle)
         {
-            if (string.IsNullOrEmpty(blobTitle))
+            try
             {
-                return BadRequest($"Field: string blobTitle is mandatory!");
+                if (string.IsNullOrEmpty(blobTitle))
+                {
+                    return BadRequest($"Field: string blobTitle is mandatory!");
+                }
+                var res = _sasTokenRepository.GetSasTokenForFilm(blobTitle);
+                return Ok(res);
             }
-            var res = _sasTokenRepository.GetSasTokenForFilm(blobTitle);
-            return Ok(res);
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected exception occured during action: SASController.GetSasTokenForFilm: ex: {ex.ToString()}, ex.Message: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.Source: {ex.Source}");
+                return StatusCode(505, "Internal Server Error");
+            }
         }
 
         [HttpGet("film-upload/{blobTitle}")]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public IActionResult GetSasTokenForFilmUpload(string blobTitle)
         {
-            if (string.IsNullOrEmpty(blobTitle))
-            {
-                return BadRequest($"Field: string blobTitle is mandatory!");
+            try 
+            { 
+                if (string.IsNullOrEmpty(blobTitle))
+                {
+                    return BadRequest($"Field: string blobTitle is mandatory!");
+                }
+                var res = _sasTokenRepository.GetSasTokenForFilmUpload(blobTitle);
+                return Ok(res);
             }
-            var res = _sasTokenRepository.GetSasTokenForFilmUpload(blobTitle);
-            return Ok(res);
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected exception occured during action: SASController.GetSasTokenForFilmUpload: ex: {ex.ToString()}, ex.Message: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.Source: {ex.Source}");
+                return StatusCode(505, "Internal Server Error");
+            }
         }
 
         [HttpGet("thumbnail/{blobTitle}")]
         public IActionResult GetSasTokenForThumbnail(string blobTitle)
         {
-            if (string.IsNullOrEmpty(blobTitle))
-            {
-                return BadRequest($"Field: string blobTitle is mandatory!");
+            try { 
+                if (string.IsNullOrEmpty(blobTitle))
+                {
+                    return BadRequest($"Field: string blobTitle is mandatory!");
+                }
+                var res = _sasTokenRepository.GetSasTokenForThumbnail(blobTitle);
+                return Ok(res);
             }
-            var res = _sasTokenRepository.GetSasTokenForThumbnail(blobTitle);
-            return Ok(res);
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected exception occured during action: SASController.GetSasTokenForThumbnail: ex: {ex.ToString()}, ex.Message: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.Source: {ex.Source}");
+                return StatusCode(505, "Internal Server Error");
+            }
         }
 
         [HttpGet("thumbnail-upload/{blobTitle}")]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public IActionResult GetSasTokenForThumbnailUpload(string blobTitle)
         {
-            if (string.IsNullOrEmpty(blobTitle))
+            try
             {
-                return BadRequest($"Field: string blobTitle is mandatory!");
+                if (string.IsNullOrEmpty(blobTitle))
+                {
+                    return BadRequest($"Field: string blobTitle is mandatory!");
+                }
+                var res = _sasTokenRepository.GetSasTokenForThumbnailUpload(blobTitle);
+                return Ok(res);
             }
-            var res = _sasTokenRepository.GetSasTokenForThumbnailUpload(blobTitle);
-            return Ok(res);
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected exception occured during action: SASController.GetSasTokenForThumbnailUpload: ex: {ex.ToString()}, ex.Message: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.Source: {ex.Source}");
+                return StatusCode(505, "Internal Server Error");
+            }
         }
     }
 }

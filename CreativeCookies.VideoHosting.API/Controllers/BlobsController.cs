@@ -3,7 +3,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using CreativeCookies.VideoHosting.Domain.Models;
+using CreativeCookies.VideoHosting.Domain.DTOs;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
