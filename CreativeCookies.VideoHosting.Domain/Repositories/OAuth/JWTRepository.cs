@@ -17,6 +17,9 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
         public string GenerateAccessToken(Guid userId, string userEmail, Guid clientId, IConfiguration configuration, string issuer)
         {
             var secretKey = configuration["JWTSecretKey"];
+
+            if(string.IsNullOrWhiteSpace(secretKey)) throw new ArgumentNullException(nameof(secretKey));
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
             var tokenHandler = new JwtSecurityTokenHandler();
