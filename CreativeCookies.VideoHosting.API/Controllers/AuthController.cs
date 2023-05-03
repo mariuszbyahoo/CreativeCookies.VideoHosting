@@ -36,13 +36,13 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         [HttpGet("authorize")]
         public async Task<IActionResult> Authorize([FromQuery]string? client_id, [FromQuery] string? redirect_uri, 
-            [FromQuery] string? response_type, [FromQuery] string? scope, [FromQuery] string? state,
+            [FromQuery] string? response_type, [FromQuery] string? state,
             [FromQuery] string? code_challenge, [FromQuery] string? code_challenge_method)
         {
             try
             {
                 HttpContext.Response.Headers["Cache-Control"] = "no-store";
-                var validationResult = await ValidateAuthRequestParameters(redirect_uri, client_id, state, response_type, scope, code_challenge, code_challenge_method);
+                var validationResult = await ValidateAuthRequestParameters(redirect_uri, client_id, state, response_type, code_challenge, code_challenge_method);
                 if (validationResult != null)
                 {
                     return validationResult;
@@ -50,7 +50,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
                 if (!User.Identity.IsAuthenticated)
                 {
-                    var returnUrl = $"/api/auth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type={response_type}&scope={scope}&state={state}&code_challenge={code_challenge}&code_challenge_method={code_challenge_method}";
+                    var returnUrl = $"/api/auth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type={response_type}&state={state}&code_challenge={code_challenge}&code_challenge_method={code_challenge_method}";
                     var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
                     var loginUrl = $"{baseUrl}/Identity/Account/Login?returnUrl={WebUtility.UrlEncode(returnUrl)}";
 
@@ -144,7 +144,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
         }
 
-        private async Task<IActionResult?> ValidateAuthRequestParameters(string redirect_uri, string client_id, string state, string response_type, string scope, string code_challenge, string code_challenge_method)
+        private async Task<IActionResult?> ValidateAuthRequestParameters(string redirect_uri, string client_id, string state, string response_type, string code_challenge, string code_challenge_method)
         {
             var clientIdRedirectUrlErrorResponse = await ValidateRedirectUriAndClientId(redirect_uri, client_id, true, state);
             if (clientIdRedirectUrlErrorResponse != null)
@@ -152,10 +152,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 return clientIdRedirectUrlErrorResponse;
             }
             if (string.IsNullOrWhiteSpace(response_type)) return RedirectToError(redirect_uri, "unsupported_response_type", state);
-            if (string.IsNullOrWhiteSpace(scope)) return RedirectToError(redirect_uri, "invalid_scope", state); // HACK: VALIDATE SCOPE
             if (string.IsNullOrWhiteSpace(state)) return RedirectToError(redirect_uri, "invalid_request", state);
-            if (string.IsNullOrWhiteSpace(code_challenge)) return RedirectToError(redirect_uri, "invalid_request", state); // HACK: VALIDATE CODE_CHALLENGE FOR PKCE
-            if (string.IsNullOrWhiteSpace(code_challenge_method)) return RedirectToError(redirect_uri, "invalid_request", state); // // HACK: VALIDATE CODE_CHALLENGE_METHOD FOR PKCE
+            if (string.IsNullOrWhiteSpace(code_challenge)) return RedirectToError(redirect_uri, "invalid_request", state); 
+            if (string.IsNullOrWhiteSpace(code_challenge_method)) return RedirectToError(redirect_uri, "invalid_request", state); 
             if (!response_type.Equals("code")) return RedirectToError(redirect_uri, "invalid_request", state);
 
             // all good
