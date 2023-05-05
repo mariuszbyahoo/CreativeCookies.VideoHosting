@@ -31,7 +31,7 @@ namespace CreativeCookies.VideoHosting.Domain.BackgroundWorkers
                         // HACK: TODO Add expired tokens cleanup!
                         await authCodeRepository.ClearExpiredAuthorizationCodes();
                     }
-                    await Task.Delay(TimeSpan.FromMinutes(15), stoppingToken);
+                    await Task.Delay(TimeSpan.FromHours(6), stoppingToken);
                 }
             }
         }
