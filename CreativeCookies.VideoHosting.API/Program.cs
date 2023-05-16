@@ -7,15 +7,18 @@ using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.Domain.Azure;
 using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
+using CreativeCookies.VideoHosting.Domain.Email;
 using CreativeCookies.VideoHosting.Domain.Repositories;
 using CreativeCookies.VideoHosting.Domain.Repositories.OAuth;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
+using System.Configuration;
 using System.Text;
 
 namespace CreativeCookies.VideoHosting.API
@@ -101,10 +104,26 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
             builder.Services.AddScoped<IJWTRepository, JWTRepository>();
 
+            builder.Services.AddTransient<IEmailService>(serviceProvider =>
+            {
+                int smtpPort;
+                var logger = serviceProvider.GetRequiredService<ILogger<EmailService>>();
+                var hasPortBeenParsed = int.TryParse(builder.Configuration.GetValue<string>("SMTPPort"), out smtpPort);
+                if (!hasPortBeenParsed)
+                {
+                    logger.LogError("SMTP port configuration is invalid or not set. Please ensure it is a valid integer.");
+                    throw new ConfigurationErrorsException("SMTP port configuration is invalid or not set. Please ensure it is a valid integer.");
+                }
+                var host = builder.Configuration.GetValue<string>("SMTPHost");
+                var user = builder.Configuration.GetValue<string>("SMTPUser");
+                var password = builder.Configuration.GetValue<string>("SMTPPassword");
+                return new EmailService(logger, host, smtpPort, user, password);
+            });
+
+
             var accountName = builder.Configuration.GetValue<string>("Storage:AccountName");
             var accountKey = builder.Configuration.GetValue<string>("Storage:AccountKey");
             var blobServiceUrl = builder.Configuration.GetValue<string>("Storage:BlobServiceUrl");
-
             builder.Services.AddSingleton(x => new StorageSharedKeyCredential(accountName, accountKey));
             builder.Services.AddSingleton(x => new BlobServiceClient(new Uri(blobServiceUrl), x.GetRequiredService<StorageSharedKeyCredential>()));
             builder.Services.AddSingleton<IBlobServiceClientWrapper>(sp =>

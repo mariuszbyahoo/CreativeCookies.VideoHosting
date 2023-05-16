@@ -29,7 +29,15 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             _ctx.AuthorizationCodes.RemoveRange(expiredCodes);
             await _ctx.SaveChangesAsync();
         }
-
+        /// <summary>
+        /// Generates a new AuthorizationCode for particular user and particular client_id, and removes all auth codes issued to this user previousely.
+        /// </summary>
+        /// <param name="client_id"></param>
+        /// <param name="userId"></param>
+        /// <param name="redirect_uri"></param>
+        /// <param name="code_challenge"></param>
+        /// <param name="code_challenge_method"></param>
+        /// <returns></returns>
         public async Task<string> GetAuthorizationCode(string client_id, string userId, string redirect_uri, string code_challenge, string code_challenge_method)
         {
             var authorizationCode = AuthCodeGenerator.GenerateAuthorizationCode();
@@ -39,9 +47,9 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
                 UserId = userId,
                 Code = authorizationCode,
                 RedirectUri = redirect_uri,
-                CodeChallenge = code_challenge, // HACK  to do with PKCE
-                CodeChallengeMethod = code_challenge_method, // HACK  to do with PKCE
-                Expiration = DateTime.UtcNow.AddMinutes(10)
+                CodeChallenge = code_challenge, 
+                CodeChallengeMethod = code_challenge_method,
+                Expiration = DateTime.UtcNow.AddMinutes(1)
             };
             var issuedAuthCodes = _ctx.AuthorizationCodes
                 .Where(c =>
