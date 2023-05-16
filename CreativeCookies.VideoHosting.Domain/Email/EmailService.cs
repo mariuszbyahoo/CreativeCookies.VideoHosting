@@ -17,9 +17,9 @@ namespace CreativeCookies.VideoHosting.Domain.Email
         private readonly int _smtpPort;
         private readonly string _senderEmail;
         private readonly string _smtpPass;
-        private readonly ILogger _logger;
+        private readonly ILogger<EmailService> _logger;
 
-        public EmailService(ILogger logger, string smtpHost, int smtpPort, string senderEmail, string smtpPass)
+        public EmailService(ILogger<EmailService> logger, string smtpHost, int smtpPort, string senderEmail, string smtpPass)
         {
             _logger = logger;
             _smtpHost = smtpHost;

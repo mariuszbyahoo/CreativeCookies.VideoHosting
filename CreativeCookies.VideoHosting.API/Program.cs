@@ -18,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
+using System.Configuration;
 using System.Text;
 
 namespace CreativeCookies.VideoHosting.API
@@ -103,12 +104,26 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
             builder.Services.AddScoped<IJWTRepository, JWTRepository>();
 
-            builder.Services.AddTransient<IEmailService, EmailService>();
+            builder.Services.AddTransient<IEmailService>(serviceProvider =>
+            {
+                int smtpPort;
+                var logger = serviceProvider.GetRequiredService<ILogger<EmailService>>();
+                var hasPortBeenParsed = int.TryParse(builder.Configuration.GetValue<string>("SMTPPort"), out smtpPort);
+                if (!hasPortBeenParsed)
+                {
+                    logger.LogError("SMTP port configuration is invalid or not set. Please ensure it is a valid integer.");
+                    throw new ConfigurationErrorsException("SMTP port configuration is invalid or not set. Please ensure it is a valid integer.");
+                }
+                var host = builder.Configuration.GetValue<string>("SMTPHost");
+                var user = builder.Configuration.GetValue<string>("SMTPUser");
+                var password = builder.Configuration.GetValue<string>("SMTPPassword");
+                return new EmailService(logger, host, smtpPort, user, password);
+            });
+
 
             var accountName = builder.Configuration.GetValue<string>("Storage:AccountName");
             var accountKey = builder.Configuration.GetValue<string>("Storage:AccountKey");
             var blobServiceUrl = builder.Configuration.GetValue<string>("Storage:BlobServiceUrl");
-
             builder.Services.AddSingleton(x => new StorageSharedKeyCredential(accountName, accountKey));
             builder.Services.AddSingleton(x => new BlobServiceClient(new Uri(blobServiceUrl), x.GetRequiredService<StorageSharedKeyCredential>()));
             builder.Services.AddSingleton<IBlobServiceClientWrapper>(sp =>
