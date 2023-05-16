@@ -7,11 +7,13 @@ using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.Domain.Azure;
 using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
+using CreativeCookies.VideoHosting.Domain.Email;
 using CreativeCookies.VideoHosting.Domain.Repositories;
 using CreativeCookies.VideoHosting.Domain.Repositories.OAuth;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -100,6 +102,8 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddScoped<IClientStore, ClientStore>();
             builder.Services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
             builder.Services.AddScoped<IJWTRepository, JWTRepository>();
+
+            builder.Services.AddTransient<IEmailService, EmailService>();
 
             var accountName = builder.Configuration.GetValue<string>("Storage:AccountName");
             var accountKey = builder.Configuration.GetValue<string>("Storage:AccountKey");
