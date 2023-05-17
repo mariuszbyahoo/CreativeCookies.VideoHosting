@@ -1,7 +1,7 @@
 
 using Azure.Storage;
 using Azure.Storage.Blobs;
-using CreativeCookies.VideoHosting.API.Email;
+using CreativeCookies.VideoHosting.API.EmailHelpers;
 using CreativeCookies.VideoHosting.Contracts.Azure;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;

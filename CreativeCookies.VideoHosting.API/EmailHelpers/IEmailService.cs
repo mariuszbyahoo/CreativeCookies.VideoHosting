@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.API.Email
+namespace CreativeCookies.VideoHosting.API.EmailHelpers
 {
     public interface IEmailService
     {

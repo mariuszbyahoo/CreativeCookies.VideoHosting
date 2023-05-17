@@ -16,7 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 
-namespace CreativeCookies.VideoHosting.API.Email
+namespace CreativeCookies.VideoHosting.API.EmailHelpers
 {
     public class EmailService : IEmailService
     {
