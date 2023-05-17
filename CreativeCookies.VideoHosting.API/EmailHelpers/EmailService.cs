@@ -124,7 +124,7 @@ namespace CreativeCookies.VideoHosting.API.EmailHelpers
 
             using (var sw = new StringWriter())
             {
-                var viewResult = _razorViewEngine.FindView(actionContext, $"/Templates/{viewName}.cshtml", false);
+                var viewResult = _razorViewEngine.GetView("~/", $"/Templates/{viewName}.cshtml", false);
 
                 if (viewResult.View == null)
                 {
