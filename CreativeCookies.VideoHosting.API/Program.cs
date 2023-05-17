@@ -1,19 +1,21 @@
 
 using Azure.Storage;
 using Azure.Storage.Blobs;
+using CreativeCookies.VideoHosting.API.Email;
 using CreativeCookies.VideoHosting.Contracts.Azure;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.Domain.Azure;
 using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
-using CreativeCookies.VideoHosting.Domain.Email;
 using CreativeCookies.VideoHosting.Domain.Repositories;
 using CreativeCookies.VideoHosting.Domain.Repositories.OAuth;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -109,15 +111,17 @@ namespace CreativeCookies.VideoHosting.API
                 int smtpPort;
                 var logger = serviceProvider.GetRequiredService<ILogger<EmailService>>();
                 var hasPortBeenParsed = int.TryParse(builder.Configuration.GetValue<string>("SMTPPort"), out smtpPort);
-                if (!hasPortBeenParsed)
-                {
-                    logger.LogError("SMTP port configuration is invalid or not set. Please ensure it is a valid integer.");
-                    throw new ConfigurationErrorsException("SMTP port configuration is invalid or not set. Please ensure it is a valid integer.");
-                }
                 var host = builder.Configuration.GetValue<string>("SMTPHost");
                 var user = builder.Configuration.GetValue<string>("SMTPUser");
                 var password = builder.Configuration.GetValue<string>("SMTPPassword");
-                return new EmailService(logger, host, smtpPort, user, password);
+                if (!hasPortBeenParsed || string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(password))
+                {
+                    logger.LogError("One of the SMTP configuration is invalid or not set. Please ensure all of the SMTP config key value pairs have been populated and is SMTPPort a valid integer.");
+                    throw new ConfigurationErrorsException("One of the SMTP configuration is invalid or not set. Please ensure all of the SMTP config key value pairs have been populated and is SMTPPort a valid integer.");
+                }
+                var razorViewEngine = serviceProvider.GetRequiredService<IRazorViewEngine>();
+                var tempDataProvider = serviceProvider.GetRequiredService<ITempDataProvider>();
+                return new EmailService(logger, host, smtpPort, user, password, razorViewEngine, tempDataProvider, serviceProvider);
             });
 
 
@@ -161,7 +165,7 @@ namespace CreativeCookies.VideoHosting.API
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
                 }; // HACK: hardcoded values above prohibits usage of any other external IdPs 
             });
-            builder.Services.AddRazorPages(); 
+            builder.Services.AddRazorPages().AddRazorRuntimeCompilation(); 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

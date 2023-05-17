@@ -8,8 +8,15 @@ using System.Text;
 using System.Threading.Tasks;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 
-namespace CreativeCookies.VideoHosting.Domain.Email
+namespace CreativeCookies.VideoHosting.API.Email
 {
     public class EmailService : IEmailService
     {
@@ -18,14 +25,28 @@ namespace CreativeCookies.VideoHosting.Domain.Email
         private readonly string _senderEmail;
         private readonly string _smtpPass;
         private readonly ILogger<EmailService> _logger;
+        private readonly IRazorViewEngine _razorViewEngine;
+        private readonly ITempDataProvider _tempDataProvider;
+        private readonly IServiceProvider _serviceProvider;
 
-        public EmailService(ILogger<EmailService> logger, string smtpHost, int smtpPort, string senderEmail, string smtpPass)
+        public EmailService(
+            ILogger<EmailService> logger,
+            string smtpHost,
+            int smtpPort,
+            string senderEmail,
+            string smtpPass,
+            IRazorViewEngine razorViewEngine,
+            ITempDataProvider tempDataProvider,
+            IServiceProvider serviceProvider)
         {
             _logger = logger;
             _smtpHost = smtpHost;
             _smtpPort = smtpPort;
             _senderEmail = senderEmail;
             _smtpPass = smtpPass;
+            _razorViewEngine = razorViewEngine;
+            _tempDataProvider = tempDataProvider;
+            _serviceProvider = serviceProvider;
         }
 
         /// <summary>
@@ -68,6 +89,38 @@ namespace CreativeCookies.VideoHosting.Domain.Email
             {
                 _logger.LogError($"Unexpected exception occured when trying to send an email, msg: {ex.Message}, innerException: {ex.InnerException}, source: {ex.Source}", ex);
                 return false;
+            }
+        }
+
+        public async Task<string> RenderViewToStringAsync<TModel>(string viewName, TModel model)
+        {
+            var httpContext = new DefaultHttpContext { RequestServices = _serviceProvider };
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            using (var sw = new StringWriter())
+            {
+                var viewResult = _razorViewEngine.FindView(actionContext, viewName, false);
+
+                if (viewResult.View == null)
+                {
+                    throw new ArgumentNullException($"{viewName} does not match any available view");
+                }
+
+                var viewDictionary = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+                {
+                    Model = model
+                };
+                var viewContext = new ViewContext(
+                    actionContext,
+                    viewResult.View,
+                    viewDictionary,
+                    new TempDataDictionary(actionContext.HttpContext, _tempDataProvider),
+                    sw,
+                    new HtmlHelperOptions()
+                );
+
+                await viewResult.View.RenderAsync(viewContext);
+                return sw.ToString();
             }
         }
     }
