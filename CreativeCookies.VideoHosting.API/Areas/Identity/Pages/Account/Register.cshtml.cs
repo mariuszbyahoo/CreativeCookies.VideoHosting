@@ -109,12 +109,11 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 
                     var websiteName = _configuration.GetValue<string>("WebsiteName");
                     var websiteUrl = _configuration.GetValue<string>("ClientUrl");
-                    var wasEmailSent = await _emailService.SendEmailAsync(
+                    var wasEmailSent = await _emailService.SendAccountActivationEmailAsync(
                         Input.Email, 
                         $"Confirm your account at {websiteName}", 
                         $"You're recieving this email because you've requested to sign in at {websiteName}: {websiteUrl}",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here </a>. <br /> If this link has not been rendered correctly, please copy paste this into the browser: {callbackUrl}", // HACK: this link is not rendering corectly
-                        websiteUrl, websiteName);
+                        websiteUrl, websiteName, callbackUrl);
                     if (wasEmailSent)
                     {
                         return LocalRedirect("~/Identity/Account/ConfirmAccount");

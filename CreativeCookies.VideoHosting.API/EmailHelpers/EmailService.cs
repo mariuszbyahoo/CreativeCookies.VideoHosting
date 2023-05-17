@@ -66,6 +66,13 @@ namespace CreativeCookies.VideoHosting.API.EmailHelpers
             return await SendMessageAsync(recipientEmail, subject, htmlMessage);
         }
 
+        public async Task<bool> SendAccountActivationEmailAsync(string recipientEmail, string subject, string introduction, string websiteUrl, string websiteName, string accountActivationLink)
+        {
+            var model = new AccountActivationEmailTemplateViewModel(recipientEmail, introduction, websiteUrl, websiteName, accountActivationLink);
+            var htmlMessage = await RenderViewToStringAsync("AccountActivationEmailTemplate", model);
+            return await SendMessageAsync(recipientEmail, subject, htmlMessage);
+        }
+
         /// <summary>
         /// Sends an email using secured TLS encryption, if an email server does not supporting TLS encrpyption, it will throw an NotSupportedException
         /// </summary>
