@@ -1,8 +1,8 @@
-﻿@model CreativeCookies.VideoHosting.API.EmailTemplates.EmailTemplateViewModel
+﻿@model CreativeCookies.VideoHosting.API.Templates.EmailTemplateViewModel
 
 <p style="font-size:18px; font-family: 'Comic Sans MS'; font-weight:600;">Hello, @Model.RecipientName,</p>
 
-<p style="font-size:14px; font-family: 'Brush Script MT', cursive; font-weight:400;">You're receiving this email because you've requested to create a new account on @Model.SiteName</p>
+<p style="font-size:14px; font-family: 'Brush Script MT', cursive; font-weight:400;">You're receiving this email because you've requested to create a new account on @Model.WebsiteUrl</p>
 
 <p style="font-size:16px; font-family: 'Comic Sans MS'; font-weight:500;">@Model.Introduction</p>
 
@@ -10,4 +10,4 @@
 
 <p style="font-size:16px; font-family: 'Comic Sans MS'; font-weight:500;">Best regards,</p>
 
-<p style="font-size:16px; font-family: 'Comic Sans MS'; font-weight:500;">Your @Model.SiteName Team</p>
+<p style="font-size:16px; font-family: 'Comic Sans MS'; font-weight:500;">@Model.WebsiteName Team</p>

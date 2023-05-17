@@ -30,12 +30,14 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
+            IConfiguration configuration,
             IEmailService emailService)
         {
             _userManager = userManager;
@@ -43,6 +45,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             _emailStore = GetEmailStore();
             _signInManager = signInManager;
             _logger = logger;
+            _configuration = configuration;
             _emailService = emailService;
         }
 
@@ -104,10 +107,23 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
                         values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
 
-                    await _emailService.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-                    return LocalRedirect("~/Identity/Account/ConfirmAccount");
+                    var websiteName = _configuration.GetValue<string>("WebsiteName");
+                    var websiteUrl = _configuration.GetValue<string>("ClientUrl");
+                    var wasEmailSent = await _emailService.SendEmailAsync(
+                        Input.Email, 
+                        $"Confirm your account at {websiteName}", 
+                        $"You're recieving this email because you've requested to sign in at {websiteName}",
+                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.",
+                        websiteUrl, websiteName);
+                    if (wasEmailSent)
+                    {
+                        return LocalRedirect("~/Identity/Account/ConfirmAccount");
+                    }
+                    else
+                    {
+                        return LocalRedirect("~/Identity/Account/EmailWasNotSentDueToError");
+                        // HACK: TODO do some kind of transaction cancelling (just delete previousely created account because of the error).
+                    }
                 }
                 foreach (var error in result.Errors)
                 {
