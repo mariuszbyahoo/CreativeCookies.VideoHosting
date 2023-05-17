@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CreativeCookies.VideoHosting.API.Templates;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,8 +9,7 @@ namespace CreativeCookies.VideoHosting.API.EmailHelpers
 {
     public interface IEmailService
     {
-        Task<bool> SendEmailAsync(string email, string subject, string message);
-
-        Task<string> RenderViewToStringAsync<TModel>(string viewName, TModel model);
+        Task<bool> SendEmailAsync(string recipientEmail, string subject, string introduction, string message, string websiteUrl, string websiteName);
+        Task<bool> SendAccountActivationEmailAsync(string recipientEmail, string subject, string introduction, string websiteUrl, string websiteName, string accountActivationLink);
     }
 }
