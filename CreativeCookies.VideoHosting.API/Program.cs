@@ -191,6 +191,8 @@ namespace CreativeCookies.VideoHosting.API
 
             app.UseHttpsRedirection();
 
+            app.UseStatusCodePagesWithReExecute("/StatusCode", "?statusCode={0}");
+
             app.UseStaticFiles();
             app.UseCors("AllowAllOriginsPolicy");
 
