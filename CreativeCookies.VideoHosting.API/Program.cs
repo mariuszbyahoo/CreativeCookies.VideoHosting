@@ -187,9 +187,17 @@ namespace CreativeCookies.VideoHosting.API
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/StatusCode");
+                app.UseHsts();
             }
 
             app.UseHttpsRedirection();
+
+            app.UseStatusCodePagesWithReExecute("/StatusCode", "?statusCode={0}");
 
             app.UseStaticFiles();
             app.UseCors("AllowAllOriginsPolicy");

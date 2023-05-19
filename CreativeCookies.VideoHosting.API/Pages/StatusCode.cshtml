@@ -1,0 +1,32 @@
+﻿@page
+@model CreativeCookies.VideoHosting.API.Pages.StatusCodeModel
+
+
+<div style="margin-inline:0 auto;">
+    <a href=@Model.ClientUrl class="nav-link text-dark" style="text-decoration:underline;">Head back to @Model.WebsiteName</a>
+    <a href="~/Identity/Account/Manage" class="nav-link text-dark" style="text-decoration:underline;">Manage your account's data</a> <br />
+</div>
+
+@if(string.IsNullOrEmpty(Model.StatusCode)){
+    <div style="margin-inline:0 auto;">
+        <p>Unexpected error happen.</p>
+    </div>
+}
+else if (Model.StatusCode.Equals("404"))
+{
+    <div style="margin-inline:0 auto;">
+        <p>You've tried to enter a page which doesn't exist.</p>
+    </div>
+}
+else if (Model.StatusCode.Equals("403"))
+{
+    <div style="margin-inline:0 auto;">
+        <p>Access Denied. You've got to raise your permissions to access this page.</p>
+    </div>
+}
+else
+{
+    <div style="margin-inline:0 auto;">
+        <p>Unexpected error happen.</p>
+    </div>
+}
