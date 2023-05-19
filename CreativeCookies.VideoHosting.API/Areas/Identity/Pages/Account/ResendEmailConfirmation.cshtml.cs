@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using CreativeCookies.VideoHosting.API.EmailHelpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -20,31 +21,21 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
     public class ResendEmailConfirmationModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
-        public ResendEmailConfirmationModel(UserManager<IdentityUser> userManager, IEmailSender emailSender)
+        public ResendEmailConfirmationModel(UserManager<IdentityUser> userManager, IEmailService emailService, IConfiguration configuration)
         {
             _userManager = userManager;
-            _emailSender = emailSender;
+            _emailService = emailService;
+            _configuration = configuration;
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public class InputModel
         {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
             [Required]
             [EmailAddress]
             public string Email { get; set; }
@@ -76,13 +67,22 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
                 pageHandler: null,
                 values: new { userId = userId, code = code },
                 protocol: Request.Scheme);
-            await _emailSender.SendEmailAsync(
+            var websiteName = _configuration.GetValue<string>("WebsiteName");
+            var websiteUrl = _configuration.GetValue<string>("ClientUrl");
+            var wasEmailSent = await _emailService.SendAccountActivationEmailAsync(
                 Input.Email,
-                "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-            ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");
-            return Page();
+                $"Confirm your account at {websiteName}",
+                $"You're recieving this email because you've requested to sign in at {websiteName}: {websiteUrl}",
+                websiteUrl, websiteName, callbackUrl);
+            if (wasEmailSent)
+            {
+                return LocalRedirect("~/Identity/Account/ConfirmAccount");
+            }
+            else
+            {
+                return LocalRedirect("~/Identity/Account/EmailWasNotSentDueToError");
+                // HACK: TODO do some kind of transaction cancelling (just delete previousely created account because of the error).
+            }
         }
     }
 }
