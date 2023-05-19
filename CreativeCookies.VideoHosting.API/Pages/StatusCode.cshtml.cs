@@ -20,7 +20,6 @@ namespace CreativeCookies.VideoHosting.API.Pages
             _logger = logger;
             ClientUrl = _configuration.GetValue<string>(nameof(ClientUrl));
             WebsiteName = _configuration.GetValue<string>(nameof(WebsiteName));
-
         }
 
         public void OnGet()
