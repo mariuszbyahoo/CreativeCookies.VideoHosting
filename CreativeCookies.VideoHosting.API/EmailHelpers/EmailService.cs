@@ -80,6 +80,14 @@ namespace CreativeCookies.VideoHosting.API.EmailHelpers
             return await SendMessageAsync(recipientEmail, subject, htmlMessage);
         }
 
+
+        public async Task<bool> SendResetPasswordLinkAsync(string recipientEmail, string subject, string introduction, string websiteName, string resetPasswordLink)
+        {
+            var model = new AccountResetPasswordEmailTemplateViewModel(recipientEmail, introduction, websiteName, resetPasswordLink);
+            var htmlMessage = await RenderViewToStringAsync("AccountResetPasswordEmailTemplate", model);
+            return await SendMessageAsync(recipientEmail, subject, htmlMessage);
+        }
+
         /// <summary>
         /// Sends an email using secured TLS encryption, if an email server does not supporting TLS encrpyption, it will throw an NotSupportedException
         /// </summary>
@@ -121,13 +129,6 @@ namespace CreativeCookies.VideoHosting.API.EmailHelpers
                 _logger.LogError($"Unexpected exception occured when trying to send an email, msg: {ex.Message}, innerException: {ex.InnerException}, source: {ex.Source}", ex);
                 return false;
             }
-        }
-
-        public async Task<bool> SendResetPasswordLinkAsync(string recipientEmail, string subject, string introduction, string websiteName, string resetPasswordLink)
-        {
-            var model = new AccountResetPasswordEmailTemplateViewModel(recipientEmail, introduction, websiteName, resetPasswordLink);
-            var htmlMessage = await RenderViewToStringAsync("AccountResetPasswordEmailTemplate", model);
-            return await SendMessageAsync(recipientEmail, subject, htmlMessage);
         }
 
         /// <summary>
