@@ -7,7 +7,12 @@
     <a href="~/Identity/Account/Manage" class="nav-link text-dark" style="text-decoration:underline;">Manage your account's data</a> <br />
 </div>
 
-@if (Model.StatusCode.Equals("404"))
+@if(string.IsNullOrEmpty(Model.StatusCode)){
+    <div style="margin-inline:0 auto;">
+        <p>Unexpected error happen.</p>
+    </div>
+}
+else if (Model.StatusCode.Equals("404"))
 {
     <div style="margin-inline:0 auto;">
         <p>You've tried to enter a page which doesn't exist.</p>
