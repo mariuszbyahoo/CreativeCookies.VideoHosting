@@ -123,6 +123,13 @@ namespace CreativeCookies.VideoHosting.API.EmailHelpers
             }
         }
 
+        public async Task<bool> SendResetPasswordLinkAsync(string recipientEmail, string subject, string introduction, string websiteName, string resetPasswordLink)
+        {
+            var model = new AccountResetPasswordEmailTemplateViewModel(recipientEmail, introduction, websiteName, resetPasswordLink);
+            var htmlMessage = await RenderViewToStringAsync("AccountResetPasswordEmailTemplate", model);
+            return await SendMessageAsync(recipientEmail, subject, htmlMessage);
+        }
+
         /// <summary>
         /// Renders Razor View (for example an email template) to HTML string
         /// </summary>
