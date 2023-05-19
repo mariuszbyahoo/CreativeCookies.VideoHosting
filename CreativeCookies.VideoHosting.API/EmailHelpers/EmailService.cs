@@ -51,7 +51,7 @@ namespace CreativeCookies.VideoHosting.API.EmailHelpers
         }
 
         /// <summary>
-        /// Method utilizating EmailTemplateViewModel in order to send an email message to desired recipient.
+        /// Method utilizating EmailTemplateViewModel in order to send a custom email message to desired recipient.
         /// </summary>
         /// <param name="recipientEmail">Email message reviever</param>
         /// <param name="subject">Email message subject</param>
@@ -59,9 +59,9 @@ namespace CreativeCookies.VideoHosting.API.EmailHelpers
         /// <param name="websiteUrl">Url which will be pointed as an origin of the email</param>
         /// <param name="websiteName">Website's name which will be shown to the end user to identify the email sender</param>
         /// <returns>boolean value indicating was email sending successful at the end or not.</returns>
-        public async Task<bool> SendEmailAsync(string recipientEmail, string subject, string introduction, string message, string websiteUrl, string websiteName)
+        public async Task<bool> SendEmailAsync(string recipientEmail, string subject, string introduction, string message, string websiteName)
         {
-            var model = new EmailTemplateViewModel(recipientEmail, message, introduction, websiteUrl, websiteName);
+            var model = new EmailTemplateViewModel(recipientEmail, message, introduction, websiteName);
             var htmlMessage = await RenderViewToStringAsync("EmailTemplate", model);
             return await SendMessageAsync(recipientEmail, subject, htmlMessage);
         }
@@ -70,6 +70,13 @@ namespace CreativeCookies.VideoHosting.API.EmailHelpers
         {
             var model = new AccountActivationEmailTemplateViewModel(recipientEmail, introduction, websiteUrl, websiteName, accountActivationLink);
             var htmlMessage = await RenderViewToStringAsync("AccountActivationEmailTemplate", model);
+            return await SendMessageAsync(recipientEmail, subject, htmlMessage);
+        }
+
+        public async Task<bool> SendEmailChangeLinkAsync(string recipientEmail, string subject, string introduction, string websiteName, string emailChangeLink)
+        {
+            var model = new AccountConfirmEmailChangeTemplateViewModel(recipientEmail, "", introduction, websiteName, emailChangeLink);
+            var htmlMessage = await RenderViewToStringAsync("AccountConfirmEmailChangeTemplate", model);
             return await SendMessageAsync(recipientEmail, subject, htmlMessage);
         }
 
