@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -62,6 +63,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             if (entry == null) return OAuthErrorResponse.InvalidRequest;
             if (!entry.ClientId.Equals(client_id)) return OAuthErrorResponse.InvalidRequest;
             if (entry.Expiration < DateTime.UtcNow) return OAuthErrorResponse.InvalidGrant;
+            entry.CodeChallenge = WebUtility.UrlDecode(entry.CodeChallenge);
 
             if (entry.CodeChallengeMethod.ToLower().Equals("s256"))
             {
