@@ -4,6 +4,7 @@ namespace CreativeCookies.VideoHosting.Domain.DTOs
 {
     public class FilmTile : IFilmTile
     {
+        public Guid Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string ThumbnailName { get; set; }

@@ -30,6 +30,16 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             _context = context;
         }
 
+        public async Task<string> GetBlobUrl(Guid Id)
+        {
+            var res = (await _context.VideosMetadata.Where(v => v.Id == Id).FirstOrDefaultAsync())?.BlobUrl;
+            if (res != null)
+            {
+                return res;
+            }
+            return "NOT_FOUND_IN_REPO";
+        }
+
         public async Task<IFilmsPaginatedResult> GetFilmsPaginatedResult(string search, int pageNumber, int pageSize)
         {
             // Get a reference to your DbContext (replace MyDbContext with your actual DbContext class)
@@ -47,6 +57,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
 
             var filmTiles = paginatedVideos.Select(v => new FilmTile()
             {
+                Id = v.Id,
                 Name = v.Name,
                 Description = v.Description,
                 ThumbnailName = v.ThumbnailName,
