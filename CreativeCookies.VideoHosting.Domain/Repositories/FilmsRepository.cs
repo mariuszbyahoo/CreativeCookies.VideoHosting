@@ -42,7 +42,6 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
 
         public async Task<IFilmsPaginatedResult> GetFilmsPaginatedResult(string search, int pageNumber, int pageSize)
         {
-            // Get a reference to your DbContext (replace MyDbContext with your actual DbContext class)
             IQueryable<VideoMetadata> query = _context.VideosMetadata;
             if (!string.IsNullOrEmpty(search))
             {
