@@ -36,7 +36,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             if(Guid.TryParse(Id, out videoId))
             {
                 var res = await _filmsRepository.GetBlobUrl(videoId);
-                if (!res.Equals("NOT_FOUND_IN_REPO"))
+                if (res != null && !res.BlobUrl.Equals("NOT_FOUND_IN_REPO"))
                 {
                     return Ok(res);
                 }

@@ -30,14 +30,14 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             _context = context;
         }
 
-        public async Task<string> GetBlobUrl(Guid Id)
+        public async Task<IBlobUrlResult> GetBlobUrl(Guid Id)
         {
-            var res = (await _context.VideosMetadata.Where(v => v.Id == Id).FirstOrDefaultAsync())?.BlobUrl;
+            var res = (await _context.VideosMetadata.Where(v => v.Id.Equals(Id)).FirstOrDefaultAsync())?.BlobUrl;
             if (res != null)
             {
-                return res;
+                return new BlobUrlResult(res);
             }
-            return "NOT_FOUND_IN_REPO";
+            return new BlobUrlResult("NOT_FOUND_IN_REPO");
         }
 
         public async Task<IFilmsPaginatedResult> GetFilmsPaginatedResult(string search, int pageNumber, int pageSize)
