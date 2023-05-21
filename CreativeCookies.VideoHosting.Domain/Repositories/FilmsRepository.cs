@@ -2,12 +2,16 @@
 using CreativeCookies.VideoHosting.Contracts.Azure;
 using CreativeCookies.VideoHosting.Contracts.DTOs;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
+using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.Domain.DTOs;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CreativeCookies.VideoHosting.DAL.DAOs;
 
 namespace CreativeCookies.VideoHosting.Domain.Repositories
 {
@@ -16,67 +20,50 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
         private readonly string _filmsContainerName;
         private readonly string _thumbnailsContainerName;
         private readonly IBlobServiceClientWrapper _blobServiceClient;
+        private readonly AppDbContext _context;
 
-        public FilmsRepository(IBlobServiceClientWrapper wrapper) 
+        public FilmsRepository(IBlobServiceClientWrapper wrapper, AppDbContext context) 
         {
             _filmsContainerName = "films";
             _thumbnailsContainerName = "thumbnails";
             _blobServiceClient = wrapper;
+            _context = context;
         }
 
         public async Task<IFilmsPaginatedResult> GetFilmsPaginatedResult(string search, int pageNumber, int pageSize)
         {
-            var filmsClient = _blobServiceClient.GetBlobContainerClient(_filmsContainerName);
-            var thumbnailsClient = _blobServiceClient.GetBlobContainerClient(_thumbnailsContainerName);
-
-            List<BlobItem> filmBlobs = new List<BlobItem>();
-            List<BlobItem> thumbnailBlobs = new List<BlobItem>();
-            await foreach (BlobItem blob in filmsClient.GetBlobsAsync())
-            {
-                filmBlobs.Add(blob);
-            }
-            await foreach (BlobItem blob in thumbnailsClient.GetBlobsAsync())
-            {
-                thumbnailBlobs.Add(blob);
-            }
-
-            // Filter the blobs based on the search term (if provided)
+            // Get a reference to your DbContext (replace MyDbContext with your actual DbContext class)
+            IQueryable<VideoMetadata> query = _context.VideosMetadata;
             if (!string.IsNullOrEmpty(search))
             {
-                filmBlobs = filmBlobs.Where(b => b.Name.ToLower().Contains(search.ToLower())).ToList();
+                query = query.Where(v => v.Name.ToLower().Contains(search.ToLower()));
             }
 
-            filmBlobs = filmBlobs.OrderByDescending(b => b.Properties.CreatedOn).ToList();
+            query = query.OrderByDescending(v => v.CreatedOn);
 
-            // Paginate the blobs
-            int totalBlobs = filmBlobs.Count;
-            var paginatedBlobs = filmBlobs.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+            // Paginate the results
+            int totalVideos = await query.CountAsync();
+            var paginatedVideos = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
-            var filmTiles = new List<FilmTile>();
-            foreach (var blob in paginatedBlobs)
+            var filmTiles = paginatedVideos.Select(v => new FilmTile()
             {
-                try
-                {
-                    var blobClient = filmsClient.GetBlobClient(blob.Name);
-                    var properties = await blobClient.GetPropertiesAsync();
-                    var length = properties.Value.Metadata.Count > 0 ? properties.Value.Metadata["length"] : "";
-                    var name = blob.Name;
-                    var createdOn = blob.Properties?.CreatedOn?.ToString() ?? string.Empty;
-                    var imageBlob = thumbnailBlobs.FirstOrDefault(b => b.Name.Substring(0, b.Name.LastIndexOf('.')).Equals(name.Substring(0, name.LastIndexOf('.')), StringComparison.OrdinalIgnoreCase));
-                    filmTiles.Add(new FilmTile() { Name = name, ThumbnailName = imageBlob?.Name, Length = length, CreatedOn = createdOn });
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception($"Exception thrown for blob: {blob.Name}", ex);
-                }
-            }
-            var result = new FilmsPaginatedResult() {
+                Name = v.Name,
+                Description = v.Description,
+                ThumbnailName = v.ThumbnailName,
+                Length = v.Length,
+                CreatedOn = v.CreatedOn.ToString(),
+                BlobUrl = v.BlobUrl
+            }).ToList();
+
+            var result = new FilmsPaginatedResult()
+            {
                 Films = filmTiles,
                 CurrentPage = pageNumber,
-                TotalPages = (int)Math.Ceiling((double)totalBlobs / pageSize),
-                HasMore = pageNumber * pageSize < totalBlobs
+                TotalPages = (int)Math.Ceiling((double)totalVideos / pageSize),
+                HasMore = pageNumber * pageSize < totalVideos
             };
             return result;
         }
+
     }
 }
