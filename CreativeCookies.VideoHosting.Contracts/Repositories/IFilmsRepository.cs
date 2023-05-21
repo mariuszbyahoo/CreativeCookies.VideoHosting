@@ -9,6 +9,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
 {
     public interface IFilmsRepository
     {
+        Task<IBlobUrlResult> GetBlobUrl(Guid videoId);
         Task<IFilmsPaginatedResult> GetFilmsPaginatedResult(string search, int pageNumber, int pageSize);
     }
 }

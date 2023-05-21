@@ -47,7 +47,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 {
                     return BadRequest($"Field: string blobTitle is mandatory!");
                 }
-                var res = _sasTokenRepository.GetSasTokenForFilm(blobTitle);
+                var res = _sasTokenRepository.GetSasTokenForFilm($"{blobTitle.ToUpper()}.mp4");
                 return Ok(res);
             }
             catch (Exception ex)

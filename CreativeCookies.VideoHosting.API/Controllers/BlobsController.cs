@@ -27,5 +27,28 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
             return Ok(res);
         }
+
+        [HttpGet]
+        [Route("storageUrl")]
+        public async Task<IActionResult> GetBlobUrl([FromQuery] string Id)
+        {
+            Guid videoId;
+            if(Guid.TryParse(Id, out videoId))
+            {
+                var res = await _filmsRepository.GetBlobUrl(videoId);
+                if (res != null && !res.BlobUrl.Equals("NOT_FOUND_IN_REPO"))
+                {
+                    return Ok(res);
+                }
+                else
+                {
+                    return NotFound("Video has not been found");
+                }
+            }
+            else
+            {
+                return BadRequest("Id should be a valid GUID");
+            }
+        }
     }
 }

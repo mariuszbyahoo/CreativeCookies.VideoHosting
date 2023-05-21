@@ -63,7 +63,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             if (entry == null) return OAuthErrorResponse.InvalidRequest;
             if (!entry.ClientId.Equals(client_id)) return OAuthErrorResponse.InvalidRequest;
             if (entry.Expiration < DateTime.UtcNow) return OAuthErrorResponse.InvalidGrant;
-            entry.CodeChallenge = WebUtility.UrlDecode(entry.CodeChallenge);
+            entry.CodeChallenge = WebUtility.UrlDecode(entry.CodeChallenge).Replace('+', '-').Replace('/', '_').Replace("=", "");
 
             if (entry.CodeChallengeMethod.ToLower().Equals("s256"))
             {

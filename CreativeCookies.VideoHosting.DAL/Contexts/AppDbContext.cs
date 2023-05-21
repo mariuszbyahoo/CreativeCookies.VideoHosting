@@ -17,6 +17,8 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
         public DbSet<AllowedScope> AllowedScopes { get; set; }
         public DbSet<AuthorizationCode> AuthorizationCodes { get; set; }
 
+        public DbSet<VideoMetadata> VideosMetadata { get; set; }
+
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
 
@@ -25,6 +27,12 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<VideoMetadata>(o =>
+            {
+                o.HasKey(o => o.Id);
+                o.Property(e => e.Id).HasDefaultValueSql("newsequentialid()");
+            });
 
             builder.Entity<OAuthClient>(o =>
             {

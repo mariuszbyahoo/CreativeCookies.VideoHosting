@@ -140,9 +140,9 @@ namespace CreativeCookies.VideoHosting.API
                 var blobServiceClient = sp.GetRequiredService<BlobServiceClient>();
                 return new BlobServiceClientWrapper(blobServiceClient);
             });
-            builder.Services.AddSingleton<IFilmsRepository, FilmsRepository>();
             builder.Services.AddSingleton<ISasTokenRepository, SasTokenRepository>();
             builder.Services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
+            builder.Services.AddScoped<IFilmsRepository, FilmsRepository>();
 
             builder.Services.AddHostedService<TokenCleanupWorker>();
 

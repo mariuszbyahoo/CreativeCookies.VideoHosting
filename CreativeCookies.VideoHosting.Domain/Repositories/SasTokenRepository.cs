@@ -86,7 +86,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
                     BlobName = blobTitle,
                     Resource = "b",
                     StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
-                    ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(6000),
+                    ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(120),
                 };
                 if (endpointType == EndpointType.BlobUpload)
                 {
