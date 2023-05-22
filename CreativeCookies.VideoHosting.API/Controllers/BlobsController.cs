@@ -3,8 +3,9 @@ using Azure.Storage.Blobs;
 using Azure.Storage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using CreativeCookies.VideoHosting.Domain.DTOs;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
+using CreativeCookies.VideoHosting.Contracts.DTOs;
+using CreativeCookies.VideoHosting.Domain.DTOs;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
@@ -13,10 +14,12 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     public class BlobsController : ControllerBase
     {
         private readonly IFilmsRepository _filmsRepository;
+        private ILogger<BlobsController> _logger;
 
-        public BlobsController(IFilmsRepository filmsRepository)
+        public BlobsController(IFilmsRepository filmsRepository, ILogger<BlobsController> logger)
         {
             _filmsRepository = filmsRepository;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -48,6 +51,22 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             else
             {
                 return BadRequest("Id should be a valid GUID");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveVideoMetadata([FromBody] VideoMetadata metadata)
+        {
+            try
+            {
+                await _filmsRepository.SaveVideoMetadata(metadata);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                _logger.LogError($"Unexpected error occured on attempt to save video metadata: {ex.Message} ; {ex.InnerException} ; {ex.Source}", ex);
+                return BadRequest(ex.Message);
             }
         }
     }

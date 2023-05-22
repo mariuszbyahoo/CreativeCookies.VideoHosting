@@ -5,17 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.DAL.DAOs
+namespace CreativeCookies.VideoHosting.Domain.DTOs
 {
-    /// <summary>
-    /// DAO for Video metadata
-    /// </summary>
     public class VideoMetadata : IVideoMetadata
     {
-        /// <summary>
-        /// Unique identifier
-        /// </summary>
-        public Guid Id { get; set; }
         /// <summary>
         /// Name to display
         /// </summary>

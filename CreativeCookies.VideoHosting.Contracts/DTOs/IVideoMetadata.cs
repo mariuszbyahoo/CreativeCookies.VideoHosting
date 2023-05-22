@@ -1,21 +1,13 @@
-﻿using CreativeCookies.VideoHosting.Contracts.DTOs;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.DAL.DAOs
+namespace CreativeCookies.VideoHosting.Contracts.DTOs
 {
-    /// <summary>
-    /// DAO for Video metadata
-    /// </summary>
-    public class VideoMetadata : IVideoMetadata
+    public interface IVideoMetadata
     {
-        /// <summary>
-        /// Unique identifier
-        /// </summary>
-        public Guid Id { get; set; }
         /// <summary>
         /// Name to display
         /// </summary>
