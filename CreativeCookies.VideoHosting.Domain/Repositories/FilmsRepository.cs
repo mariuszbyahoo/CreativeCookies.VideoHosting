@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CreativeCookies.VideoHosting.DAL.DAOs;
+using System.Runtime.InteropServices;
 
 namespace CreativeCookies.VideoHosting.Domain.Repositories
 {
@@ -75,13 +76,14 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             return result;
         }
 
-        public async Task SaveVideoMetadata(IVideoMetadata metadata)
+        public async Task<IVideoMetadata> SaveVideoMetadata(IVideoMetadata metadata)
         {
             var dao = new DAL.DAOs.VideoMetadata() { 
                 Id = metadata.Id, BlobUrl = metadata.BlobUrl, CreatedOn = metadata.CreatedOn, Description = metadata.Description, 
                 Length = metadata.Length, Name = metadata.Name, ThumbnailName = metadata.ThumbnailName, VideoType = metadata.VideoType };
             _context.VideosMetadata.Add(dao);
             await _context.SaveChangesAsync();
+            return dao;
         }
     }
 }

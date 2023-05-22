@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.DTOs;
 using CreativeCookies.VideoHosting.Domain.DTOs;
+using CreativeCookies.VideoHosting.API.Utils;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
@@ -59,8 +60,12 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         {
             try
             {
-                await _filmsRepository.SaveVideoMetadata(metadata);
-                return Ok();
+                var res = await _filmsRepository.SaveVideoMetadata(metadata);
+                if (res != null)
+                {
+                    return new CreatedObjectResult(res);
+                }
+                else { return BadRequest("SaveVideoMetadata returned null!"); };
             }
             catch (Exception ex)
             {

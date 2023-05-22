@@ -11,6 +11,6 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
     {
         Task<IBlobUrlResult> GetBlobUrl(Guid videoId);
         Task<IFilmsPaginatedResult> GetFilmsPaginatedResult(string search, int pageNumber, int pageSize);
-        Task SaveVideoMetadata(IVideoMetadata metadata);
+        Task<IVideoMetadata> SaveVideoMetadata(IVideoMetadata metadata);
     }
 }
