@@ -9,6 +9,10 @@ namespace CreativeCookies.VideoHosting.Contracts.DTOs
     public interface IVideoMetadata
     {
         /// <summary>
+        /// Unique identifier
+        /// </summary>
+        public Guid Id { get; set; }
+        /// <summary>
         /// Name to display
         /// </summary>
         public string Name { get; set; }
