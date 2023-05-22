@@ -37,6 +37,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="blobTitle">blob's title WITH video file format eg. mp4</param>
+        /// <returns></returns>
         [HttpGet("film/{blobTitle}")]
         //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public IActionResult GetSasTokenForFilm(string blobTitle)
@@ -47,7 +52,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 {
                     return BadRequest($"Field: string blobTitle is mandatory!");
                 }
-                var res = _sasTokenRepository.GetSasTokenForFilm($"{blobTitle.ToUpper()}.mp4");
+                var res = _sasTokenRepository.GetSasTokenForFilm(blobTitle);
                 return Ok(res);
             }
             catch (Exception ex)
