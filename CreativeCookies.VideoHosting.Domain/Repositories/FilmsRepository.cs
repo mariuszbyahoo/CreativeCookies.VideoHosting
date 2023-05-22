@@ -78,8 +78,8 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
         public async Task SaveVideoMetadata(IVideoMetadata metadata)
         {
             var dao = new DAL.DAOs.VideoMetadata() { 
-                BlobUrl = metadata.BlobUrl, CreatedOn = metadata.CreatedOn, Description = metadata.Description, Length = metadata.Length, 
-                Name = metadata.Name, ThumbnailName = metadata.ThumbnailName, VideoType = metadata.VideoType };
+                Id = metadata.Id, BlobUrl = metadata.BlobUrl, CreatedOn = metadata.CreatedOn, Description = metadata.Description, 
+                Length = metadata.Length, Name = metadata.Name, ThumbnailName = metadata.ThumbnailName, VideoType = metadata.VideoType };
             _context.VideosMetadata.Add(dao);
             await _context.SaveChangesAsync();
         }
