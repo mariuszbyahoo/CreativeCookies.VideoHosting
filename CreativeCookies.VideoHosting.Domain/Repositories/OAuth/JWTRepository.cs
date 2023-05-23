@@ -27,13 +27,13 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.NameIdentifier, userId.ToString()), 
-                    new Claim("client_id", clientId.ToString()),
-                    new Claim(ClaimTypes.Email, userEmail)
+                    new Claim(ClaimTypes.NameIdentifier, userId.ToString().ToUpperInvariant()), 
+                    new Claim("client_id", clientId.ToString().ToUpperInvariant()),
+                    new Claim(ClaimTypes.Email, userEmail.ToUpperInvariant())
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(60), 
                 Issuer = issuer, 
-                Audience = clientId.ToString(), 
+                Audience = clientId.ToString().ToUpperInvariant(), 
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
