@@ -6,9 +6,11 @@ using CreativeCookies.VideoHosting.Domain.DTOs.OAuth;
 using CreativeCookies.VideoHosting.Domain.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,9 +19,11 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
     public class AuthorizationCodeRepository : IAuthorizationCodeRepository
     {
         private readonly AppDbContext _ctx;
-        public AuthorizationCodeRepository(AppDbContext ctx) 
+        private readonly ILogger<AuthorizationCodeRepository> _logger;
+        public AuthorizationCodeRepository(AppDbContext ctx, ILogger<AuthorizationCodeRepository> logger) 
         {
             _ctx = ctx;
+            _logger = logger;
         }
         public async Task ClearExpiredAuthorizationCodes()
         {
@@ -47,10 +51,11 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
                 UserId = userId,
                 Code = authorizationCode,
                 RedirectUri = redirect_uri,
-                CodeChallenge = code_challenge, 
+                CodeChallenge = WebUtility.UrlDecode(code_challenge), 
                 CodeChallengeMethod = code_challenge_method,
                 Expiration = DateTime.UtcNow.AddMinutes(1)
             };
+            _logger.LogInformation($"code_challenge just before being saved to Dabatase : {codeEntry.CodeChallenge}");
             var issuedAuthCodes = _ctx.AuthorizationCodes
                 .Where(c =>
                     c.ClientId.ToLower().Equals(client_id.ToLower()) &&
