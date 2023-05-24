@@ -33,14 +33,14 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpGet]
-        [Route("storageUrl")]
-        public async Task<IActionResult> GetBlobUrl([FromQuery] string Id)
+        [Route("getMetadata")]
+        public async Task<IActionResult> GetVideoMetadata([FromQuery] string Id)
         {
             Guid videoId;
             if(Guid.TryParse(Id, out videoId))
             {
-                var res = await _filmsRepository.GetBlobUrl(videoId);
-                if (res != null && !res.BlobUrl.Equals("NOT_FOUND_IN_REPO"))
+                var res = await _filmsRepository.GetVideoMetadata(videoId);
+                if (res != null)
                 {
                     return Ok(res);
                 }
