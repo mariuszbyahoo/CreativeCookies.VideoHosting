@@ -41,5 +41,17 @@ namespace CreativeCookies.VideoHosting.Domain.DTOs
         /// When this video has been uploaded
         /// </summary>
         public DateTimeOffset CreatedOn { get; set; }
+
+        public VideoMetadata(Guid id, string name, string description, string length, string thumbnailName, string blobUrl, string videoType, DateTimeOffset createdOn)
+        {
+            Id = id;
+            Name = name;
+            Description = description;
+            Length = length;
+            ThumbnailName = thumbnailName;
+            BlobUrl = blobUrl;
+            VideoType = videoType;
+            CreatedOn = createdOn;
+        }
     }
 }
