@@ -7,6 +7,7 @@ using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.DTOs;
 using CreativeCookies.VideoHosting.Domain.DTOs;
 using CreativeCookies.VideoHosting.API.Utils;
+using System.Security.Permissions;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
@@ -73,6 +74,13 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 _logger.LogError($"Unexpected error occured on attempt to save video metadata: {ex.Message} ; {ex.InnerException} ; {ex.Source}", ex);
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteVideoMetadata(Guid Id)
+        {
+            await _filmsRepository.DeleteVideoMetadata(Id);
+            return NoContent();
         }
     }
 }

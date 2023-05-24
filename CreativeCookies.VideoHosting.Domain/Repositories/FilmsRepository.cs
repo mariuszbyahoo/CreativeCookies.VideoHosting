@@ -81,5 +81,10 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             await _context.SaveChangesAsync();
             return dao;
         }
+
+        public async Task DeleteVideoMetadata(Guid Id)
+        {
+            await _context.VideosMetadata.Where(v => v.Id.Equals(Id)).ExecuteDeleteAsync();
+        }
     }
 }
