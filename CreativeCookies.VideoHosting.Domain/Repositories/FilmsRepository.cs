@@ -81,5 +81,26 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             await _context.SaveChangesAsync();
             return dao;
         }
+
+        public async Task DeleteVideoMetadata(Guid Id)
+        {
+            // Fetch the video metadata from the database
+            var videoMetadata = await _context.VideosMetadata.Where(v => v.Id.Equals(Id)).FirstOrDefaultAsync();
+            // Delete the video blob from Azure Blob Storage
+            var blobContainerClient = _blobServiceClient.GetBlobContainerClient(_filmsContainerName);
+            var blobClient = blobContainerClient.GetBlobClient($"{Id.ToString().ToUpperInvariant()}.mp4");
+            var exists = await blobClient.ExistsAsync();
+            if (exists.Value)
+            {
+                var result = await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
+            }
+
+            if (videoMetadata != null)
+            {
+                // Delete the video metadata from the database
+                _context.VideosMetadata.Remove(videoMetadata);
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }
