@@ -8,6 +8,8 @@ using CreativeCookies.VideoHosting.Contracts.DTOs;
 using CreativeCookies.VideoHosting.Domain.DTOs;
 using CreativeCookies.VideoHosting.API.Utils;
 using System.Security.Permissions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
@@ -57,6 +59,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> SaveVideoMetadata([FromBody] VideoMetadata metadata)
         {
             try
@@ -78,6 +81,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         [HttpDelete]
         [Route("deleteVideoMetadata")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> DeleteVideoMetadata(string Id)
         {
             Guid videoId;
