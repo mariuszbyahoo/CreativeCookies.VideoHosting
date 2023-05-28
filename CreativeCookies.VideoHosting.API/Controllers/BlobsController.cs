@@ -80,13 +80,13 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpDelete]
-        [Route("deleteVideoMetadata")]
+        [Route("deleteVideo")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> DeleteVideoMetadata(string Id)
+        public async Task<IActionResult> DeleteVideo(string Id)
         {
             Guid videoId;
             if (Guid.TryParse(Id, out videoId))
-                await _filmsRepository.DeleteVideoMetadata(videoId);
+                await _filmsRepository.DeleteVideoBlobWithMetadata(videoId);
             else return BadRequest("Id supplied in an argument is not a valid GUID");
             return NoContent();
         }
