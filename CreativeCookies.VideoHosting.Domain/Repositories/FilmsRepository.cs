@@ -82,24 +82,35 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             return dao;
         }
 
-        public async Task DeleteVideoMetadata(Guid Id)
+        public async Task DeleteVideoBlobWithMetadata(Guid Id)
         {
             // Fetch the video metadata from the database
             var videoMetadata = await _context.VideosMetadata.Where(v => v.Id.Equals(Id)).FirstOrDefaultAsync();
             // Delete the video blob from Azure Blob Storage
-            var blobContainerClient = _blobServiceClient.GetBlobContainerClient(_filmsContainerName);
-            var blobClient = blobContainerClient.GetBlobClient($"{Id.ToString().ToUpperInvariant()}.mp4");
-            var exists = await blobClient.ExistsAsync();
-            if (exists.Value)
-            {
-                var result = await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
-            }
-
+            await DeleteVideoWithThumbnail(Id);
             if (videoMetadata != null)
             {
                 // Delete the video metadata from the database
                 _context.VideosMetadata.Remove(videoMetadata);
                 await _context.SaveChangesAsync();
+            }
+        }
+
+        private async Task DeleteVideoWithThumbnail(Guid Id)
+        {
+            var filmsContainerClient = _blobServiceClient.GetBlobContainerClient(_filmsContainerName);
+            var thumbnailsContainerClient = _blobServiceClient.GetBlobContainerClient(_thumbnailsContainerName);
+            var videoBlobClient = filmsContainerClient.GetBlobClient($"{Id.ToString().ToUpperInvariant()}.mp4");
+            var thumbnailBlobClient = thumbnailsContainerClient.GetBlobClient($"{Id.ToString().ToUpperInvariant()}.jpg");
+            var videExists = await videoBlobClient.ExistsAsync();
+            if (videExists.Value)
+            {
+                var result = await videoBlobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
+            }
+            var thumbnailExists = await thumbnailBlobClient.ExistsAsync();
+            if(thumbnailExists.Value)
+            {
+                var result = await thumbnailBlobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
             }
         }
     }
