@@ -58,6 +58,19 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
         }
 
+        [HttpPatch]
+        [Route("editMetadata")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> EditVideoMetadata([FromBody] VideoMetadata metadata)
+        {
+            var res = await _filmsRepository.EditVideoMetadata(metadata);
+            if (res != null)
+            {
+                return Ok(res);
+            }
+            else return NotFound("Video with such an ID has not been found");
+        }
+
         [HttpPost]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> SaveVideoMetadata([FromBody] VideoMetadata metadata)

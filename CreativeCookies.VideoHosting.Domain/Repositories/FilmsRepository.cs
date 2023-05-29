@@ -82,6 +82,26 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             return dao;
         }
 
+        public async Task<IVideoMetadata> EditVideoMetadata(IVideoMetadata metadata)
+        {
+            // Find the video metadata by ID.
+            var videoMetadataToUpdate = await _context.VideosMetadata.FindAsync(metadata.Id);
+
+            if (videoMetadataToUpdate != null)
+            {
+                // Update the Name and Description fields
+                videoMetadataToUpdate.Name = metadata.Name;
+                videoMetadataToUpdate.Description = metadata.Description;
+
+                // Save the changes to the database.
+                await _context.SaveChangesAsync();
+
+                return videoMetadataToUpdate;
+            }
+
+            return null;
+        }
+
         public async Task DeleteVideoBlobWithMetadata(Guid Id)
         {
             // Fetch the video metadata from the database
