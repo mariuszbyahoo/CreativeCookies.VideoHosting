@@ -16,7 +16,7 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
         public DbSet<OAuthClient> OAuthClients { get; set; }
         public DbSet<AllowedScope> AllowedScopes { get; set; }
         public DbSet<AuthorizationCode> AuthorizationCodes { get; set; }
-
+        public DbSet<RefreshTokenDAO> RefresTokens { get; set; }
         public DbSet<VideoMetadata> VideosMetadata { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
@@ -41,6 +41,12 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
             });
 
             builder.Entity<AuthorizationCode>(o =>
+            {
+                o.HasKey(o => o.Id);
+                o.Property(c => c.Id).HasDefaultValueSql("newsequentialid()");
+            });
+
+            builder.Entity<RefreshTokenDAO>(o =>
             {
                 o.HasKey(o => o.Id);
                 o.Property(c => c.Id).HasDefaultValueSql("newsequentialid()");
