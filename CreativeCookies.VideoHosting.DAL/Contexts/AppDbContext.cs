@@ -16,7 +16,7 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
         public DbSet<OAuthClient> OAuthClients { get; set; }
         public DbSet<AllowedScope> AllowedScopes { get; set; }
         public DbSet<AuthorizationCode> AuthorizationCodes { get; set; }
-        public DbSet<RefreshTokenDAO> RefresTokens { get; set; }
+        public DbSet<RefreshTokenDAO> RefreshTokens { get; set; }
         public DbSet<VideoMetadata> VideosMetadata { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)

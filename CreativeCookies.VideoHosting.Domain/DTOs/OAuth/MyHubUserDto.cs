@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace CreativeCookies.VideoHosting.Domain.DTOs.OAuth
 {
-    public class MyHubUser : IMyHubUser
+    public class MyHubUserDto : IMyHubUser
     {
         public Guid Id { get; set; }
         public string UserEmail { get; set; }
 
-        public MyHubUser(Guid id, string userEmail)
+        public MyHubUserDto(Guid id, string userEmail)
         {
             Id = id;
             UserEmail = userEmail;

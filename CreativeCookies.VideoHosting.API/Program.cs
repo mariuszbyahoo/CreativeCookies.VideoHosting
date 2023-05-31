@@ -110,6 +110,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddScoped<IClientStore, ClientStore>();
             builder.Services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
             builder.Services.AddScoped<IJWTRepository, JWTRepository>();
+            builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
             builder.Services.AddTransient<IEmailService>(serviceProvider =>
             {

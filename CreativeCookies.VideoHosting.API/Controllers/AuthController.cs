@@ -3,6 +3,7 @@ using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using CreativeCookies.VideoHosting.Domain.DTOs.OAuth;
+using CreativeCookies.VideoHosting.Domain.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -22,9 +23,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly IConfiguration _configuration;
         private readonly IJWTRepository _jwtRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
 
         public AuthController(IClientStore store, IAuthorizationCodeRepository codesRepo, IJWTRepository jwtRepository, 
-            ILogger<AuthController> logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+            ILogger<AuthController> logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IRefreshTokenRepository refreshTokenRepository)
         {
             _store = store;
             _codesRepo = codesRepo;
@@ -32,6 +34,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _configuration = configuration;
             _jwtRepository = jwtRepository;
             _httpContextAccessor = httpContextAccessor;
+            _refreshTokenRepository = refreshTokenRepository;
         }
 
         [HttpGet("authorize")]
@@ -107,13 +110,14 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     return GenerateBadRequest("server_error");
                 }
 
-                var access_token = _jwtRepository.GenerateAccessToken(extractedUser.Id, extractedUser.UserEmail, Guid.Parse(client_id), _configuration, baseUrl);
-
+                var accessToken = _jwtRepository.GenerateAccessToken(extractedUser.Id, extractedUser.UserEmail, Guid.Parse(client_id), _configuration, baseUrl);
+                var refreshToken = await _refreshTokenRepository.CreateRefreshToken(extractedUser.Id);
                 // HACK: Add scopes for the GenerateAccessToken in order to implement RBAC as describen in RFC6749 3.3
 
                 var response = Ok(new
                 {
-                    access_token = access_token,
+                    access_token = accessToken,
+                    refresh_token = refreshToken.Token,
                     token_type = "Bearer",
                     expires_in = 3600
                 });
