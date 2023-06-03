@@ -46,22 +46,31 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
 
         public IRefreshToken GenerateRefreshToken(Guid userId)
         {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            var stringChars = new char[RefreshTokenLength];
+
             using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
             {
-                var randomNumber = new byte[RefreshTokenLength];
-                rng.GetBytes(randomNumber);
+                var byteBuffer = new byte[RefreshTokenLength];
 
-                var refreshToken = new RefreshTokenDto
+                for (int i = 0; i < RefreshTokenLength; i++)
                 {
-                    Id = Guid.NewGuid(),
-                    Token = Convert.ToBase64String(randomNumber),
-                    UserId = userId,
-                    CreationDate = DateTime.UtcNow,
-                    ExpirationDate = DateTime.UtcNow.AddMinutes(65),
-                };
-
-                return refreshToken;
+                    rng.GetBytes(byteBuffer);
+                    var randomIndex = byteBuffer[i] % chars.Length;
+                    stringChars[i] = chars[randomIndex];
+                }
             }
+
+            var refreshToken = new RefreshTokenDto
+            {
+                Id = Guid.NewGuid(),
+                Token = new string(stringChars),
+                UserId = userId,
+                CreationDate = DateTime.UtcNow,
+                ExpirationDate = DateTime.UtcNow.AddMinutes(65),
+            };
+
+            return refreshToken;
         }
     }
 }
