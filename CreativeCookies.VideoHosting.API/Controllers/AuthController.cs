@@ -25,6 +25,12 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
 
+        public const string CacheControlHeader = "no-store";
+        public const string RefreshTokenGrantType = "refresh_token";
+        public const string AuthorizationCodeGrantType = "authorization_code";
+        public const string UnsupportedGrantType = "unsupported_grant_type";
+        public const string ServerError = "server_error";
+
         public AuthController(IClientStore store, IAuthorizationCodeRepository codesRepo, IJWTRepository jwtRepository, 
             ILogger<AuthController> logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IRefreshTokenRepository refreshTokenRepository)
         {
@@ -84,50 +90,63 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         {
             try
             {
-                HttpContext.Response.Headers["Cache-Control"] = "no-store";
-                var clientIdRedirectUrlErrorResponse = await ValidateRedirectUriAndClientId(redirect_uri, client_id, false);
-                if (clientIdRedirectUrlErrorResponse != null)
-                {
-                    return clientIdRedirectUrlErrorResponse;
-                }
-                var codeAndCodeVerifierErrorResponse = await ValidateCodeAndCodeVerifier(code, code_verifier, client_id);
-                if (codeAndCodeVerifierErrorResponse != null)
-                {
-                    return codeAndCodeVerifierErrorResponse;
-                }
-                if (string.IsNullOrWhiteSpace(grant_type) || (!string.IsNullOrWhiteSpace(grant_type) && !grant_type.Equals("authorization_code")))
-                {
-                    return GenerateBadRequest("unsupported_grant_type");
-                }
+                HttpContext.Response.Headers["Cache-Control"] = CacheControlHeader;
 
-                var request = _httpContextAccessor.HttpContext.Request;
-                var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
-
-                var extractedUser = await _codesRepo.GetUserByAuthCodeAsync(code);
-                if(extractedUser == null)
+                switch (grant_type)
                 {
-                    _logger.LogError($"Codes repo returned null for GetUserByAuthCodeAsync when invoked inside Token action with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(grant_type)}: {grant_type}, {nameof(code)}: {code}, {nameof(code_verifier)}: {code_verifier}");
-                    return GenerateBadRequest("server_error");
+                    case RefreshTokenGrantType:
+                        throw new NotImplementedException("TODO");
+
+                    case AuthorizationCodeGrantType:
+                        return await HandleAuthorizationCodeGrant(code, redirect_uri, client_id, code_verifier, grant_type);
+
+                    default:
+                        return GenerateBadRequest(UnsupportedGrantType);
                 }
-
-                var accessToken = _jwtRepository.GenerateAccessToken(extractedUser.Id, extractedUser.UserEmail, Guid.Parse(client_id), _configuration, baseUrl);
-                var refreshToken = await _refreshTokenRepository.CreateRefreshToken(extractedUser.Id);
-                // HACK: Add scopes for the GenerateAccessToken in order to implement RBAC as describen in RFC6749 3.3
-
-                var response = Ok(new
-                {
-                    access_token = accessToken,
-                    refresh_token = refreshToken.Token,
-                    token_type = "Bearer",
-                    expires_in = 3600
-                });
-                return response;
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Unexpected exception when ran Token call with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(grant_type)}: {grant_type}, {nameof(code)}: {code}, {nameof(code_verifier)}: {code_verifier} , ex: {ex.Message}, stackTrace: {ex.StackTrace}, source: {ex.Source}, innerException: {ex.InnerException}");
-                return RedirectToError(redirect_uri, "server_error");
+                return RedirectToError(redirect_uri, ServerError);
             }
+        }
+
+        private async Task<IActionResult> HandleAuthorizationCodeGrant(string? code, string? redirect_uri, string? client_id, string? code_verifier, string grant_type)
+        {
+            var clientIdRedirectUrlErrorResponse = await ValidateRedirectUriAndClientId(redirect_uri, client_id, false);
+            if (clientIdRedirectUrlErrorResponse != null)
+            {
+                return clientIdRedirectUrlErrorResponse;
+            }
+            var codeAndCodeVerifierErrorResponse = await ValidateCodeAndCodeVerifier(code, code_verifier, client_id);
+            if (codeAndCodeVerifierErrorResponse != null)
+            {
+                return codeAndCodeVerifierErrorResponse;
+            }
+
+            var request = _httpContextAccessor.HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
+
+            var extractedUser = await _codesRepo.GetUserByAuthCodeAsync(code);
+            if (extractedUser == null)
+            {
+                _logger.LogError($"Codes repo returned null for GetUserByAuthCodeAsync when invoked inside Token action with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(grant_type)}: {grant_type}, {nameof(code)}: {code}, {nameof(code_verifier)}: {code_verifier}");
+                return GenerateBadRequest("server_error");
+            }
+
+            var accessToken = _jwtRepository.GenerateAccessToken(extractedUser.Id, extractedUser.UserEmail, Guid.Parse(client_id), _configuration, baseUrl);
+            var refreshToken = await _refreshTokenRepository.CreateRefreshToken(extractedUser.Id);
+            // HACK: TODO implement RBAC as describen in RFC6749 3.3
+
+            var response = Ok(new
+            {
+                access_token = accessToken,
+                refresh_token = refreshToken.Token,
+                token_type = "Bearer",
+                expires_in = 3600
+            });
+            return response;
+
         }
 
         private async Task<IActionResult?> ValidateCodeAndCodeVerifier(string code, string code_verifier, string client_id)
