@@ -95,7 +95,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 switch (grant_type)
                 {
                     case RefreshTokenGrantType:
-                        return await HandleRefreshTokenGrant(code, client_id);
+                        return await HandleRefreshTokenGrant(client_id);
 
                     case AuthorizationCodeGrantType:
                         return await HandleAuthorizationCodeGrant(code, redirect_uri, client_id, code_verifier, grant_type);
@@ -138,10 +138,19 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             var refreshToken = await _refreshTokenRepository.CreateRefreshToken(extractedUser.Id);
             // HACK: TODO implement RBAC as describen in RFC6749 3.3
 
+            // Set the new refresh token in an HttpOnly cookie.
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // Only send the cookie over HTTPS. 
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddHours(2),
+            };
+            _httpContextAccessor.HttpContext.Response.Cookies.Append("refresh_token", refreshToken.Token, cookieOptions);
+
             var response = Ok(new
             {
                 access_token = accessToken,
-                refresh_token = refreshToken.Token,
                 token_type = "Bearer",
                 expires_in = 3600
             });
@@ -149,7 +158,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         }
 
-        private async Task<IActionResult> HandleRefreshTokenGrant(string? refresh_token, string? client_id)
+        private async Task<IActionResult> HandleRefreshTokenGrant(string? client_id)
         {
             var clientIdRedirectUrlErrorResponse = await ValidateClientId(client_id);
             if (clientIdRedirectUrlErrorResponse != null)
@@ -157,7 +166,13 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 return clientIdRedirectUrlErrorResponse;
             }
 
-            var user = await _refreshTokenRepository.GetUserByRefreshToken(refresh_token);
+            var refreshToken = Request.Cookies["refreshToken"];
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                throw new NotImplementedException("Implement refreshTOken cookie validation");
+            }
+
+            var user = await _refreshTokenRepository.GetUserByRefreshToken(refreshToken);
 
             if (user == null)
             {
