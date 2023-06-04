@@ -95,7 +95,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 switch (grant_type)
                 {
                     case RefreshTokenGrantType:
-                        return await HandleRefreshTokenGrant(code, client_id, redirect_uri);
+                        return await HandleRefreshTokenGrant(code, client_id);
 
                     case AuthorizationCodeGrantType:
                         return await HandleAuthorizationCodeGrant(code, redirect_uri, client_id, code_verifier, grant_type);
@@ -149,7 +149,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         }
 
-        private async Task<IActionResult> HandleRefreshTokenGrant(string? refresh_token, string? client_id, string? redirect_uri)
+        private async Task<IActionResult> HandleRefreshTokenGrant(string? refresh_token, string? client_id)
         {
             // Validate the client ID and redirect URI.
             var clientIdRedirectUrlErrorResponse = await ValidateClientId(client_id);
