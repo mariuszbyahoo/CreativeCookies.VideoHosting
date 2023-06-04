@@ -151,14 +151,12 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         private async Task<IActionResult> HandleRefreshTokenGrant(string? refresh_token, string? client_id)
         {
-            // Validate the client ID and redirect URI.
             var clientIdRedirectUrlErrorResponse = await ValidateClientId(client_id);
             if (clientIdRedirectUrlErrorResponse != null)
             {
                 return clientIdRedirectUrlErrorResponse;
             }
 
-            // Find the user by the refresh token
             var user = await _refreshTokenRepository.GetUserByRefreshToken(refresh_token);
 
             if (user == null)
@@ -167,19 +165,26 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 throw new NotImplementedException("Implement all actions to do if a refresh token is invalid or has expired");
             }
 
-            // Get the request's base URL.
             var request = _httpContextAccessor.HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
 
-            // Generate a new access token and refresh token for the user.
             var newAccessToken = _jwtRepository.GenerateAccessToken(user.Id, user.UserEmail, Guid.Parse(client_id), _configuration, baseUrl);
             var newRefreshToken = await _refreshTokenRepository.CreateRefreshToken(user.Id);
+
+            // Set the new refresh token in an HttpOnly cookie.
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // Only send the cookie over HTTPS. 
+                SameSite = SameSiteMode.None, 
+                Expires = DateTime.UtcNow.AddHours(2), 
+            };
+            _httpContextAccessor.HttpContext.Response.Cookies.Append("refresh_token", newRefreshToken.Token, cookieOptions);
 
             // Return the new tokens.
             var response = Ok(new
             {
                 access_token = newAccessToken,
-                refresh_token = newRefreshToken.Token,
                 token_type = "Bearer",
                 expires_in = 3600 // Adjust this according to your needs
             });
