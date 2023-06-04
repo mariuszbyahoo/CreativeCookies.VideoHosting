@@ -65,13 +65,18 @@ namespace CreativeCookies.VideoHosting.API
 
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAllOriginsPolicy",
-                    builder =>
-                    {
-                        builder.AllowAnyOrigin()
-                               .AllowAnyMethod()
-                               .AllowAnyHeader();
-                    });
+                options.AddPolicy("Production",
+                    builder => builder
+                    .WithOrigins("https://myhub.com.pl", "https://streambeacon.azurewebsites.net") 
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials());
+
+                options.AddPolicy("Development", builder => 
+                    builder .WithOrigins("https://localhost:44495")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials());
             });
             var connectionString = "";
 
@@ -196,12 +201,20 @@ namespace CreativeCookies.VideoHosting.API
                 app.UseHsts();
             }
 
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseCors("Development");
+            }
+            else
+            {
+                app.UseCors("Production");
+            }
+
             app.UseHttpsRedirection();
 
             app.UseStatusCodePagesWithReExecute("/StatusCode", "?statusCode={0}");
 
             app.UseStaticFiles();
-            app.UseCors("AllowAllOriginsPolicy");
 
             app.UseAuthentication();
             app.UseAuthorization();
