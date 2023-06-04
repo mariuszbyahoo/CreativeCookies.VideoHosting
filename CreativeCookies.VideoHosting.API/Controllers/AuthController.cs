@@ -3,6 +3,7 @@ using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using CreativeCookies.VideoHosting.Domain.DTOs.OAuth;
+using CreativeCookies.VideoHosting.Domain.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -22,9 +23,16 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly IConfiguration _configuration;
         private readonly IJWTRepository _jwtRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
+
+        public const string CacheControlHeader = "no-store";
+        public const string RefreshTokenGrantType = "refresh_token";
+        public const string AuthorizationCodeGrantType = "authorization_code";
+        public const string UnsupportedGrantType = "unsupported_grant_type";
+        public const string ServerError = "server_error";
 
         public AuthController(IClientStore store, IAuthorizationCodeRepository codesRepo, IJWTRepository jwtRepository, 
-            ILogger<AuthController> logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+            ILogger<AuthController> logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IRefreshTokenRepository refreshTokenRepository)
         {
             _store = store;
             _codesRepo = codesRepo;
@@ -32,6 +40,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _configuration = configuration;
             _jwtRepository = jwtRepository;
             _httpContextAccessor = httpContextAccessor;
+            _refreshTokenRepository = refreshTokenRepository;
         }
 
         [HttpGet("authorize")]
@@ -81,49 +90,100 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         {
             try
             {
-                HttpContext.Response.Headers["Cache-Control"] = "no-store";
-                var clientIdRedirectUrlErrorResponse = await ValidateRedirectUriAndClientId(redirect_uri, client_id, false);
-                if (clientIdRedirectUrlErrorResponse != null)
+                HttpContext.Response.Headers["Cache-Control"] = CacheControlHeader;
+
+                switch (grant_type)
                 {
-                    return clientIdRedirectUrlErrorResponse;
+                    case RefreshTokenGrantType:
+                        return await HandleRefreshTokenGrant(code, client_id);
+
+                    case AuthorizationCodeGrantType:
+                        return await HandleAuthorizationCodeGrant(code, redirect_uri, client_id, code_verifier, grant_type);
+
+                    default:
+                        return GenerateBadRequest(UnsupportedGrantType);
                 }
-                var codeAndCodeVerifierErrorResponse = await ValidateCodeAndCodeVerifier(code, code_verifier, client_id);
-                if (codeAndCodeVerifierErrorResponse != null)
-                {
-                    return codeAndCodeVerifierErrorResponse;
-                }
-                if (string.IsNullOrWhiteSpace(grant_type) || (!string.IsNullOrWhiteSpace(grant_type) && !grant_type.Equals("authorization_code")))
-                {
-                    return GenerateBadRequest("unsupported_grant_type");
-                }
-
-                var request = _httpContextAccessor.HttpContext.Request;
-                var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
-
-                var extractedUser = await _codesRepo.GetUserByAuthCodeAsync(code);
-                if(extractedUser == null)
-                {
-                    _logger.LogError($"Codes repo returned null for GetUserByAuthCodeAsync when invoked inside Token action with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(grant_type)}: {grant_type}, {nameof(code)}: {code}, {nameof(code_verifier)}: {code_verifier}");
-                    return GenerateBadRequest("server_error");
-                }
-
-                var access_token = _jwtRepository.GenerateAccessToken(extractedUser.Id, extractedUser.UserEmail, Guid.Parse(client_id), _configuration, baseUrl);
-
-                // HACK: Add scopes for the GenerateAccessToken in order to implement RBAC as describen in RFC6749 3.3
-
-                var response = Ok(new
-                {
-                    access_token = access_token,
-                    token_type = "Bearer",
-                    expires_in = 3600
-                });
-                return response;
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Unexpected exception when ran Token call with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(grant_type)}: {grant_type}, {nameof(code)}: {code}, {nameof(code_verifier)}: {code_verifier} , ex: {ex.Message}, stackTrace: {ex.StackTrace}, source: {ex.Source}, innerException: {ex.InnerException}");
-                return RedirectToError(redirect_uri, "server_error");
+                return RedirectToError(redirect_uri, ServerError);
             }
+        }
+
+        private async Task<IActionResult> HandleAuthorizationCodeGrant(string? code, string? redirect_uri, string? client_id, string? code_verifier, string grant_type)
+        {
+            var clientIdRedirectUrlErrorResponse = await ValidateRedirectUriAndClientId(redirect_uri, client_id, false);
+            if (clientIdRedirectUrlErrorResponse != null)
+            {
+                return clientIdRedirectUrlErrorResponse;
+            }
+            var codeAndCodeVerifierErrorResponse = await ValidateCodeAndCodeVerifier(code, code_verifier, client_id);
+            if (codeAndCodeVerifierErrorResponse != null)
+            {
+                return codeAndCodeVerifierErrorResponse;
+            }
+
+            var request = _httpContextAccessor.HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
+
+            var extractedUser = await _codesRepo.GetUserByAuthCodeAsync(code);
+            if (extractedUser == null)
+            {
+                _logger.LogError($"Codes repo returned null for GetUserByAuthCodeAsync when invoked inside Token action with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(grant_type)}: {grant_type}, {nameof(code)}: {code}, {nameof(code_verifier)}: {code_verifier}");
+                return GenerateBadRequest("server_error");
+            }
+
+            var accessToken = _jwtRepository.GenerateAccessToken(extractedUser.Id, extractedUser.UserEmail, Guid.Parse(client_id), _configuration, baseUrl);
+            var refreshToken = await _refreshTokenRepository.CreateRefreshToken(extractedUser.Id);
+            // HACK: TODO implement RBAC as describen in RFC6749 3.3
+
+            var response = Ok(new
+            {
+                access_token = accessToken,
+                refresh_token = refreshToken.Token,
+                token_type = "Bearer",
+                expires_in = 3600
+            });
+            return response;
+
+        }
+
+        private async Task<IActionResult> HandleRefreshTokenGrant(string? refresh_token, string? client_id)
+        {
+            // Validate the client ID and redirect URI.
+            var clientIdRedirectUrlErrorResponse = await ValidateClientId(client_id);
+            if (clientIdRedirectUrlErrorResponse != null)
+            {
+                return clientIdRedirectUrlErrorResponse;
+            }
+
+            // Find the user by the refresh token
+            var user = await _refreshTokenRepository.GetUserByRefreshToken(refresh_token);
+
+            if (user == null)
+            {
+                // The refresh token is invalid or has expired
+                throw new NotImplementedException("Implement all actions to do if a refresh token is invalid or has expired");
+            }
+
+            // Get the request's base URL.
+            var request = _httpContextAccessor.HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
+
+            // Generate a new access token and refresh token for the user.
+            var newAccessToken = _jwtRepository.GenerateAccessToken(user.Id, user.UserEmail, Guid.Parse(client_id), _configuration, baseUrl);
+            var newRefreshToken = await _refreshTokenRepository.CreateRefreshToken(user.Id);
+
+            // Return the new tokens.
+            var response = Ok(new
+            {
+                access_token = newAccessToken,
+                refresh_token = newRefreshToken.Token,
+                token_type = "Bearer",
+                expires_in = 3600 // Adjust this according to your needs
+            });
+            return response;
         }
 
         private async Task<IActionResult?> ValidateCodeAndCodeVerifier(string code, string code_verifier, string client_id)
@@ -160,10 +220,36 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             // all good
             return null;
         }
-        private async Task<IActionResult?> ValidateRedirectUriAndClientId(
-            string redirect_uri, string client_id, bool redirectsToClientApp = true ,string state = "")
+        public async Task<IActionResult?> ValidateClientId(string client_id)
         {
-            var redirectUriError = await ValidateRedirectUri(redirect_uri);
+            var clientIdError = await ValidateClientIdInternal(client_id);
+            if (clientIdError != null && clientIdError.HasValue)
+            {
+                var errorResponse = string.Empty;
+                switch (clientIdError.Value)
+                {
+                    case OAuthErrorResponse.InvalidRequest:
+                        _logger.LogDebug($"Received invalid request with params: {nameof(client_id)}: {client_id}");
+                        errorResponse = "invalid_request";
+                        return GenerateBadRequest(errorResponse);
+                    case OAuthErrorResponse.UnauthorisedClient:
+                        _logger.LogDebug($"Received invalid request with an unauthorised client, and params: {nameof(client_id)}: {client_id}");
+                        errorResponse = "unauthorised_client";
+                        return GenerateBadRequest(errorResponse);
+                    default:
+                        _logger.LogError($"Unexpected OAuth error response with params: {nameof(client_id)}: {client_id}", clientIdError.Value);
+                        errorResponse = "server_error";
+                        return GenerateBadRequest(errorResponse);
+                }
+            }
+
+            // all good, no errors to return 
+            return null;
+        }
+        private async Task<IActionResult?> ValidateRedirectUriAndClientId(
+            string redirect_uri, string client_id, bool redirectsErrorsToClientApp = true ,string state = "")
+        {
+            var redirectUriError = await ValidateRedirectUriInternal(redirect_uri);
             if (redirectUriError != null && redirectUriError.HasValue)
             {
                 var errorResponse = string.Empty;
@@ -175,12 +261,12 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     case OAuthErrorResponse.InvalidRequest:
                         _logger.LogDebug($"Received invalid request with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}");
                         errorResponse = "invalid_request";
-                        if (redirectsToClientApp) return RedirectToError(redirect_uri, errorResponse, state);
+                        if (redirectsErrorsToClientApp) return RedirectToError(redirect_uri, errorResponse, state);
                         else return GenerateBadRequest(errorResponse);
                     default:
                         _logger.LogError($"Unexpected OAuth error response with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}", redirectUriError.Value);
                         errorResponse = "server_error";
-                        if (redirectsToClientApp)
+                        if (redirectsErrorsToClientApp)
                         {
                             return RedirectToError(redirect_uri, errorResponse, state);
                         }
@@ -190,7 +276,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                         }
                 }
             }
-            var clientIdError = await ValidateClientId(client_id);
+            var clientIdError = await ValidateClientIdInternal(client_id);
             if (clientIdError != null && clientIdError.HasValue)
             {
                 var errorResponse = string.Empty;
@@ -218,7 +304,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
             else return GenerateBadRequest("Invalid redirect_uri");
         }
-        private async Task<OAuthErrorResponse?> ValidateClientId(string inputClientId)
+        private async Task<OAuthErrorResponse?> ValidateClientIdInternal(string inputClientId)
         {
             Guid clientId;
             var parsedSuccessfully = Guid.TryParse(inputClientId, out clientId);
@@ -233,7 +319,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
             return null;
         }
-        private async Task<OAuthErrorResponse?> ValidateRedirectUri(string inputRedirectUri)
+        private async Task<OAuthErrorResponse?> ValidateRedirectUriInternal(string inputRedirectUri)
         {
             if (!string.IsNullOrWhiteSpace(inputRedirectUri) && await _store.IsRedirectUriPresentInDatabase(inputRedirectUri))
             {

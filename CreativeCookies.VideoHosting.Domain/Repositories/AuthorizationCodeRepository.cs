@@ -79,7 +79,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             else
             {
                 var user = await _ctx.Users.Where(u => u.Id.Equals(codeEntry.UserId))
-                    .Select<IdentityUser, IMyHubUser>(r => new MyHubUser(Guid.Parse(r.Id), r.NormalizedEmail))
+                    .Select<IdentityUser, IMyHubUser>(r => new MyHubUserDto(Guid.Parse(r.Id), r.NormalizedEmail))
                     .FirstOrDefaultAsync();
                 return user;
             }

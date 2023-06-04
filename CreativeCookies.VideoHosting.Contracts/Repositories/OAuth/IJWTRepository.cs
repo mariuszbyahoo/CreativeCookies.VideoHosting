@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,6 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories.OAuth
     public interface IJWTRepository
     {
         string GenerateAccessToken(Guid userId, string userEmail, Guid clientId, IConfiguration configuration, string issuer);
+        IRefreshToken GenerateRefreshToken(Guid userId);
     }
 }
