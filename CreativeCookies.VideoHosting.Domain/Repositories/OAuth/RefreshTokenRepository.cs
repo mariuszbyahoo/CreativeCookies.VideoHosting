@@ -70,6 +70,17 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             };
         }
 
+        public async Task<IMyHubUser> GetUserByRefreshToken(string? refresh_token)
+        {
+            var tokenEntry = await _context.RefreshTokens.Where(t => t.Token.Equals(refresh_token)).FirstOrDefaultAsync();
+            if (tokenEntry == null) return null;
+            else
+            {
+                var user = await _context.Users.Where(u => u.Id.ToUpperInvariant().Equals(tokenEntry.Id.ToString().ToUpperInvariant())).FirstOrDefaultAsync();
+                return new MyHubUserDto(Guid.Parse(tokenEntry.UserId), user.NormalizedEmail);
+            }
+        }
+
         public async Task RevokeRefreshToken(string token)
         {
             var refreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == token);
