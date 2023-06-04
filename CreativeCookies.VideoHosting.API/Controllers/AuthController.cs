@@ -220,7 +220,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             // all good
             return null;
         }
-        public async Task<IActionResult?> ValidateClientId(string client_id)
+        private async Task<IActionResult?> ValidateClientId(string client_id)
         {
             var clientIdError = await ValidateClientIdInternal(client_id);
             if (clientIdError != null && clientIdError.HasValue)
