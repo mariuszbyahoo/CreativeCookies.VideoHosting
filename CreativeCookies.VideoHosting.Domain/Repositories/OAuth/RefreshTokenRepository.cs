@@ -91,7 +91,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             if (tokenEntry == null) return null;
             else
             {
-                var user = await _context.Users.Where(u => u.Id.ToUpperInvariant().Equals(tokenEntry.Id.ToString().ToUpperInvariant())).FirstOrDefaultAsync();
+                var user = await _context.Users.Where(u => u.Id.Equals(tokenEntry.UserId)).FirstOrDefaultAsync();
                 return new MyHubUserDto(Guid.Parse(tokenEntry.UserId), user.NormalizedEmail);
             }
         }

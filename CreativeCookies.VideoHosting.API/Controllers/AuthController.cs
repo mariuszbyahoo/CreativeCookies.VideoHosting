@@ -166,7 +166,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 return clientIdRedirectUrlErrorResponse;
             }
 
-            var refreshToken = Request.Cookies["refreshToken"];
+            var refreshToken = Request.Cookies["refresh_token"];
             if (string.IsNullOrWhiteSpace(refreshToken))
             {
                 throw new NotImplementedException("Implement refreshTOken cookie validation");
