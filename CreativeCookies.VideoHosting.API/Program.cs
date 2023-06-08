@@ -72,8 +72,8 @@ namespace CreativeCookies.VideoHosting.API
                     .AllowAnyMethod()
                     .AllowCredentials());
 
-                options.AddPolicy("Development", builder => 
-                    builder .WithOrigins("https://localhost:44495")
+                options.AddPolicy("Development", builder => builder
+                    .WithOrigins("https://localhost:44495")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials());
@@ -162,7 +162,6 @@ namespace CreativeCookies.VideoHosting.API
                 options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
                 options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
             })
-            .AddCookie("CookieAuthScheme")
             .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -175,6 +174,12 @@ namespace CreativeCookies.VideoHosting.API
                     ValidAudience = clientId.ToString(),
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
                 }; // HACK: hardcoded values above prohibits usage of any other external IdPs 
+            })
+            .AddCookie(options =>
+            {
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.IsEssential = true;
             });
             builder.Services.AddRazorPages().AddRazorRuntimeCompilation(); 
             builder.Services.AddControllers();
