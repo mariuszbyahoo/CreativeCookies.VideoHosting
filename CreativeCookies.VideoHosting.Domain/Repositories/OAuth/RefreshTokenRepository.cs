@@ -85,6 +85,13 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             };
         }
 
+        public async Task<bool> IsTokenValid(string refresh_token)
+        {
+            var tokenEntry = await _context.RefreshTokens.Where(t => t.Token.Equals(refresh_token)).FirstOrDefaultAsync();
+            if (tokenEntry != null && !tokenEntry.IsRevoked && tokenEntry.Expires > DateTime.UtcNow) return true;
+            else return false;
+        }
+
         public async Task<IMyHubUser> GetUserByRefreshToken(string? refresh_token)
         {
             var tokenEntry = await _context.RefreshTokens.Where(t => t.Token.Equals(refresh_token)).FirstOrDefaultAsync();

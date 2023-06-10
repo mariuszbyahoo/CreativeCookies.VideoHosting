@@ -66,8 +66,6 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     return Redirect(loginUrl);
                 }
 
-                // Optional - display a screen to get user's permissions (if necessary)
-
                 var authorizationCode = await _codesRepo.GetAuthorizationCode(client_id, User.FindFirstValue(ClaimTypes.NameIdentifier), redirect_uri, code_challenge, code_challenge_method);
 
                 var redirectUriBuilder = new UriBuilder(redirect_uri);
@@ -137,12 +135,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             var accessToken = _jwtRepository.GenerateAccessToken(extractedUser.Id, extractedUser.UserEmail, Guid.Parse(client_id), _configuration, baseUrl);
             var refreshToken = await _refreshTokenRepository.CreateRefreshToken(extractedUser.Id);
             // HACK: TODO implement RBAC as describen in RFC6749 3.3
-
-            // Set the new refresh token in an HttpOnly cookie.
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true, // Only send the cookie over HTTPS. 
+                Secure = true, 
                 SameSite = SameSiteMode.None,
                 Expires = DateTime.UtcNow.AddHours(2),
             };
@@ -167,43 +163,39 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
 
             var refreshToken = Request.Cookies["refresh_token"];
-            if (string.IsNullOrWhiteSpace(refreshToken))
+            if (!string.IsNullOrWhiteSpace(refreshToken) && await _refreshTokenRepository.IsTokenValid(refreshToken))
             {
-                throw new NotImplementedException("Implement refreshTOken cookie validation");
+                var user = await _refreshTokenRepository.GetUserByRefreshToken(refreshToken);
+
+                if (user == null)
+                {
+                    return BadRequest("invalid refresh_token");
+                }
+
+                var request = _httpContextAccessor.HttpContext.Request;
+                var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
+
+                var newAccessToken = _jwtRepository.GenerateAccessToken(user.Id, user.UserEmail, Guid.Parse(client_id), _configuration, baseUrl);
+                var newRefreshToken = await _refreshTokenRepository.CreateRefreshToken(user.Id);
+
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.None,
+                    Expires = DateTime.UtcNow.AddHours(2),
+                };
+                _httpContextAccessor.HttpContext.Response.Cookies.Append("refresh_token", newRefreshToken.Token, cookieOptions);
+
+                var response = Ok(new
+                {
+                    access_token = newAccessToken,
+                    token_type = "Bearer",
+                    expires_in = 3600 
+                });
+                return response;
             }
-
-            var user = await _refreshTokenRepository.GetUserByRefreshToken(refreshToken);
-
-            if (user == null)
-            {
-                // The refresh token is invalid or has expired
-                throw new NotImplementedException("Implement all actions to do if a refresh token is invalid or has expired");
-            }
-
-            var request = _httpContextAccessor.HttpContext.Request;
-            var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
-
-            var newAccessToken = _jwtRepository.GenerateAccessToken(user.Id, user.UserEmail, Guid.Parse(client_id), _configuration, baseUrl);
-            var newRefreshToken = await _refreshTokenRepository.CreateRefreshToken(user.Id);
-
-            // Set the new refresh token in an HttpOnly cookie.
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true, // Only send the cookie over HTTPS. 
-                SameSite = SameSiteMode.None, 
-                Expires = DateTime.UtcNow.AddHours(2), 
-            };
-            _httpContextAccessor.HttpContext.Response.Cookies.Append("refresh_token", newRefreshToken.Token, cookieOptions);
-
-            // Return the new tokens.
-            var response = Ok(new
-            {
-                access_token = newAccessToken,
-                token_type = "Bearer",
-                expires_in = 3600 // Adjust this according to your needs
-            });
-            return response;
+            return BadRequest("invalid refresh_token");
         }
 
         private async Task<IActionResult?> ValidateCodeAndCodeVerifier(string code, string code_verifier, string client_id)
