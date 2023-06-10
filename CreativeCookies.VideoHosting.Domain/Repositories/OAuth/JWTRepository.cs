@@ -35,7 +35,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
                     new Claim("client_id", clientId.ToString().ToUpperInvariant()),
                     new Claim(ClaimTypes.Email, userEmail.ToUpperInvariant())
                 }),
-                Expires = DateTime.UtcNow.AddMinutes(60), 
+                Expires = DateTime.UtcNow.AddHours(1), 
                 Issuer = issuer, 
                 Audience = clientId.ToString().ToUpperInvariant(), 
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
@@ -67,7 +67,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
                 Token = new string(stringChars),
                 UserId = userId,
                 CreationDate = DateTime.UtcNow,
-                ExpirationDate = DateTime.UtcNow.AddMinutes(65),
+                ExpirationDate = DateTime.UtcNow.AddHours(3),
             };
 
             return refreshToken;

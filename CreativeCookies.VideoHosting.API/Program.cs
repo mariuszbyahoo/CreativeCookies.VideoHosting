@@ -65,13 +65,18 @@ namespace CreativeCookies.VideoHosting.API
 
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAllOriginsPolicy",
-                    builder =>
-                    {
-                        builder.AllowAnyOrigin()
-                               .AllowAnyMethod()
-                               .AllowAnyHeader();
-                    });
+                options.AddPolicy("Production",
+                    builder => builder
+                    .WithOrigins("https://myhub.com.pl", "https://streambeacon.azurewebsites.net") 
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials());
+
+                options.AddPolicy("Development", builder => builder
+                    .WithOrigins("https://localhost:44495")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials());
             });
             var connectionString = "";
 
@@ -157,7 +162,6 @@ namespace CreativeCookies.VideoHosting.API
                 options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
                 options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
             })
-            .AddCookie("CookieAuthScheme")
             .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -170,6 +174,12 @@ namespace CreativeCookies.VideoHosting.API
                     ValidAudience = clientId.ToString(),
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
                 }; // HACK: hardcoded values above prohibits usage of any other external IdPs 
+            })
+            .AddCookie(options =>
+            {
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.IsEssential = true;
             });
             builder.Services.AddRazorPages().AddRazorRuntimeCompilation(); 
             builder.Services.AddControllers();
@@ -196,12 +206,20 @@ namespace CreativeCookies.VideoHosting.API
                 app.UseHsts();
             }
 
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseCors("Development");
+            }
+            else
+            {
+                app.UseCors("Production");
+            }
+
             app.UseHttpsRedirection();
 
             app.UseStatusCodePagesWithReExecute("/StatusCode", "?statusCode={0}");
 
             app.UseStaticFiles();
-            app.UseCors("AllowAllOriginsPolicy");
 
             app.UseAuthentication();
             app.UseAuthorization();

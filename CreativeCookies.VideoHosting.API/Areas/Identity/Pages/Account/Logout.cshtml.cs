@@ -1,36 +1,41 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-#nullable disable
-
-using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
 
 namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 {
     public class LogoutModel : PageModel
     {
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly ILogger<LogoutModel> _logger;
         private readonly IConfiguration _configuration;
 
-
-        public LogoutModel(SignInManager<IdentityUser> signInManager, ILogger<LogoutModel> logger, IConfiguration configuration)
+        public LogoutModel(SignInManager<IdentityUser> signInManager, ILogger<LogoutModel> logger, IConfiguration configuration, IRefreshTokenRepository refreshTokenRepository)
         {
             _signInManager = signInManager;
+            _refreshTokenRepository = refreshTokenRepository;
             _logger = logger;
             _configuration = configuration;
         }
 
-        public async Task<IActionResult> OnGetAsync(string returnUrl = null)
+        private async Task<IActionResult> Logout(string returnUrl = null)
         {
             await _signInManager.SignOutAsync();
+            var refreshToken = Request.Cookies["refresh_token"].ToString();
+            _refreshTokenRepository.RevokeRefreshToken(refreshToken);
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+            };
+            Response.Cookies.Delete("refresh_token", cookieOptions);
+
             _logger.LogInformation("User logged out.");
-            if (returnUrl != null)
+
+            if (!string.IsNullOrWhiteSpace(returnUrl))
             {
                 return LocalRedirect(returnUrl);
             }
@@ -41,31 +46,22 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
                 {
                     return Redirect(afterLogoutRedirectUrl);
                 }
+
                 // This needs to be a redirect so that the browser performs a new
                 // request and the identity for the user gets updated.
                 return RedirectToPage();
             }
         }
 
+        public async Task<IActionResult> OnGetAsync(string returnUrl = null)
+        {
+            return await Logout(returnUrl);
+        }
+
         public async Task<IActionResult> OnPost(string returnUrl = null)
         {
-            await _signInManager.SignOutAsync();
-            _logger.LogInformation("User logged out.");
-            if (returnUrl != null)
-            {
-                return LocalRedirect(returnUrl);
-            }
-            else
-            {
-                var afterLogoutRedirectUrl = _configuration["ClientUrl"];
-                if (!string.IsNullOrWhiteSpace(afterLogoutRedirectUrl))
-                {
-                    return Redirect(afterLogoutRedirectUrl);
-                }
-                // This needs to be a redirect so that the browser performs a new
-                // request and the identity for the user gets updated.
-                return RedirectToPage();
-            }
+            return await Logout(returnUrl);
         }
     }
+
 }

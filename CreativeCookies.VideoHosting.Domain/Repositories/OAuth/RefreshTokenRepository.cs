@@ -25,13 +25,28 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             _jwtRepository = jwtRepository;
         }
 
+        /// <summary>
+        /// Creates a new token and deletes all other refreshTokens issued for particular userId
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns>new object compliant with IRefreshToken interface</returns>
         public async Task<IRefreshToken> CreateRefreshToken(Guid userId)
         {
             var refreshTokenDto = _jwtRepository.GenerateRefreshToken(userId);
 
+            var issuedTokens = await _context.RefreshTokens
+                .Where(t => t.UserId.Equals(userId.ToString()))
+                .ToListAsync();
+
+            if(issuedTokens.Count > 0)
+            {
+                _context.RefreshTokens.RemoveRange(issuedTokens);
+                await _context.SaveChangesAsync();
+            }
+
             var refreshTokenDao = new RefreshTokenDAO
             {
-                UserId = refreshTokenDto.UserId.ToString().ToUpperInvariant(),
+                UserId = refreshTokenDto.UserId.ToString(),
                 Token = refreshTokenDto.Token,
                 CreatedAt = refreshTokenDto.CreationDate,
                 Expires = refreshTokenDto.ExpirationDate,
@@ -70,13 +85,20 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             };
         }
 
+        public async Task<bool> IsTokenValid(string refresh_token)
+        {
+            var tokenEntry = await _context.RefreshTokens.Where(t => t.Token.Equals(refresh_token)).FirstOrDefaultAsync();
+            if (tokenEntry != null && !tokenEntry.IsRevoked && tokenEntry.Expires > DateTime.UtcNow) return true;
+            else return false;
+        }
+
         public async Task<IMyHubUser> GetUserByRefreshToken(string? refresh_token)
         {
             var tokenEntry = await _context.RefreshTokens.Where(t => t.Token.Equals(refresh_token)).FirstOrDefaultAsync();
             if (tokenEntry == null) return null;
             else
             {
-                var user = await _context.Users.Where(u => u.Id.ToUpperInvariant().Equals(tokenEntry.Id.ToString().ToUpperInvariant())).FirstOrDefaultAsync();
+                var user = await _context.Users.Where(u => u.Id.Equals(tokenEntry.UserId)).FirstOrDefaultAsync();
                 return new MyHubUserDto(Guid.Parse(tokenEntry.UserId), user.NormalizedEmail);
             }
         }
