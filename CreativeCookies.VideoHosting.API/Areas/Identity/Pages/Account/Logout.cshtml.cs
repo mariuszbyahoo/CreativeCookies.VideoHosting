@@ -23,15 +23,28 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
         private async Task<IActionResult> Logout(string returnUrl = null)
         {
             await _signInManager.SignOutAsync();
-            var refreshToken = Request.Cookies["ltrt"].ToString();
-            _refreshTokenRepository.RevokeRefreshToken(refreshToken);
-            var cookieOptions = new CookieOptions
+            if (Request.Cookies.ContainsKey("ltrt"))
             {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
-            };
-            Response.Cookies.Delete("ltrt", cookieOptions);
+                var refreshToken = Request.Cookies["ltrt"].ToString();
+                _refreshTokenRepository.RevokeRefreshToken(refreshToken);
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.None,
+                };
+                Response.Cookies.Delete("ltrt", cookieOptions);
+            }
+            if (Request.Cookies.ContainsKey("stac"))
+            {
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.None,
+                };
+                Response.Cookies.Delete("stac", cookieOptions);
+            }
 
             _logger.LogInformation("User logged out.");
 
