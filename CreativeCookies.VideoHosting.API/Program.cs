@@ -174,6 +174,16 @@ namespace CreativeCookies.VideoHosting.API
                     ValidAudience = clientId.ToString(),
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
                 }; // HACK: hardcoded values above prohibits usage of any other external IdPs 
+                options.Events = new JwtBearerEvents();
+                options.Events.OnMessageReceived = context =>
+                {
+                    if (context.Request.Cookies.ContainsKey("stac"))
+                    {
+                        context.Token = context.Request.Cookies["stac"];
+                    }
+
+                    return Task.CompletedTask;
+                };
             })
             .AddCookie(options =>
             {
