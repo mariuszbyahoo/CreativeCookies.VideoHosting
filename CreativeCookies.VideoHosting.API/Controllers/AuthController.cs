@@ -82,7 +82,16 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                         var data = okResult.Value as dynamic;
                         if (data != null)
                         {
-                            userEmail = (string)data.access_token;
+                            try
+                            {
+                                var claimsPrincipal = tokenHandler.ValidateToken((string)data.access_token, validationParameters, out _);
+                                userEmail = claimsPrincipal.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.Email))?.Value;
+                            }
+                            catch(Exception ex)
+                            {
+                                _logger.LogError("Exception occured while extracting the email from stac cookie's access_token");
+                                return StatusCode(500, ServerError);
+                            }
                         }
                     }
                 }
