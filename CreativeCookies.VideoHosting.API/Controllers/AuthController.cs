@@ -4,8 +4,11 @@ using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
+using System.Text;
 using System.Web;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
@@ -27,6 +30,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         public const string AuthorizationCodeGrantType = "authorization_code";
         public const string UnsupportedGrantType = "unsupported_grant_type";
         public const string ServerError = "server_error";
+        private readonly string _jwtSecretKey;
+        private readonly string _apiUrl;
 
         public AuthController(IClientStore store, IAuthorizationCodeRepository codesRepo, IJWTRepository jwtRepository, 
             ILogger<AuthController> logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IRefreshTokenRepository refreshTokenRepository)
@@ -38,21 +43,72 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _jwtRepository = jwtRepository;
             _httpContextAccessor = httpContextAccessor;
             _refreshTokenRepository = refreshTokenRepository;
+            _jwtSecretKey = _configuration.GetValue<string>("JWTSecretKey");
+            _apiUrl = _configuration.GetValue<string>("ApiUrl");
         }
 
         [HttpGet("isAuthenticated")]
-        public IActionResult CheckAuthentication()
+        public async Task<IActionResult> CheckAuthentication(string clientId)
         {
-            var userEmail = User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.Email))?.Value;
-            if (User.Identity.IsAuthenticated && !string.IsNullOrEmpty(userEmail))
+            var stac = Request.Cookies["stac"];
+            string userEmail = null;
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = _apiUrl,
+                ValidAudience = clientId.ToString(),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecretKey)),
+            }; // HACK: hardcoded values above prohibits usage of any other external IdPs 
+
+            if (tokenHandler.CanReadToken(stac))
+            {
+                try
+                {
+                    var claimsPrincipal = tokenHandler.ValidateToken(stac, validationParameters, out _);
+                    userEmail = claimsPrincipal.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.Email))?.Value;
+                }
+                catch (SecurityTokenExpiredException)
+                {
+                    var result = await HandleRefreshTokenGrant(clientId);
+
+                    if (result is OkObjectResult okResult)
+                    {
+                        var data = okResult.Value as dynamic;
+                        if (data != null)
+                        {
+                            try
+                            {
+                                var claimsPrincipal = tokenHandler.ValidateToken((string)data.access_token, validationParameters, out _);
+                                userEmail = claimsPrincipal.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.Email))?.Value;
+                            }
+                            catch(Exception ex)
+                            {
+                                _logger.LogError("Exception occured while extracting the email from stac cookie's access_token");
+                                return StatusCode(500, ServerError);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(userEmail))
             {
                 return Ok(new { isAuthenticated = true, email = userEmail });
             }
             else
             {
+                Response.Cookies.Delete("stac");
+                Response.Cookies.Delete("ltrt");
                 return Ok(new { isAuthenticated = false });
             }
         }
+
 
         [HttpGet("authorize")]
         public async Task<IActionResult> Authorize([FromQuery]string? client_id, [FromQuery] string? redirect_uri, 
