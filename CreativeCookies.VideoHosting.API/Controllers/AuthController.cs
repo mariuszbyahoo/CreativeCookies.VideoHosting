@@ -2,7 +2,7 @@
 using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
-
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -24,6 +24,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly IJWTRepository _jwtRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<IdentityUser> _userManager;
 
         public const string CacheControlHeader = "no-store";
         public const string RefreshTokenGrantType = "refresh_token";
@@ -33,8 +35,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly string _jwtSecretKey;
         private readonly string _apiUrl;
 
-        public AuthController(IClientStore store, IAuthorizationCodeRepository codesRepo, IJWTRepository jwtRepository, 
-            ILogger<AuthController> logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IRefreshTokenRepository refreshTokenRepository)
+        public AuthController(IClientStore store, IAuthorizationCodeRepository codesRepo, IJWTRepository jwtRepository,
+            ILogger<AuthController> logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor,
+            IRefreshTokenRepository refreshTokenRepository, SignInManager<IdentityUser> signInManager,
+            UserManager<IdentityUser> userManager)
         {
             _store = store;
             _codesRepo = codesRepo;
@@ -43,10 +47,17 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _jwtRepository = jwtRepository;
             _httpContextAccessor = httpContextAccessor;
             _refreshTokenRepository = refreshTokenRepository;
+            _signInManager = signInManager;
+            _userManager = userManager;
             _jwtSecretKey = _configuration.GetValue<string>("JWTSecretKey");
             _apiUrl = _configuration.GetValue<string>("ApiUrl");
         }
 
+        /// <summary>
+        /// Method checks ltrt or stac cookies are available and not expired, if so - it logs user in
+        /// </summary>
+        /// <param name="clientId"></param>
+        /// <returns></returns>
         [HttpGet("isAuthenticated")]
         public async Task<IActionResult> CheckAuthentication(string clientId)
         {
@@ -87,7 +98,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                                 var claimsPrincipal = tokenHandler.ValidateToken((string)data.access_token, validationParameters, out _);
                                 userEmail = claimsPrincipal.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.Email))?.Value;
                             }
-                            catch(Exception ex)
+                            catch (Exception ex)
                             {
                                 _logger.LogError("Exception occured while extracting the email from stac cookie's access_token");
                                 return StatusCode(500, ServerError);
@@ -99,6 +110,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
             if (!string.IsNullOrEmpty(userEmail))
             {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    var user = await _userManager.FindByEmailAsync(userEmail);
+                    await _signInManager.SignInAsync(user, false);
+                }
                 return Ok(new { isAuthenticated = true, email = userEmail });
             }
             else
