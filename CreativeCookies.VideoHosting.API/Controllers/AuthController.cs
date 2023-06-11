@@ -1,12 +1,9 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Enums;
+﻿using Azure.Core;
+using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
-using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
-using CreativeCookies.VideoHosting.Domain.DTOs.OAuth;
-using CreativeCookies.VideoHosting.Domain.Models;
-using Microsoft.AspNetCore.Http;
+
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
 using System.Net;
 using System.Security.Claims;
 using System.Web;
@@ -41,6 +38,20 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _jwtRepository = jwtRepository;
             _httpContextAccessor = httpContextAccessor;
             _refreshTokenRepository = refreshTokenRepository;
+        }
+
+        [HttpGet("isAuthenticated")]
+        public IActionResult CheckAuthentication()
+        {
+            var userEmail = User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.Email))?.Value;
+            if (User.Identity.IsAuthenticated && !string.IsNullOrEmpty(userEmail))
+            {
+                return Ok(new { isAuthenticated = true, email = userEmail });
+            }
+            else
+            {
+                return Ok(new { isAuthenticated = false });
+            }
         }
 
         [HttpGet("authorize")]
@@ -135,14 +146,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             var accessToken = _jwtRepository.GenerateAccessToken(extractedUser.Id, extractedUser.UserEmail, Guid.Parse(client_id), _configuration, baseUrl);
             var refreshToken = await _refreshTokenRepository.CreateRefreshToken(extractedUser.Id);
             // HACK: TODO implement RBAC as describen in RFC6749 3.3
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true, 
-                SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddHours(2),
-            };
-            _httpContextAccessor.HttpContext.Response.Cookies.Append("refresh_token", refreshToken.Token, cookieOptions);
+            var accessTokenCookieOptions = ReturnAuthCookieOptions(1);
+            _httpContextAccessor.HttpContext.Response.Cookies.Append("stac", accessToken, accessTokenCookieOptions);
+
+            var refreshTokenCookieOptions = ReturnAuthCookieOptions(8);
+            _httpContextAccessor.HttpContext.Response.Cookies.Append("ltrt", refreshToken.Token, refreshTokenCookieOptions);
 
             var response = Ok(new
             {
@@ -162,7 +170,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 return clientIdRedirectUrlErrorResponse;
             }
 
-            var refreshToken = Request.Cookies["refresh_token"];
+            var refreshToken = Request.Cookies["ltrt"];
             if (!string.IsNullOrWhiteSpace(refreshToken) && await _refreshTokenRepository.IsTokenValid(refreshToken))
             {
                 var user = await _refreshTokenRepository.GetUserByRefreshToken(refreshToken);
@@ -178,14 +186,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 var newAccessToken = _jwtRepository.GenerateAccessToken(user.Id, user.UserEmail, Guid.Parse(client_id), _configuration, baseUrl);
                 var newRefreshToken = await _refreshTokenRepository.CreateRefreshToken(user.Id);
 
-                var cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.None,
-                    Expires = DateTime.UtcNow.AddHours(2),
-                };
-                _httpContextAccessor.HttpContext.Response.Cookies.Append("refresh_token", newRefreshToken.Token, cookieOptions);
+                var accessTokenCookieOptions = ReturnAuthCookieOptions(1);
+                _httpContextAccessor.HttpContext.Response.Cookies.Append("stac", newAccessToken, accessTokenCookieOptions);
+
+                var refreshTokenCookieOptions = ReturnAuthCookieOptions(8);
+                _httpContextAccessor.HttpContext.Response.Cookies.Append("ltrt", newRefreshToken.Token, refreshTokenCookieOptions);
 
                 var response = Ok(new
                 {
@@ -366,6 +371,17 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             HttpContext.Response.Headers["Cache-Control"] = "no-store";
 
             return BadRequest(errorResponse);
+        }
+
+        private CookieOptions ReturnAuthCookieOptions(double hoursToExpire)
+        {
+            return new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddHours(hoursToExpire)
+            };
         }
 
     }

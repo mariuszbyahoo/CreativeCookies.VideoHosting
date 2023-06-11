@@ -67,7 +67,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
                 Token = new string(stringChars),
                 UserId = userId,
                 CreationDate = DateTime.UtcNow,
-                ExpirationDate = DateTime.UtcNow.AddHours(3),
+                ExpirationDate = DateTime.UtcNow.AddHours(8),
             };
 
             return refreshToken;

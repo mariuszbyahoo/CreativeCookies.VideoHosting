@@ -23,7 +23,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
         private async Task<IActionResult> Logout(string returnUrl = null)
         {
             await _signInManager.SignOutAsync();
-            var refreshToken = Request.Cookies["refresh_token"].ToString();
+            var refreshToken = Request.Cookies["ltrt"].ToString();
             _refreshTokenRepository.RevokeRefreshToken(refreshToken);
             var cookieOptions = new CookieOptions
             {
@@ -31,7 +31,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
                 Secure = true,
                 SameSite = SameSiteMode.None,
             };
-            Response.Cookies.Delete("refresh_token", cookieOptions);
+            Response.Cookies.Delete("ltrt", cookieOptions);
 
             _logger.LogInformation("User logged out.");
 
