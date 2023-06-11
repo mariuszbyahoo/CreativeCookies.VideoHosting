@@ -40,6 +40,20 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _refreshTokenRepository = refreshTokenRepository;
         }
 
+        [HttpGet("isAuthenticated")]
+        public IActionResult CheckAuthentication()
+        {
+            var userEmail = User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.Email))?.Value;
+            if (User.Identity.IsAuthenticated && !string.IsNullOrEmpty(userEmail))
+            {
+                return Ok(new { isAuthenticated = true, email = userEmail });
+            }
+            else
+            {
+                return Ok(new { isAuthenticated = false });
+            }
+        }
+
         [HttpGet("authorize")]
         public async Task<IActionResult> Authorize([FromQuery]string? client_id, [FromQuery] string? redirect_uri, 
             [FromQuery] string? response_type, [FromQuery] string? state,
