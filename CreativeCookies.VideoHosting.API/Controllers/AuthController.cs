@@ -192,6 +192,61 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
         }
 
+        /// <summary>
+        /// Logs user out and revokes the refreshToken 
+        /// Duplicate of Logout.cshtml.cs from ASP.NET
+        /// </summary>
+        /// <param name="returnUrl"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        [HttpPost]
+        [Route("logout")]
+        public async Task<IActionResult> Logout(string returnUrl = "")
+        {
+            await _signInManager.SignOutAsync();
+            if (Request.Cookies.ContainsKey("ltrt"))
+            {
+                var refreshToken = Request.Cookies["ltrt"].ToString();
+                await _refreshTokenRepository.RevokeRefreshToken(refreshToken);
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.None,
+                };
+                Response.Cookies.Delete("ltrt", cookieOptions);
+            }
+            if (Request.Cookies.ContainsKey("stac"))
+            {
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.None,
+                };
+                Response.Cookies.Delete("stac", cookieOptions);
+            }
+
+            _logger.LogInformation("User logged out.");
+
+            if (!string.IsNullOrWhiteSpace(returnUrl))
+            {
+                return LocalRedirect(returnUrl);
+            }
+            else
+            {
+                var afterLogoutRedirectUrl = _configuration["ClientUrl"];
+                if (!string.IsNullOrWhiteSpace(afterLogoutRedirectUrl))
+                {
+                    return Ok();
+                }
+                else
+                {
+                    throw new ArgumentNullException("ClientUrl has not been found in the API's configuration");
+                }
+            }
+        }
+
         private async Task<IActionResult> HandleAuthorizationCodeGrant(string? code, string? redirect_uri, string? client_id, string? code_verifier, string grant_type)
         {
             var clientIdRedirectUrlErrorResponse = await ValidateRedirectUriAndClientId(redirect_uri, client_id, false);
