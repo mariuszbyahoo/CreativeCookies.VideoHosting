@@ -26,7 +26,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             if (Request.Cookies.ContainsKey("ltrt"))
             {
                 var refreshToken = Request.Cookies["ltrt"].ToString();
-                _refreshTokenRepository.RevokeRefreshToken(refreshToken);
+                await _refreshTokenRepository.RevokeRefreshToken(refreshToken);
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,

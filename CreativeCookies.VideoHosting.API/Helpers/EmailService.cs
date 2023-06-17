@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using CreativeCookies.VideoHosting.API.Templates;
 
-namespace CreativeCookies.VideoHosting.API.EmailHelpers
+namespace CreativeCookies.VideoHosting.API.Helpers
 {
     public class EmailService : IEmailService
     {
