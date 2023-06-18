@@ -235,15 +235,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
             else
             {
-                var afterLogoutRedirectUrl = _configuration["ClientUrl"];
-                if (!string.IsNullOrWhiteSpace(afterLogoutRedirectUrl))
-                {
-                    return Ok();
-                }
-                else
-                {
-                    throw new ArgumentNullException("ClientUrl has not been found in the API's configuration");
-                }
+            return Ok();
             }
         }
 
