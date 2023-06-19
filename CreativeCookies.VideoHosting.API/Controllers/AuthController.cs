@@ -196,17 +196,20 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         /// Logs user out and revokes the refreshToken 
         /// Duplicate of Logout.cshtml.cs from ASP.NET
         /// </summary>
-        /// <param name="returnUrl"></param>
+        /// <param name="returnPath">relative path of an endpoint where to redirect after logout with initial slash, ex. "/films-list"</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         [HttpPost]
         [Route("logout")]
-        public async Task<IActionResult> Logout(string returnUrl = "")
+        public async Task<IActionResult> Logout(string returnPath = "")
         {
             await _signInManager.SignOutAsync();
-            if (Request.Cookies.ContainsKey("ltrt"))
+            var ltrt = "ltrt";
+            var stac = "stac";
+            var aspNetCoreAuthCookie = ".AspNetCore.Identity.Application";
+            if (Request.Cookies.ContainsKey(ltrt))
             {
-                var refreshToken = Request.Cookies["ltrt"].ToString();
+                var refreshToken = Request.Cookies[ltrt].ToString();
                 await _refreshTokenRepository.RevokeRefreshToken(refreshToken);
                 var cookieOptions = new CookieOptions
                 {
@@ -214,9 +217,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     Secure = true,
                     SameSite = SameSiteMode.None,
                 };
-                Response.Cookies.Delete("ltrt", cookieOptions);
+                Response.Cookies.Delete(ltrt, cookieOptions);
             }
-            if (Request.Cookies.ContainsKey("stac"))
+            if (Request.Cookies.ContainsKey(stac))
             {
                 var cookieOptions = new CookieOptions
                 {
@@ -224,18 +227,35 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     Secure = true,
                     SameSite = SameSiteMode.None,
                 };
-                Response.Cookies.Delete("stac", cookieOptions);
+                Response.Cookies.Delete(stac, cookieOptions);
             }
 
-            _logger.LogInformation("User logged out.");
-
-            if (!string.IsNullOrWhiteSpace(returnUrl))
+            if (Request.Cookies.ContainsKey(aspNetCoreAuthCookie))
             {
-                return LocalRedirect(returnUrl);
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict
+                };
+                Response.Cookies.Delete(aspNetCoreAuthCookie);
+            }
+
+            // HACK: Delete AspNetCore.Identity.Application cookie
+
+            _logger.LogInformation("User logged out.");
+            var afterLogoutRedirectUrl = _configuration["ClientUrl"];
+            if (!string.IsNullOrWhiteSpace(afterLogoutRedirectUrl))
+            {
+                if (!string.IsNullOrWhiteSpace(returnPath))
+                {
+                    afterLogoutRedirectUrl += returnPath;
+                }
+                return Ok($"redirectTo={afterLogoutRedirectUrl}");
             }
             else
             {
-            return Ok();
+                throw new ArgumentNullException("ClientUrl has not been found in the API's configuration");
             }
         }
 
