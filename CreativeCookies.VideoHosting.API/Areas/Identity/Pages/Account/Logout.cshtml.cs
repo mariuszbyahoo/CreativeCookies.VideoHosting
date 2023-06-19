@@ -20,7 +20,12 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             _configuration = configuration;
         }
 
-        private async Task<IActionResult> Logout(string returnUrl = null)
+        /// <summary>
+        /// Performs logout action
+        /// </summary>
+        /// <param name="returnPath">relative path : ex. "/films-list" param MUST contain slash at the beginning</param>
+        /// <returns>Task<IActionResult></returns>
+        private async Task<IActionResult> Logout(string returnPath = null)
         {
             await _signInManager.SignOutAsync();
             if (Request.Cookies.ContainsKey("ltrt"))
@@ -47,28 +52,21 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             }
 
             _logger.LogInformation("User logged out.");
+            var clientUrl = _configuration["ClientUrl"];
 
-            if (!string.IsNullOrWhiteSpace(returnUrl))
+            if (!string.IsNullOrWhiteSpace(returnPath))
             {
-                return LocalRedirect(returnUrl);
+                return Redirect($"{clientUrl}{returnPath}");
             }
             else
             {
-                var afterLogoutRedirectUrl = _configuration["ClientUrl"];
-                if (!string.IsNullOrWhiteSpace(afterLogoutRedirectUrl))
-                {
-                    return Redirect(afterLogoutRedirectUrl);
-                }
-
-                // This needs to be a redirect so that the browser performs a new
-                // request and the identity for the user gets updated.
-                return RedirectToPage();
+                return Redirect($"{clientUrl}/films-list");
             }
         }
 
-        public async Task<IActionResult> OnGetAsync(string returnUrl = null)
+        public async Task<IActionResult> OnGetAsync(string returnPath = null)
         {
-            return await Logout(returnUrl);
+            return await Logout(returnPath);
         }
 
         public async Task<IActionResult> OnPost(string returnUrl = null)
