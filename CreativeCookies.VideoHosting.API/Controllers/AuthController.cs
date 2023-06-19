@@ -240,6 +240,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 };
                 Response.Cookies.Delete(aspNetCoreAuthCookie);
             }
+            else return Ok();
 
             // HACK: Delete AspNetCore.Identity.Application cookie
 
