@@ -83,7 +83,6 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
-                    // HACK: TODO Below just assumes it was given a full url, it results in redirecion to: https://{returnUrl}:80
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
