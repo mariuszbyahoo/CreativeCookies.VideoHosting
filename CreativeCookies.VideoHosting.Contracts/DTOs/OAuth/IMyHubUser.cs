@@ -10,5 +10,6 @@ namespace CreativeCookies.VideoHosting.Contracts.DTOs.OAuth
     {
         public Guid Id { get; set; }
         public string UserEmail { get; set; }
+        public string Role { get; set; }
     }
 }

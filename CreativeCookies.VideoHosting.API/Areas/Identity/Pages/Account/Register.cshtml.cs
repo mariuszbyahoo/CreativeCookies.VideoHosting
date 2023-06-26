@@ -96,7 +96,12 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User created a new account with password.");
+                    var roleResult = await _userManager.AddToRoleAsync(user, "NonSubscriber");
+                    if (roleResult.Succeeded)
+                    {
+                        _logger.LogInformation("User created a new account with password.");
+                    }
+                    else _logger.LogError($"Error occured while adding user: {user.Id} to role: NonSubscriber");
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);

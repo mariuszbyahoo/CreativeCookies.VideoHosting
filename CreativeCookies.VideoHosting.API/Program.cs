@@ -202,6 +202,35 @@ namespace CreativeCookies.VideoHosting.API
             {
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 db.Database.Migrate();
+
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+
+                // Ensure the roles exist
+                var roles = new[] { "admin", "subscriber", "nonsubscriber" };
+                foreach (var role in roles)
+                {
+                    if (!roleManager.RoleExistsAsync(role).Result)
+                    {
+                        roleManager.CreateAsync(new IdentityRole(role)).Wait();
+                    }
+                }
+
+                // Create an admin user
+                var adminEmail = builder.Configuration.GetValue<string>("AdminEmail");
+                var adminUser = userManager.FindByEmailAsync(adminEmail)?.Result;
+
+                if (adminUser == null)
+                {
+                    adminUser = new IdentityUser { UserName = adminEmail, Email = adminEmail };
+                    adminUser.EmailConfirmed = true;
+                    var result = userManager.CreateAsync(adminUser, "Pass123$").Result;
+                    if (result.Succeeded)
+                    {
+                        // HACK: Send an email about creation of the user to adminEmail
+                        userManager.AddToRoleAsync(adminUser, "Admin").Wait();
+                    }
+                }
             }
 
             if (app.Environment.IsDevelopment())
