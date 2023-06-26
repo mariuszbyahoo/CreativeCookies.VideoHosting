@@ -18,7 +18,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
     {
         private const int RefreshTokenLength = 32;
 
-        public string GenerateAccessToken(Guid userId, string userEmail, Guid clientId, IConfiguration configuration, string issuer)
+        public string GenerateAccessToken(Guid userId, string userEmail, Guid clientId, IConfiguration configuration, string issuer, string userRole)
         {
             var secretKey = configuration["JWTSecretKey"];
 
@@ -33,7 +33,8 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
                 {
                     new Claim(ClaimTypes.NameIdentifier, userId.ToString().ToUpperInvariant()), 
                     new Claim("client_id", clientId.ToString().ToUpperInvariant()),
-                    new Claim(ClaimTypes.Email, userEmail.ToUpperInvariant())
+                    new Claim(ClaimTypes.Email, userEmail.ToUpperInvariant()),
+                    new Claim(ClaimTypes.Role, userRole) 
                 }),
                 Expires = DateTime.UtcNow.AddHours(1), 
                 Issuer = issuer, 

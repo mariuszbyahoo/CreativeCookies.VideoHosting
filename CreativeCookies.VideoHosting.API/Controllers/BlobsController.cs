@@ -60,7 +60,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         [HttpPatch]
         [Route("editMetadata")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
         public async Task<IActionResult> EditVideoMetadata([FromBody] VideoMetadata metadata)
         {
             var res = await _filmsRepository.EditVideoMetadata(metadata);
@@ -72,7 +72,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
         public async Task<IActionResult> SaveVideoMetadata([FromBody] VideoMetadata metadata)
         {
             try
@@ -94,7 +94,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         [HttpDelete]
         [Route("deleteVideo")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
         public async Task<IActionResult> DeleteVideo(string Id)
         {
             Guid videoId;

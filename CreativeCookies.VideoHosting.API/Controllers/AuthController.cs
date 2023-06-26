@@ -149,7 +149,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     return Redirect(loginUrl);
                 }
 
-                var authorizationCode = await _codesRepo.GetAuthorizationCode(client_id, User.FindFirstValue(ClaimTypes.NameIdentifier), redirect_uri, code_challenge, code_challenge_method);
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var authorizationCode = await _codesRepo.GetAuthorizationCode(client_id, userId, redirect_uri, code_challenge, code_challenge_method);
 
                 var redirectUriBuilder = new UriBuilder(redirect_uri);
                 var queryParameters = HttpUtility.ParseQueryString(redirectUriBuilder.Query);
@@ -282,8 +283,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 _logger.LogError($"Codes repo returned null for GetUserByAuthCodeAsync when invoked inside Token action with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(grant_type)}: {grant_type}, {nameof(code)}: {code}, {nameof(code_verifier)}: {code_verifier}");
                 return GenerateBadRequest("server_error");
             }
+            // HACK: Get user's role and pass it into GenerateAccessToken
 
-            var accessToken = _jwtRepository.GenerateAccessToken(extractedUser.Id, extractedUser.UserEmail, Guid.Parse(client_id), _configuration, baseUrl);
+            var accessToken = _jwtRepository.GenerateAccessToken(extractedUser.Id, extractedUser.UserEmail, Guid.Parse(client_id), _configuration, baseUrl, extractedUser.Role);
             var refreshToken = await _refreshTokenRepository.CreateRefreshToken(extractedUser.Id);
             // HACK: TODO implement RBAC as describen in RFC6749 3.3
             var accessTokenCookieOptions = ReturnAuthCookieOptions(1);
@@ -323,7 +325,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 var request = _httpContextAccessor.HttpContext.Request;
                 var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
 
-                var newAccessToken = _jwtRepository.GenerateAccessToken(user.Id, user.UserEmail, Guid.Parse(client_id), _configuration, baseUrl);
+                var newAccessToken = _jwtRepository.GenerateAccessToken(user.Id, user.UserEmail, Guid.Parse(client_id), _configuration, baseUrl, user.Role);
                 var newRefreshToken = await _refreshTokenRepository.CreateRefreshToken(user.Id);
 
                 var accessTokenCookieOptions = ReturnAuthCookieOptions(1);

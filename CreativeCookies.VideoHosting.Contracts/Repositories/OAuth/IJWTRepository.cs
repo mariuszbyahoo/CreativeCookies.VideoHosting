@@ -10,7 +10,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories.OAuth
 {
     public interface IJWTRepository
     {
-        string GenerateAccessToken(Guid userId, string userEmail, Guid clientId, IConfiguration configuration, string issuer);
+        string GenerateAccessToken(Guid userId, string userEmail, Guid clientId, IConfiguration configuration, string issuer, string userRole);
         IRefreshToken GenerateRefreshToken(Guid userId);
     }
 }

@@ -99,7 +99,11 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             else
             {
                 var user = await _context.Users.Where(u => u.Id.Equals(tokenEntry.UserId)).FirstOrDefaultAsync();
-                return new MyHubUserDto(Guid.Parse(tokenEntry.UserId), user.NormalizedEmail);
+                var intermediateLookup = await _context.UserRoles.FirstOrDefaultAsync(r => r.UserId.Equals(tokenEntry.UserId));
+                var roleId = intermediateLookup.RoleId;
+                var role = await _context.Roles.FirstOrDefaultAsync(r => r.Id.Equals(roleId)); 
+
+                return new MyHubUserDto(Guid.Parse(tokenEntry.UserId), user.NormalizedEmail, role.NormalizedName);
             }
         }
 
