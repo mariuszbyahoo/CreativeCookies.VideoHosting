@@ -1,4 +1,5 @@
-﻿using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
+﻿using CreativeCookies.VideoHosting.Contracts.DTOs;
+using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,6 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
 {
     public interface IUsersRepository
     {
-        Task<IEnumerable<IMyHubUser>> GetUsersList(string search, int pageNumber, int pageSize);
+        Task<IUsersPaginatedResult> GetUsersList(string search, int pageNumber, int pageSize);
     }
 }
