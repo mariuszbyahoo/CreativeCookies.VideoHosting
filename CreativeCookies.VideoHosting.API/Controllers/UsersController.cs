@@ -1,10 +1,12 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
+using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Domain.DTOs.OAuth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
@@ -13,11 +15,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IUsersRepository _usersRepo;
 
-        public UsersController(UserManager<IdentityUser> userManager)
+        public UsersController(IUsersRepository usersRepo)
         {
-            _userManager = userManager;
+            _usersRepo = usersRepo;
         }
 
         [HttpGet]
@@ -29,21 +31,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 return BadRequest("PageNumber and PageSize must be greater than zero.");
             }
 
-            var users = _userManager.Users
-                .OrderBy(x => x.Email)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
+            var result = await _usersRepo.GetUsersList(string.Empty, pageNumber, pageSize);
 
-            var result = new List<IMyHubUser>();
-
-            foreach (var user in users)
-            {
-                var userRoles = await _userManager.GetRolesAsync(user);
-                result.Add(new MyHubUserDto(Guid.Parse(user.Id.ToUpperInvariant()), user.Email ?? user.UserName, string.Join(',', userRoles)));
-            }
-
-            return result;
+            return Ok(result);
         }
     }
 }
