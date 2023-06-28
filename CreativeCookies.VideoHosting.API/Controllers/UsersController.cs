@@ -24,14 +24,14 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
-        public async Task<ActionResult<IList<IMyHubUser>>> GetAll(int pageNumber = 1, int pageSize = 10)
-        {
+        public async Task<ActionResult<IList<IMyHubUser>>> GetAll(int pageNumber = 1, int pageSize = 10, string search = "")
+        { // HACK: ADD Roles filter!
             if (pageNumber <= 0 || pageSize <= 0)
             {
                 return BadRequest("PageNumber and PageSize must be greater than zero.");
             }
 
-            var result = await _usersRepo.GetUsersList(string.Empty, pageNumber, pageSize);
+            var result = await _usersRepo.GetUsersList(search, pageNumber, pageSize);
 
             return Ok(result);
         }
