@@ -26,7 +26,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             _userManager = userManager;
         }
 
-        public async Task<IUsersPaginatedResult> GetUsersList(string search, int pageNumber, int pageSize)
+        public async Task<IUsersPaginatedResult> GetUsersList(string search, int pageNumber, int pageSize, string role)
         {
             var usersQuery = _context.Users.Where(user => string.IsNullOrEmpty(search) || user.Email.Contains(search) || user.UserName.Contains(search));
             double usersCount = await usersQuery.CountAsync();
@@ -41,8 +41,18 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
 
             foreach (var user in users)
             {
+                var toAdd = false;
                 var userRoles = await _userManager.GetRolesAsync(user);
-                result.Add(new MyHubUserDto(Guid.Parse(user.Id.ToUpperInvariant()), user.Email ?? user.UserName, string.Join(',', userRoles)));
+                var matchingRole = userRoles.FirstOrDefault(r => r.ToLowerInvariant() == role.ToLowerInvariant());
+                if (role.Equals("any", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    toAdd = true;
+                    matchingRole = userRoles.First();
+                }
+                else if (!string.IsNullOrWhiteSpace(matchingRole)) toAdd = true;
+
+                if (toAdd) result.Add(new MyHubUserDto(Guid.Parse(user.Id.ToUpperInvariant()), user.Email ?? user.UserName, matchingRole));
+
             }
             return new UsersPaginatedResult(result, usersCount > result.Count(), pageNumber, totalPages);
         }

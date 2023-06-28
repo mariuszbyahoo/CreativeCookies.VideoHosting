@@ -10,6 +10,6 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
 {
     public interface IUsersRepository
     {
-        Task<IUsersPaginatedResult> GetUsersList(string search, int pageNumber, int pageSize);
+        Task<IUsersPaginatedResult> GetUsersList(string search, int pageNumber, int pageSize, string role);
     }
 }
