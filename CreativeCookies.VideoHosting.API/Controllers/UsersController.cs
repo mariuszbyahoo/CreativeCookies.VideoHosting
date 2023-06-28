@@ -22,15 +22,27 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
-        public async Task<ActionResult<IList<IMyHubUser>>> GetAll()
+        public async Task<ActionResult<IList<IMyHubUser>>> GetAll(int pageNumber = 1, int pageSize = 10)
         {
-            var users = _userManager.Users.ToList();
+            if (pageNumber <= 0 || pageSize <= 0)
+            {
+                return BadRequest("PageNumber and PageSize must be greater than zero.");
+            }
+
+            var users = _userManager.Users
+                .OrderBy(x => x.Email)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
             var result = new List<IMyHubUser>();
+
             foreach (var user in users)
             {
                 var userRoles = await _userManager.GetRolesAsync(user);
-                result.Add(new MyHubUserDto(Guid.Parse(user.Id.ToUpperInvariant()), user.Email ?? user.UserName, string.Join(',',userRoles)));
+                result.Add(new MyHubUserDto(Guid.Parse(user.Id.ToUpperInvariant()), user.Email ?? user.UserName, string.Join(',', userRoles)));
             }
+
             return result;
         }
     }
