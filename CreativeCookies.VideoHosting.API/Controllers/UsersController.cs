@@ -25,7 +25,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
         public async Task<ActionResult<IList<IMyHubUser>>> GetAll(int pageNumber = 1, int pageSize = 10, string search = "", string role = "any")
-        { // HACK: ADD Roles filter!
+        { 
             if (pageNumber <= 0 || pageSize <= 0)
             {
                 return BadRequest("PageNumber and PageSize must be greater than zero.");
