@@ -82,7 +82,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
                 var roleId = intermediateLookup.RoleId;
                 var role = await _ctx.Roles.FirstOrDefaultAsync(r => r.Id.Equals(roleId));
                 var user = await _ctx.Users.Where(u => u.Id.Equals(codeEntry.UserId))
-                    .Select<IdentityUser, IMyHubUser>(r => new MyHubUserDto(Guid.Parse(r.Id), r.NormalizedEmail, role.NormalizedName))
+                    .Select<IdentityUser, IMyHubUser>(r => new MyHubUserDto(Guid.Parse(r.Id), r.NormalizedEmail, role.NormalizedName, r.EmailConfirmed))
                     .FirstOrDefaultAsync();
                 return user;
             }

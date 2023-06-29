@@ -1,10 +1,12 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
+using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Domain.DTOs.OAuth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
@@ -13,25 +15,25 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IUsersRepository _usersRepo;
 
-        public UsersController(UserManager<IdentityUser> userManager)
+        public UsersController(IUsersRepository usersRepo)
         {
-            _userManager = userManager;
+            _usersRepo = usersRepo;
         }
 
         [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
-        public async Task<ActionResult<IList<IMyHubUser>>> GetAll()
-        {
-            var users = _userManager.Users.ToList();
-            var result = new List<IMyHubUser>();
-            foreach (var user in users)
+        public async Task<ActionResult<IList<IMyHubUser>>> GetAll(int pageNumber = 1, int pageSize = 10, string search = "", string role = "any")
+        { 
+            if (pageNumber <= 0 || pageSize <= 0)
             {
-                var userRoles = await _userManager.GetRolesAsync(user);
-                result.Add(new MyHubUserDto(Guid.Parse(user.Id.ToUpperInvariant()), user.Email ?? user.UserName, string.Join(',',userRoles)));
+                return BadRequest("PageNumber and PageSize must be greater than zero.");
             }
-            return result;
+
+            var result = await _usersRepo.GetUsersList(search, pageNumber, pageSize, role);
+
+            return Ok(result);
         }
     }
 }

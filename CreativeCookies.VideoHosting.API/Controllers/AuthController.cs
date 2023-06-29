@@ -63,6 +63,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         {
             var stac = Request.Cookies["stac"];
             string userEmail = null;
+            string userRole = null;
 
             var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -83,6 +84,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 {
                     var claimsPrincipal = tokenHandler.ValidateToken(stac, validationParameters, out _);
                     userEmail = claimsPrincipal.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.Email))?.Value;
+                    userRole = claimsPrincipal.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.Role))?.Value;
                 }
                 catch (SecurityTokenExpiredException)
                 {
@@ -97,6 +99,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                             {
                                 var claimsPrincipal = tokenHandler.ValidateToken((string)data.access_token, validationParameters, out _);
                                 userEmail = claimsPrincipal.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.Email))?.Value;
+                                userRole = claimsPrincipal.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.Role))?.Value;
                             }
                             catch (Exception ex)
                             {
@@ -108,14 +111,14 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 }
             }
 
-            if (!string.IsNullOrEmpty(userEmail))
+            if (!string.IsNullOrEmpty(userEmail) && !string.IsNullOrEmpty(userRole))
             {
                 if (!User.Identity.IsAuthenticated)
                 {
                     var user = await _userManager.FindByEmailAsync(userEmail);
                     await _signInManager.SignInAsync(user, false);
                 }
-                return Ok(new { isAuthenticated = true, email = userEmail });
+                return Ok(new { isAuthenticated = true, email = userEmail, userRole = userRole });
             }
             else
             {

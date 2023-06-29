@@ -112,6 +112,7 @@ namespace CreativeCookies.VideoHosting.API
             var apiUrl = builder.Configuration.GetValue<string>("ApiUrl");
 
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<IUsersRepository, UsersRepository>();
             builder.Services.AddScoped<IClientStore, ClientStore>();
             builder.Services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
             builder.Services.AddScoped<IJWTRepository, JWTRepository>();
