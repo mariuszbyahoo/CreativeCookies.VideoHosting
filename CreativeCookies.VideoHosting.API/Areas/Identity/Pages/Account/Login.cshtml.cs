@@ -86,11 +86,6 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
-                    if (User.Identity.IsAuthenticated && User.IsInRole("admin"))
-                    {
-                        var stripeAccountId = 
-                        // Add StripeService call to check is there an entity in the database.
-                    }
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
