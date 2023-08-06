@@ -12,6 +12,6 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
         /// Checks is there any Stripe Connected account added to the database
         /// </summary>
         /// <returns>Account's Stripe Id, or empty string if found none</returns>
-        public string GetConnectedAccountsId();
+        public Task<string> GetConnectedAccountsId();
     }
 }

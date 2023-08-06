@@ -1,5 +1,6 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.Contexts;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,9 +16,9 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
         {
             _ctx = ctx;
         }
-        public string GetConnectedAccountsId()
+        public async Task<string> GetConnectedAccountsId()
         {
-            var record = _ctx.StripeAccountRecords.FirstOrDefault();
+            var record = await _ctx.StripeAccountRecords.FirstOrDefaultAsync();
             if(record == null) return string.Empty;
             return record.StripeConnectedAccountId;
         }
