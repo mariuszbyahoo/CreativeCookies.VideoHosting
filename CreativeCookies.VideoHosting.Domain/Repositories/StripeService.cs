@@ -42,22 +42,29 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
 
         public string ReturnConnectAccountLink()
         {
-            StripeConfiguration.ApiKey = _stripeSecretAPIKey;
-            var apiUrl = _configuration.GetValue<string>("ApiUrl");
-            var accountOptions = new AccountCreateOptions { Type = "standard" };
-            var accountSrv = new AccountService();
-            var account = accountSrv.Create(accountOptions);
-
-            var linkOptions = new AccountLinkCreateOptions
+            try
             {
-                Account = account.Id,
-                RefreshUrl = $"{apiUrl}/Stripe/OnboardingRefresh",
-                ReturnUrl = $"{apiUrl}/Stripe/OnboardingReturn",
-                Type = "account_onboarding",
-            };
-            var accountLinkSrv = new AccountLinkService();
-            var link = accountLinkSrv.Create(linkOptions);
-            return link.Url;
+                StripeConfiguration.ApiKey = _stripeSecretAPIKey;
+                var apiUrl = _configuration.GetValue<string>("ApiUrl");
+                var accountOptions = new AccountCreateOptions { Type = "standard" };
+                var accountSrv = new AccountService();
+                var account = accountSrv.Create(accountOptions);
+
+                var linkOptions = new AccountLinkCreateOptions
+                {
+                    Account = account.Id,
+                    RefreshUrl = $"{apiUrl}/Stripe/OnboardingRefresh",
+                    ReturnUrl = $"{apiUrl}/Stripe/OnboardingReturn",
+                    Type = "account_onboarding",
+                };
+                var accountLinkSrv = new AccountLinkService();
+                var link = accountLinkSrv.Create(linkOptions);
+                return link.Url;
+            } catch(Exception ex)
+            {
+                _logger.LogError(ex, "Error occured in ReturnConnectAccountLink()");
+                return string.Empty;
+            }
         }
 
         public async Task<bool> SaveAccountId(string accountId)
