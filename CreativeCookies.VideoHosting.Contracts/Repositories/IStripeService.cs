@@ -13,5 +13,11 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
         /// </summary>
         /// <returns>Account's Stripe Id, or empty string if found none</returns>
         public Task<string> GetConnectedAccountsId();
+
+        /// <summary>
+        /// Checks is Id stored in the Database also present in Stripe's connected accounts set.
+        /// </summary>
+        /// <returns>true - DB contains valid Stripe Connect Id value, false - Stripe Connect ID account has not been found in Stripe API</returns>
+        public bool IsDbRecordValid(string IdStoredInDatabase);
     }
 }
