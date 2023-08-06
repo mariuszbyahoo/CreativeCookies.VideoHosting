@@ -39,7 +39,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             var accountLink = _stripeService.ReturnConnectAccountLink();
             return Redirect(accountLink);
         }
-        [HttpGet("OnboardingReturnUrl")]
+        [HttpGet("OnboardingReturn")]
         public async Task<IActionResult> OnboardingReturn()
         {
             return Ok("Onboarding Returned!");
