@@ -53,8 +53,8 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
                 var linkOptions = new AccountLinkCreateOptions
                 {
                     Account = account.Id,
-                    RefreshUrl = $"{apiUrl}/Stripe/OnboardingRefresh",
-                    ReturnUrl = $"{apiUrl}/Stripe/OnboardingReturn",
+                    RefreshUrl = $"{apiUrl}api/Stripe/OnboardingRefresh",
+                    ReturnUrl = $"{apiUrl}api/Stripe/OnboardingReturn",
                     Type = "account_onboarding",
                 };
                 var accountLinkSrv = new AccountLinkService();
