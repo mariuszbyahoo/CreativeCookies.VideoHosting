@@ -21,7 +21,6 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
         public async Task<ActionResult<bool>> IsStripeAccountSetUp()
         {
-            // HACK: TODO, also verify is this Stripe Connected Account's Id present in the set of connected accounts of myhub.com.pl connected accounts.
             bool result = false;
             var idStoredInDatabase = await _stripeService.GetConnectedAccountsId();
             if (!string.IsNullOrWhiteSpace(idStoredInDatabase))
