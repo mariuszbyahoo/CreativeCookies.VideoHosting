@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using CreativeCookies.VideoHosting.Contracts.Repositories;
 
 namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 {
@@ -21,10 +22,12 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
+        private readonly IStripeService _stripeService;
 
-        public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<IdentityUser> signInManager, IStripeService stripeService, ILogger<LoginModel> logger)
         {
             _signInManager = signInManager;
+            _stripeService = stripeService;
             _logger = logger;
         }
 
@@ -83,6 +86,11 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
+                    if (User.Identity.IsAuthenticated && User.IsInRole("admin"))
+                    {
+                        var stripeAccountId = 
+                        // Add StripeService call to check is there an entity in the database.
+                    }
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)

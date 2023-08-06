@@ -150,6 +150,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddSingleton<ISasTokenRepository, SasTokenRepository>();
             builder.Services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
             builder.Services.AddScoped<IFilmsRepository, FilmsRepository>();
+            builder.Services.AddScoped<IStripeService, StripeService>();
 
             builder.Services.AddHostedService<TokenCleanupWorker>();
 
