@@ -26,6 +26,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
         public async Task<ActionResult<bool>> IsStripeAccountSetUp()
         {
+            // HACK TODO: change bool as a response value to enum with three possible values:
+            // 1. Success
+            // 2. Connect account created, but has not been saved to the DB
+            // 3. Connect account missing in Stripe, as well as in DB.
+
             bool result = false;
             var idStoredInDatabase = await _stripeService.GetConnectedAccountsId();
             if (!string.IsNullOrWhiteSpace(idStoredInDatabase))
