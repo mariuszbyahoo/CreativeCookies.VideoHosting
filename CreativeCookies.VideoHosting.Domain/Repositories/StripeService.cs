@@ -35,7 +35,8 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             var list = service.List();
             if(list != null)
             {
-                return list.FirstOrDefault(a => a.Id.Equals(idStoredInDatabase)) != null;
+                var lookup = list.FirstOrDefault(a => a.Id.Equals(idStoredInDatabase));
+                if (lookup != null && lookup.DetailsSubmitted) return true;
             }
             return false;
         }

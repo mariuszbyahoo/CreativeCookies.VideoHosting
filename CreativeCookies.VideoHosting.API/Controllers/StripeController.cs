@@ -13,11 +13,13 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     {
         private readonly IStripeService _stripeService;
         private readonly ILogger<StripeController> _logger;
+        private readonly IConfiguration _configuration;
 
-        public StripeController(IStripeService stripeService, ILogger<StripeController> logger)
+        public StripeController(IStripeService stripeService, ILogger<StripeController> logger, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
             _stripeService = stripeService;
             _logger = logger;
+            _configuration = configuration;
         }
 
         [HttpGet("IsSetUp")]
@@ -43,12 +45,14 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         public async Task<IActionResult> OnboardingReturn()
         {
             return Ok("Onboarding Returned!");
+            // What to do here? Is there anything to be done specifically? Because even before hitting this
+            // controller, the account's ID is being saved to the database.
         }
 
         [HttpPost("WebHook")]
         public async Task<IActionResult> AccountUpdatedWebHook()
         {
-            const string endpointSecret = "whsec_5a47597a9ce53e2107dba3f79794a4853847ed41c8281625895196654c06271a";
+            string endpointSecret = _configuration.GetValue<string>("WebhookEndpointSecret");
 
             var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
 
