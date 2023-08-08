@@ -47,6 +47,8 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             {
                 StripeConfiguration.ApiKey = _stripeSecretAPIKey;
                 var apiUrl = _configuration.GetValue<string>("ApiUrl");
+                var clientUrl = _configuration.GetValue<string>("ClientUrl");
+
                 var accountOptions = new AccountCreateOptions { Type = "standard" };
                 var accountSrv = new AccountService();
                 var account = accountSrv.Create(accountOptions);
@@ -55,7 +57,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
                 {
                     Account = account.Id,
                     RefreshUrl = $"{apiUrl}/api/Stripe/OnboardingRefresh",
-                    ReturnUrl = $"{apiUrl}/api/Stripe/OnboardingReturn",
+                    ReturnUrl = $"{clientUrl}/stripeOnboardingReturn",
                     Type = "account_onboarding",
                 };
                 var accountLinkSrv = new AccountLinkService();
