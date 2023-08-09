@@ -23,5 +23,17 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
         public string ReturnConnectAccountLink();
 
         public Task<bool> SaveAccountId(string accountId);
+
+        /// <summary>
+        /// Removes all stored Stripe Account Ids from the database.
+        /// </summary>
+        /// <returns></returns>
+        public Task DeleteStoredAccountIds();
+
+        /// <summary>
+        /// Checks, is there anything in the database stored already.
+        /// </summary>
+        /// <returns></returns>
+        public bool HasAnyEntity();
     }
 }

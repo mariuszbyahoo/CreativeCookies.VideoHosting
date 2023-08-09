@@ -76,7 +76,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             {
                 var newAccountRecord = new DAL.DAOs.StripeAccountRecord() { Id = Guid.NewGuid(), StripeConnectedAccountId = accountId };
                 _ctx.StripeAccountRecords.Add(newAccountRecord);
-                _ctx.SaveChangesAsync();
+                await _ctx.SaveChangesAsync();
                 return true;
             }
             catch(Exception ex)
@@ -84,6 +84,28 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
                 _logger.LogError(ex, "And error occured while saving account Id to the database");
                 return false;
             }
+        }
+
+        public async Task DeleteStoredAccountIds()
+        {
+            try
+            {
+                var list = await _ctx.StripeAccountRecords.ToListAsync();
+                for(int i = 0; i < list.Count; i++)
+                {
+                    _ctx.Remove(list[i]);
+                }
+                await _ctx.SaveChangesAsync();
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "And error occured while deleting the account Ids from the database");
+            }
+        }
+
+        public bool HasAnyEntity()
+        {
+            return _ctx.StripeAccountRecords.ToList().Any();
         }
     }
 }

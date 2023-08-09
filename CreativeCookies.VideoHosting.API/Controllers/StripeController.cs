@@ -26,11 +26,6 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
         public async Task<ActionResult<bool>> IsStripeAccountSetUp()
         {
-            // HACK TODO: change bool as a response value to enum with three possible values:
-            // 1. Success
-            // 2. Connect account created, but has not been saved to the DB
-            // 3. Connect account missing in Stripe, as well as in DB.
-
             bool result = false;
             var idStoredInDatabase = await _stripeService.GetConnectedAccountsId();
             if (!string.IsNullOrWhiteSpace(idStoredInDatabase))
@@ -40,21 +35,22 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             return Ok(result);
         }
 
+        [HttpGet("CreateConnectAccountLink")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
+        public async Task<ActionResult<string>> GetConnectAccountLink()
+        {
+            var accountLink = _stripeService.ReturnConnectAccountLink();
+            return accountLink;
+        }
+
         [HttpGet("OnboardingRefresh")]
         public IActionResult RefreshOnboarding()
         {
             var accountLink = _stripeService.ReturnConnectAccountLink();
             return Redirect(accountLink);
         }
-        [HttpGet("OnboardingReturn")]
-        public async Task<IActionResult> OnboardingReturn()
-        {
-            return Ok("Onboarding Returned!");
-            // What to do here? Is there anything to be done specifically? Because even before hitting this
-            // controller, the account's ID is being saved to the database.
-        }
 
-        [HttpPost("WebHook")]
+        [HttpPost("AccountUpdatedWebhook")]
         public async Task<IActionResult> AccountUpdatedWebHook()
         {
             string endpointSecret = _configuration.GetValue<string>("WebhookEndpointSecret");
@@ -81,11 +77,22 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             catch (StripeException e)
             {
                 _logger.LogError(e, e.Message);
-                return BadRequest();
+                return BadRequest("Stripe exception occured");
+            }
+            catch(Exception e)
+            {
+                _logger.LogError(e, e.Message, e.StackTrace);
             }
 
             return Ok();
         }
 
+        [HttpDelete("DeleteStoredAccounts")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
+        public async Task<IActionResult> DeleteStoredAccounts()
+        {
+            await _stripeService.DeleteStoredAccountIds();
+            return NoContent();
+        }
     }
 }
