@@ -7,6 +7,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
     public class StripeOnboardingModel : PageModel
     {
         private readonly IStripeService _stripeService;
+        public bool EntityExists { get; set; }
 
         public StripeOnboardingModel(IStripeService stripeService)
         {
@@ -15,12 +16,20 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 
         public void OnGet()
         {
+            EntityExists = _stripeService.HasAnyEntity();
         }
 
-        public IActionResult OnPost()
+        public async Task<IActionResult> OnPostConnect()
         {
-            var url = _stripeService.ReturnConnectAccountLink();
+            var url = await _stripeService.ReturnConnectAccountLink();
             return Redirect(url);
         }
+
+        public async Task<IActionResult> OnPostDelete()
+        {
+            await _stripeService.DeleteStoredAccountIds();
+            return RedirectToPage(); // Return to the current page or redirect elsewhere if needed
+        }
     }
+
 }

@@ -35,18 +35,18 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("CreateConnectAccountLink")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
-        public async Task<ActionResult<string>> GetConnectAccountLink()
-        {
-            var accountLink = _stripeService.ReturnConnectAccountLink();
-            return accountLink;
-        }
+        //[HttpGet("CreateConnectAccountLink")]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
+        //public async Task<ActionResult<string>> GetConnectAccountLink()
+        //{
+        //    var accountLink = await _stripeService.ReturnConnectAccountLink();
+        //    return accountLink;
+        //}
 
         [HttpGet("OnboardingRefresh")]
-        public IActionResult RefreshOnboarding()
+        public async Task<IActionResult> RefreshOnboarding()
         {
-            var accountLink = _stripeService.ReturnConnectAccountLink();
+            var accountLink = await _stripeService.ReturnConnectAccountLink();
             return Redirect(accountLink);
         }
 
@@ -66,7 +66,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 if (stripeEvent.Type == Events.AccountUpdated)
                 {
                     var account = stripeEvent.Data.Object as Account;
-                    await _stripeService.SaveAccountId(account.Id);
+                    if(!_stripeService.IsDbRecordValid(await _stripeService.GetConnectedAccountsId()))
+                        await _stripeService.SaveAccountId(account.Id);
                 }
                 else
                 {

@@ -1,22 +1,34 @@
 ﻿@page
 @model CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.StripeOnboardingModel
-@{
-}
+
 <style>
     .container {
-        width: 75%; /* You can adjust this to fit your needs */
+        width: 75%; 
         margin: auto;
         text-align: center;
     }
 
     .space {
-        margin-top: 15%; /* Adjust this to get the desired space */
+        margin-top: 15%; 
     }
 </style>
 
 <div class="container">
-    <h4 >You're just one step away from monetising your premium videos:</h4>
-    <form method="post" class="space">
-        <button class="btn btn-outline-primary" type="submit">Connect Stripe</button>
-    </form>
-</div>
+    <h4>You're just one step away from monetising your premium videos:</h4>
+@*
+    @if (Model.EntityExists)
+    {
+        <form method="post" class="space" asp-page-handler="Delete">
+            <p>We've found, that you've recently submitted an account to the Stripe <strong>or</strong> you've just exited the onboarding flow in the middle of the process.</p>
+            <p>If you want delete this attempt or an old account's remainings, and start all over again, then hit :</p>
+            <button class="btn btn-outline-danger" type="submit">Refresh onboarding</button>
+        </form>
+    }
+    else
+    {*@
+        <form method="post" class="space" asp-page-handler="Connect">
+            <button class="btn btn-outline-primary" type="submit">Connect Stripe</button>
+        </form>
+@*    }
+*@</div>
+

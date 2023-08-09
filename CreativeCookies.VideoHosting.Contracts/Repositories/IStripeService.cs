@@ -17,10 +17,10 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
         /// <summary>
         /// Checks is Id stored in the Database also present in Stripe's connected accounts set.
         /// </summary>
-        /// <returns>true - DB contains valid Stripe Connect Id value, false - Stripe Connect ID account has not been found in Stripe API</returns>
+        /// <returns>true - DB contains valid Stripe Connect Id (at least one), false - DB holds no records</returns>
         public bool IsDbRecordValid(string IdStoredInDatabase);
 
-        public string ReturnConnectAccountLink();
+        public Task<string> ReturnConnectAccountLink();
 
         public Task<bool> SaveAccountId(string accountId);
 
