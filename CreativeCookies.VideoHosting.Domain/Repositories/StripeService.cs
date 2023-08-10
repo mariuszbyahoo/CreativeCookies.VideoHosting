@@ -129,12 +129,10 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             {
                 StripeConfiguration.ApiKey = _stripeSecretAPIKey;
 
-                var service = new AccountService();
 
                 var list = await _ctx.StripeAccountRecords.ToListAsync();
                 for(int i = 0; i < list.Count; i++)
                 {
-                    await service.DeleteAsync(list[i].StripeConnectedAccountId);
                     _ctx.Remove(list[i]);
                 }
                 await _ctx.SaveChangesAsync();
