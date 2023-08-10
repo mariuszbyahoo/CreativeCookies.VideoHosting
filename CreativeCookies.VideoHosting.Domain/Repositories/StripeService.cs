@@ -1,9 +1,12 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
+﻿using CreativeCookies.VideoHosting.Contracts.Enums;
+using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Stripe;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace CreativeCookies.VideoHosting.Domain.Repositories
 {
@@ -27,19 +30,34 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             return record.StripeConnectedAccountId;
         }
 
-        public bool IsDbRecordValid(string idStoredInDatabase)
+        public StripeConnectAccountStatus ReturnAccountStatus(string idStoredInDatabase)
         {
             StripeConfiguration.ApiKey = _stripeSecretAPIKey;
-           
+            var result = StripeConnectAccountStatus.Disconnected;
+
             var service = new AccountService();
-            var list = service.List();
-            if(list != null)
+            Account stripeAccount = service.Get(idStoredInDatabase); // get the specific account by ID
+
+            if (stripeAccount != null)
             {
-                var lookup = list.FirstOrDefault(a => a.Id.Equals(idStoredInDatabase));
-                if (lookup != null && lookup.DetailsSubmitted) return true;
+                if (stripeAccount.Capabilities != null &&
+                   stripeAccount.Capabilities.CardPayments.Equals("active") &&
+                   stripeAccount.Capabilities.Transfers.Equals("active"))
+                {
+                    if (stripeAccount.Requirements != null &&
+                       (stripeAccount.Requirements.PastDue == null || !stripeAccount.Requirements.PastDue.Any()))
+                    {
+                        result = StripeConnectAccountStatus.Connected;
+                    }
+                    else
+                    {
+                        result = StripeConnectAccountStatus.Restricted;
+                    }
+                }
             }
-            return false;
+            return result;
         }
+
 
         public async Task<string> ReturnConnectAccountLink()
         {

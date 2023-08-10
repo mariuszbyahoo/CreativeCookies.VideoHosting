@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CreativeCookies.VideoHosting.Contracts.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,7 +19,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
         /// Checks is Id stored in the Database also present in Stripe's connected accounts set.
         /// </summary>
         /// <returns>true - DB contains valid Stripe Connect Id (at least one), false - DB holds no records</returns>
-        public bool IsDbRecordValid(string IdStoredInDatabase);
+        public StripeConnectAccountStatus ReturnAccountStatus(string IdStoredInDatabase);
 
         public Task<string> ReturnConnectAccountLink();
 

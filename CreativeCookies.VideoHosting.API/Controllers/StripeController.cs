@@ -1,4 +1,5 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
+﻿using CreativeCookies.VideoHosting.Contracts.Enums;
+using CreativeCookies.VideoHosting.Contracts.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -24,24 +25,16 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         [HttpGet("IsSetUp")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
-        public async Task<ActionResult<bool>> IsStripeAccountSetUp()
+        public async Task<ActionResult<StripeConnectAccountStatus>> IsStripeAccountSetUp()
         {
-            bool result = false;
+            var result = StripeConnectAccountStatus.Disconnected;
             var idStoredInDatabase = await _stripeService.GetConnectedAccountsId();
             if (!string.IsNullOrWhiteSpace(idStoredInDatabase))
             {
-                result = _stripeService.IsDbRecordValid(idStoredInDatabase);
+                result = _stripeService.ReturnAccountStatus(idStoredInDatabase);
             }
             return Ok(result);
         }
-
-        //[HttpGet("CreateConnectAccountLink")]
-        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
-        //public async Task<ActionResult<string>> GetConnectAccountLink()
-        //{
-        //    var accountLink = await _stripeService.ReturnConnectAccountLink();
-        //    return accountLink;
-        //}
 
         [HttpGet("OnboardingRefresh")]
         public async Task<IActionResult> RefreshOnboarding()
@@ -66,7 +59,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 if (stripeEvent.Type == Events.AccountUpdated)
                 {
                     var account = stripeEvent.Data.Object as Account;
-                    if(!_stripeService.IsDbRecordValid(await _stripeService.GetConnectedAccountsId()))
+                    if(!_stripeService.ReturnAccountStatus(await _stripeService.GetConnectedAccountsId()))
                         await _stripeService.SaveAccountId(account.Id);
                 }
                 else
