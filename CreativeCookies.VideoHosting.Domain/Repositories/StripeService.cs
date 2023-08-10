@@ -41,8 +41,8 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             if (stripeAccount != null)
             {
                 if (stripeAccount.Capabilities != null &&
-                   stripeAccount.Capabilities.CardPayments.Equals("active") &&
-                   stripeAccount.Capabilities.Transfers.Equals("active"))
+                   stripeAccount.Capabilities.CardPayments != null && stripeAccount.Capabilities.CardPayments.Equals("active") &&
+                   stripeAccount.Capabilities.Transfers != null && stripeAccount.Capabilities.Transfers.Equals("active"))
                 {
                     if (stripeAccount.Requirements != null &&
                        (stripeAccount.Requirements.PastDue == null || !stripeAccount.Requirements.PastDue.Any()))
@@ -53,6 +53,10 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
                     {
                         result = StripeConnectAccountStatus.Restricted;
                     }
+                }
+                else if(stripeAccount.Capabilities != null && !stripeAccount.DetailsSubmitted)
+                {
+                    result = StripeConnectAccountStatus.Restricted;
                 }
             }
             return result;
