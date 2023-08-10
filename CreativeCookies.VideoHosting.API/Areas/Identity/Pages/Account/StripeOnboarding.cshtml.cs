@@ -33,12 +33,6 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             var url = await _stripeService.ReturnConnectAccountLink();
             return Redirect(url);
         }
-
-        public async Task<IActionResult> OnPostDelete()
-        {
-            await _stripeService.DeleteConnectAccounts();
-            return RedirectToPage(); // Return to the current page or redirect elsewhere if needed
-        }
     }
 
 }
