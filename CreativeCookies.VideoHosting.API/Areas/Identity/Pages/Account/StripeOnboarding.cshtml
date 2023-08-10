@@ -1,34 +1,79 @@
 ﻿@page
+@using CreativeCookies.VideoHosting.Contracts.Enums;
 @model CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.StripeOnboardingModel
 
 <style>
     .container {
-        width: 75%; 
+        width: 75%;
         margin: auto;
         text-align: center;
     }
 
     .space {
-        margin-top: 15%; 
+        margin-top: 7%;
     }
 </style>
-
-<div class="container">
-    <h4>You're just one step away from monetising your premium videos:</h4>
-@*
-    @if (Model.EntityExists)
+@{
+    var connectBtnTxt = "";
+    var connectFormMsg = "";
+    var deleteBtnTxt = "";
+    var deleteFormTxt = "";
+    switch (Model.AccountStatus)
     {
-        <form method="post" class="space" asp-page-handler="Delete">
-            <p>We've found, that you've recently submitted an account to the Stripe <strong>or</strong> you've just exited the onboarding flow in the middle of the process.</p>
-            <p>If you want delete this attempt or an old account's remainings, and start all over again, then hit :</p>
-            <button class="btn btn-outline-danger" type="submit">Refresh onboarding</button>
-        </form>
+        case StripeConnectAccountStatus.Disconnected:
+            connectBtnTxt = "Connect Stripe";
+            connectFormMsg = "In order to start setting up payment vendor, please select below:";
+            break;
+        case StripeConnectAccountStatus.Restricted:
+            connectFormMsg = "In order to continue your last attempt on payment setup, please select below:";
+            connectBtnTxt = "Continue Onboarding";
+            deleteFormTxt = "In order to delete data from your last attempt on payment setup, please select below:"; 
+            deleteBtnTxt = "Delete account";
+            break;
+        case StripeConnectAccountStatus.Connected:
+            deleteFormTxt = "In order to delete your data from MyHub database along with Stripe Connect account, please select below:";
+            deleteBtnTxt = "Delete account";
+            break;
     }
-    else
-    {*@
-        <form method="post" class="space" asp-page-handler="Connect">
+}
+<div class="container">
+    <h3>Stripe Connect Onboarding</h3>
+    @if (Model.AccountStatus == StripeConnectAccountStatus.Restricted || Model.AccountStatus == StripeConnectAccountStatus.Disconnected)
+    {
+        <p>@connectFormMsg</p>
+        <form method="post" asp-page-handler="Connect">
             <button class="btn btn-outline-primary" type="submit">Connect Stripe</button>
         </form>
-@*    }
-*@</div>
+    }
+    <div class="space"></div>
+    <h3>Or:</h3>
+    <div class="space"></div>
+    @if (Model.AccountStatus == StripeConnectAccountStatus.Connected || Model.AccountStatus == StripeConnectAccountStatus.Restricted)
+    {
+            <p>@deleteFormTxt</p>
+            <button class="btn btn-outline-danger" type="button" data-toggle="modal" data-target="#deleteModal">Delete account.</button>
+    }
+</div>
 
+
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Delete Confirmation</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete the account? This action is irreversible.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <form method="post" asp-page-handler="Delete">
+            <button class="btn btn-danger" type="submit">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
