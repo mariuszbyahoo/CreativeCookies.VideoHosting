@@ -119,7 +119,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             await _ctx.SaveChangesAsync();
         }
 
-        public async Task DeleteStoredAccountIds()
+        public async Task DeleteConnectAccounts()
         {
             try
             {

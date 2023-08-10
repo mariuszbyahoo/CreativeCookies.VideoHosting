@@ -59,8 +59,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 if (stripeEvent.Type == Events.AccountUpdated)
                 {
                     var account = stripeEvent.Data.Object as Account;
-                    if(!_stripeService.ReturnAccountStatus(await _stripeService.GetConnectedAccountsId()))
+                    if (_stripeService.ReturnAccountStatus(await _stripeService.GetConnectedAccountsId()) == StripeConnectAccountStatus.Disconnected)
+                    {
                         await _stripeService.SaveAccountId(account.Id);
+                    }
                 }
                 else
                 {
@@ -85,7 +87,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
         public async Task<IActionResult> DeleteStoredAccounts()
         {
-            await _stripeService.DeleteStoredAccountIds();
+            await _stripeService.DeleteConnectAccounts();
             return NoContent();
         }
     }

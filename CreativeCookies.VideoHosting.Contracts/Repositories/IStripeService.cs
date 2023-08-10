@@ -26,10 +26,10 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
         public Task<bool> SaveAccountId(string accountId);
 
         /// <summary>
-        /// Removes all stored Stripe Account Ids from the database.
+        /// Removes all stored Stripe Account Ids from the database as well as from the Stripe API.
         /// </summary>
         /// <returns></returns>
-        public Task DeleteStoredAccountIds();
+        public Task DeleteConnectAccounts();
 
         /// <summary>
         /// Checks, is there anything in the database stored already.
