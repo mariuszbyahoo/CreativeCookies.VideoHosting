@@ -7,10 +7,10 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 {
     public class StripeOnboardingModel : PageModel
     {
-        private readonly IStripeService _stripeService;
+        private readonly IConnectAccountsRepository _stripeService;
         public StripeConnectAccountStatus AccountStatus { get; set; }
 
-        public StripeOnboardingModel(IStripeService stripeService)
+        public StripeOnboardingModel(IConnectAccountsRepository stripeService)
         {
             _stripeService = stripeService;
         }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CreativeCookies.VideoHosting.Contracts.Repositories
 {
-    public interface IStripeService
+    public interface IConnectAccountsRepository
     {
         /// <summary>
         /// Checks is there any Stripe Connected account added to the database

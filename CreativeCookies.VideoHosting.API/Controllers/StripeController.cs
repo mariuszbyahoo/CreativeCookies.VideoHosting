@@ -12,11 +12,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     [ApiController]
     public class StripeController : ControllerBase
     {
-        private readonly IStripeService _stripeService;
+        private readonly IConnectAccountsRepository _stripeService;
         private readonly ILogger<StripeController> _logger;
         private readonly IConfiguration _configuration;
 
-        public StripeController(IStripeService stripeService, ILogger<StripeController> logger, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        public StripeController(IConnectAccountsRepository stripeService, ILogger<StripeController> logger, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
             _stripeService = stripeService;
             _logger = logger;

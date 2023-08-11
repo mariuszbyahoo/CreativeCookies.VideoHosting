@@ -10,13 +10,13 @@ using System.Text.RegularExpressions;
 
 namespace CreativeCookies.VideoHosting.Domain.Repositories
 {
-    public class StripeService : IStripeService
+    public class ConnectAccountsRepository : IConnectAccountsRepository
     {
         private readonly AppDbContext _ctx;
         private readonly IConfiguration _configuration;
         private readonly string _stripeSecretAPIKey;
-        private readonly ILogger<StripeService> _logger;
-        public StripeService(AppDbContext ctx, IConfiguration configuration, ILogger<StripeService> logger)
+        private readonly ILogger<ConnectAccountsRepository> _logger;
+        public ConnectAccountsRepository(AppDbContext ctx, IConfiguration configuration, ILogger<ConnectAccountsRepository> logger)
         {
             _ctx = ctx;
             _configuration = configuration;
@@ -30,6 +30,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             return record.StripeConnectedAccountId;
         }
 
+        #region SRP VIOLATION
         public StripeConnectAccountStatus ReturnAccountStatus(string idStoredInDatabase)
         {
             StripeConfiguration.ApiKey = _stripeSecretAPIKey;
@@ -100,7 +101,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
                 return string.Empty;
             }
         }
-
+        #endregion
 
         public async Task<bool> SaveAccountId(string accountId)
         {
