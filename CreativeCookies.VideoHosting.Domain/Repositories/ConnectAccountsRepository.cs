@@ -23,7 +23,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             _logger = logger;
             _stripeSecretAPIKey = _configuration.GetValue<string>("StripeSecretAPIKey");
         }
-        public async Task<string> GetConnectedAccountsId()
+        public async Task<string> GetConnectedAccountId()
         {
             var record = await _ctx.StripeAccountRecords.FirstOrDefaultAsync();
             if(record == null) return string.Empty;

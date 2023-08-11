@@ -17,7 +17,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 
         public void OnGet()
         {
-            var accountId = _stripeService.GetConnectedAccountsId().Result;
+            var accountId = _stripeService.GetConnectedAccountId().Result;
             if (!string.IsNullOrEmpty(accountId))
             {
                 AccountStatus = _stripeService.ReturnAccountStatus(accountId);

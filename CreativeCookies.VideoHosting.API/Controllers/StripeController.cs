@@ -28,7 +28,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         public async Task<ActionResult<StripeConnectAccountStatus>> IsStripeAccountSetUp()
         {
             var result = StripeConnectAccountStatus.Disconnected;
-            var idStoredInDatabase = await _stripeService.GetConnectedAccountsId();
+            var idStoredInDatabase = await _stripeService.GetConnectedAccountId();
             if (!string.IsNullOrWhiteSpace(idStoredInDatabase))
             {
                 result = _stripeService.ReturnAccountStatus(idStoredInDatabase);
@@ -59,7 +59,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 if (stripeEvent.Type == Events.AccountUpdated)
                 {
                     var account = stripeEvent.Data.Object as Account;
-                    if (_stripeService.ReturnAccountStatus(await _stripeService.GetConnectedAccountsId()) == StripeConnectAccountStatus.Disconnected)
+                    if (_stripeService.ReturnAccountStatus(await _stripeService.GetConnectedAccountId()) == StripeConnectAccountStatus.Disconnected)
                     {
                         await _stripeService.SaveAccountId(account.Id);
                     }
