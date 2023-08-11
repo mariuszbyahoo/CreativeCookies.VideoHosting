@@ -23,7 +23,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             var accountId = _connectAccountsRepo.GetConnectedAccountId().Result;
             if (!string.IsNullOrEmpty(accountId))
             {
-                AccountStatus = _connectAccountsRepo.ReturnAccountStatus(accountId);
+                AccountStatus = _stripeService.GetAccountStatus(accountId);
             }
             else
             {
@@ -33,7 +33,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostConnect()
         {
-            var url = await _connectAccountsRepo.ReturnConnectAccountLink();
+            var url = await _stripeService.GetConnectAccountLink();
             return Redirect(url);
         }
     }
