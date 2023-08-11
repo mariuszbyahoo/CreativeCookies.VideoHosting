@@ -2,9 +2,9 @@
 @using CreativeCookies.VideoHosting.Contracts.Enums;
 @model CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.StripeOnboardingModel
 
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.1/js/bootstrap.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
 
 <style>
     .container {
@@ -21,10 +21,7 @@
     $(document).ready(function () {
         $("#connectStripeButton").click(function () {
             $('#infoModal').modal('show');
-
-            setTimeout(function () {
-                $("#connectStripeForm").submit();
-            }, 1000); 
+            $("#connectStripeForm").submit();
         });
     });
 </script>
