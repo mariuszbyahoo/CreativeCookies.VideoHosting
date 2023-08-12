@@ -1,4 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Enums;
+using CreativeCookies.VideoHosting.Contracts.Wrappers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Stripe
 {
     public interface IStripeService
     {
-        public StripeConnectAccountStatus GetAccountStatus(string idStoredInDatabase);
-        public Task<string> GetConnectAccountLink();
+        public IStripeResult<StripeConnectAccountStatus> GetAccountStatus(string idStoredInDatabase);
+        public IStripeResult<string> GetConnectAccountLink();
     }
 }

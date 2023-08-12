@@ -1,5 +1,6 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
+using CreativeCookies.VideoHosting.Contracts.Stripe;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -12,12 +13,16 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     [ApiController]
     public class StripeController : ControllerBase
     {
-        private readonly IConnectAccountsRepository _stripeService;
+        private readonly IConnectAccountsRepository _connectAccountsRepository;
+        private readonly IStripeService _stripeService;
         private readonly ILogger<StripeController> _logger;
         private readonly IConfiguration _configuration;
 
-        public StripeController(IConnectAccountsRepository stripeService, ILogger<StripeController> logger, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        public StripeController(
+            IConnectAccountsRepository connectAccountsRepository, IStripeService stripeService, 
+            ILogger<StripeController> logger, IConfiguration configuration)
         {
+            _connectAccountsRepository = connectAccountsRepository;
             _stripeService = stripeService;
             _logger = logger;
             _configuration = configuration;
@@ -28,10 +33,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         public async Task<ActionResult<StripeConnectAccountStatus>> IsStripeAccountSetUp()
         {
             var result = StripeConnectAccountStatus.Disconnected;
-            var idStoredInDatabase = await _stripeService.GetConnectedAccountId();
+            var idStoredInDatabase = await _connectAccountsRepository.GetConnectedAccountId();
             if (!string.IsNullOrWhiteSpace(idStoredInDatabase))
             {
-                result = _stripeService.ReturnAccountStatus(idStoredInDatabase);
+                result = _stripeService.GetAccountStatus(idStoredInDatabase);
             }
             return Ok(result);
         }
@@ -39,8 +44,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         [HttpGet("OnboardingRefresh")]
         public async Task<IActionResult> RefreshOnboarding()
         {
-            var accountLink = await _stripeService.ReturnConnectAccountLink();
-            return Redirect(accountLink);
+            var accountLinkResponse = _stripeService.GetConnectAccountLink();
+            return Redirect(accountLinkResponse.Data);
         }
 
         [HttpPost("AccountUpdatedWebhook")]
@@ -59,9 +64,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 if (stripeEvent.Type == Events.AccountUpdated)
                 {
                     var account = stripeEvent.Data.Object as Account;
-                    if (_stripeService.ReturnAccountStatus(await _stripeService.GetConnectedAccountId()) == StripeConnectAccountStatus.Disconnected)
+                    var accountIdInDatabase = await _connectAccountsRepository.GetConnectedAccountId();
+                    var accountStatusResult = _stripeService.GetAccountStatus(accountIdInDatabase);
+                    if (accountStatusResult.Data == StripeConnectAccountStatus.Disconnected && !accountStatusResult.Success)
                     {
-                        await _stripeService.SaveAccountId(account.Id);
+                        await _connectAccountsRepository.SaveAccountId(account.Id);
                     }
                 }
                 else
@@ -87,7 +94,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
         public async Task<IActionResult> DeleteStoredAccounts()
         {
-            await _stripeService.DeleteConnectAccounts();
+            await _connectAccountsRepository.DeleteConnectAccounts();
             return NoContent();
         }
     }

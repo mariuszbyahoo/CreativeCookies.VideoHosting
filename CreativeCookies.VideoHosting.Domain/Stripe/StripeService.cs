@@ -1,36 +1,48 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Stripe;
+using CreativeCookies.VideoHosting.Contracts.Wrappers;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.Domain.Repositories;
+using CreativeCookies.VideoHosting.Domain.Wrappers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Stripe;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CreativeCookies.VideoHosting.Domain.Stripe
 {
     public class StripeService : IStripeService
     {
         private readonly IConfiguration _configuration;
-        private readonly string _stripeSecretAPIKey;
         private readonly ILogger<ConnectAccountsRepository> _logger;
+        private readonly string _stripeSecretAPIKey;
+        private readonly string _apiUrl;
+        private readonly string _clientUrl;
+        
         public StripeService(IConfiguration configuration, ILogger<ConnectAccountsRepository> logger)
         {
             _configuration = configuration;
             _logger = logger;
             _stripeSecretAPIKey = _configuration.GetValue<string>("StripeSecretAPIKey");
+            _apiUrl = _configuration.GetValue<string>("ApiUrl");
+            _clientUrl = _configuration.GetValue<string>("ClientUrl");
         }
-        public StripeConnectAccountStatus GetAccountStatus(string idStoredInDatabase)
+
+        public IStripeResult<StripeConnectAccountStatus> GetAccountStatus(string idStoredInDatabase)
         {
             StripeConfiguration.ApiKey = _stripeSecretAPIKey;
-            var result = StripeConnectAccountStatus.Disconnected;
+            var status = StripeConnectAccountStatus.Disconnected;
+            var stripeAccountResponse = GetStripeAccount(idStoredInDatabase);
+            if (!stripeAccountResponse.Success)
+            {
+                _logger.LogError(stripeAccountResponse.ErrorMessage);
+                return new StripeResult<StripeConnectAccountStatus>() 
+                { 
+                    Data = StripeConnectAccountStatus.Disconnected, Success = false, 
+                    ErrorMessage = stripeAccountResponse.ErrorMessage 
+                }; 
+            }
 
-            var service = new AccountService();
-            Account stripeAccount = service.Get(idStoredInDatabase); // HACK: this throws an exception if no account found
+            var stripeAccount = stripeAccountResponse.Data;
 
             if (stripeAccount != null)
             {
@@ -41,52 +53,115 @@ namespace CreativeCookies.VideoHosting.Domain.Stripe
                     if (stripeAccount.Requirements != null &&
                        (stripeAccount.Requirements.PastDue == null || !stripeAccount.Requirements.PastDue.Any()))
                     {
-                        result = StripeConnectAccountStatus.Connected;
+                        status = StripeConnectAccountStatus.Connected;
                     }
                     else
                     {
-                        result = StripeConnectAccountStatus.Restricted;
+                        status = StripeConnectAccountStatus.Restricted;
                     }
                 }
                 else if (stripeAccount.Capabilities != null && !stripeAccount.DetailsSubmitted)
                 {
-                    result = StripeConnectAccountStatus.Restricted;
+                    status = StripeConnectAccountStatus.Restricted;
                 }
             }
+            var result = new StripeResult<StripeConnectAccountStatus>()
+            {
+                Data = status,
+                Success = true,
+                ErrorMessage = string.Empty
+            };
             return result;
         }
 
-
-        public async Task<string> GetConnectAccountLink()
+        public IStripeResult<string> GetConnectAccountLink()
         {
             try
             {
                 StripeConfiguration.ApiKey = _stripeSecretAPIKey;
-                var apiUrl = _configuration.GetValue<string>("ApiUrl");
-                var clientUrl = _configuration.GetValue<string>("ClientUrl");
 
                 // Check if an account already exists
                 var accountOptions = new AccountCreateOptions { Type = "standard" };
                 var accountSrv = new AccountService();
-                var account = accountSrv.Create(accountOptions); // This throws a StripeException if not found - use StripeResult<T>
+                var accountResponse = CreateStripeAccount(accountOptions);
+                if (!accountResponse.Success)
+                {
+                    _logger.LogError(accountResponse.ErrorMessage);
+                    return new StripeResult<string>() { Data = string.Empty, Success = false, ErrorMessage = accountResponse.ErrorMessage };
+                }
+
+                var account = accountResponse.Data;
                 // await SaveConnectedAccount(account.Id); HACK TODO: This has to be handled elswhere as this belongs to ConnectAccountsRepository
 
-                var linkOptions = new AccountLinkCreateOptions
-                {
-                    Account = account.Id,
-                    RefreshUrl = $"{apiUrl}/api/Stripe/OnboardingRefresh",
-                    ReturnUrl = $"{clientUrl}/stripeOnboardingReturn",
-                    Type = "account_onboarding",
-                };
-                var accountLinkSrv = new AccountLinkService();
-                var link = accountLinkSrv.Create(linkOptions);
-                return link.Url;
+                var link = GenerateLink(account.Id);
+                if (link != null)
+                    return new StripeResult<string>() { Data = link.Url, Success = true };
+                else 
+                    return new StripeResult<string>() { Data = string.Empty, Success = false, ErrorMessage = "A Stripe's AccountLinkService returned null instead of valid AccountLink." };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred in ReturnConnectAccountLink()");
-                return string.Empty;
+                return new StripeResult<string>() { Data = string.Empty, Success = false, ErrorMessage = $"Unexpected Error occured: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.StackTrace: {ex.StackTrace}, ex.Source: {ex.Source} \nCreativeCookies.VideoHosting.Domain.Stripe.StripeService line 97" };
             }
         }
+        #region private methods
+        private AccountLink GenerateLink(string accountId)
+        {
+            var linkOptions = new AccountLinkCreateOptions
+            {
+                Account = accountId,
+                RefreshUrl = $"{_apiUrl}/api/Stripe/OnboardingRefresh",
+                ReturnUrl = $"{_clientUrl}/stripeOnboardingReturn",
+                Type = "account_onboarding",
+            };
+            var accountLinkSrv = new AccountLinkService();
+            return accountLinkSrv.Create(linkOptions);
+        }
+        private StripeResult<Account> GetStripeAccount(string accountId)
+        {
+            try
+            {
+                var service = new AccountService();
+                var account = service.Get(accountId);
+                return new StripeResult<Account>
+                {
+                    Success = true,
+                    Data = account
+                };
+            }
+            catch (StripeException ex)
+            {
+                _logger.LogError(ex, $"Error fetching account with ID {accountId}");
+                return new StripeResult<Account>
+                {
+                    Success = false,
+                    ErrorMessage = ex.Message
+                };
+            }
+        }
+        private StripeResult<Account> CreateStripeAccount(AccountCreateOptions options)
+        {
+            try
+            {
+                var service = new AccountService();
+                var account = service.Create(options);
+                return new StripeResult<Account>
+                {
+                    Success = true,
+                    Data = account
+                };
+            }
+            catch (StripeException ex)
+            {
+                _logger.LogError(ex, "Error creating Stripe account");
+                return new StripeResult<Account>
+                {
+                    Success = false,
+                    ErrorMessage = ex.Message
+                };
+            }
+        }
+        #endregion
     }
 }

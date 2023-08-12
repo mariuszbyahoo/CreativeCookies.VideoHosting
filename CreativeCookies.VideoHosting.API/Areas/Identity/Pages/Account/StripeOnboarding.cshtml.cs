@@ -33,8 +33,8 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostConnect()
         {
-            var url = await _stripeService.GetConnectAccountLink();
-            return Redirect(url);
+            var accountLinkResult = await _stripeService.GetConnectAccountLink();
+            return Redirect(accountLinkResult.Data);
         }
     }
 
