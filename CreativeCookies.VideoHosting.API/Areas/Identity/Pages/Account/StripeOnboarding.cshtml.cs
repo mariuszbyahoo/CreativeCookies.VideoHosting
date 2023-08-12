@@ -48,13 +48,20 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             IStripeResult<IAccountCreationResult> accountLinkResult = null;
             var accountStatus = (StripeConnectAccountStatus)Enum.Parse(typeof(StripeConnectAccountStatus), TempData["AccountStatus"]?.ToString());
             var connectedAccountId = TempData["ConnectedAccountId"]?.ToString() ?? string.Empty;
-            if(accountStatus == StripeConnectAccountStatus.Disconnected)
+            if (accountStatus == StripeConnectAccountStatus.Disconnected)
+            {
+                if (!string.IsNullOrWhiteSpace(connectedAccountId))
+                {
+                    // HACK TODO: Delete an account from stripe
+                    await _connectAccountsRepo.DeleteConnectAccounts();
+                }
                 accountLinkResult = _stripeService.GenerateConnectAccountLink();
+            }
             else if (accountStatus == StripeConnectAccountStatus.Restricted)
             {
-                if (string.IsNullOrWhiteSpace(connectedAccountId)) 
+                if (string.IsNullOrWhiteSpace(connectedAccountId))
                     accountLinkResult = _stripeService.GenerateConnectAccountLink();
-                else 
+                else
                     accountLinkResult = _stripeService.GenerateConnectAccountLink(connectedAccountId);
             }
             else
