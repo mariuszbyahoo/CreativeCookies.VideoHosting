@@ -6,6 +6,7 @@ using CreativeCookies.VideoHosting.Domain.Repositories;
 using CreativeCookies.VideoHosting.Domain.Wrappers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Stripe;
 
 namespace CreativeCookies.VideoHosting.Domain.Stripe
@@ -32,12 +33,12 @@ namespace CreativeCookies.VideoHosting.Domain.Stripe
             StripeConfiguration.ApiKey = _stripeSecretAPIKey;
             var status = StripeConnectAccountStatus.Disconnected;
             var stripeAccountResponse = GetStripeAccount(idStoredInDatabase);
-            if (!stripeAccountResponse.Success)
+            if (!string.IsNullOrWhiteSpace(stripeAccountResponse.ErrorMessage))
             {
                 _logger.LogError(stripeAccountResponse.ErrorMessage);
                 return new StripeResult<StripeConnectAccountStatus>() 
                 { 
-                    Data = status, Success = false, 
+                    Data = status, Success = true, 
                     ErrorMessage = stripeAccountResponse.ErrorMessage 
                 }; 
             }
@@ -71,6 +72,7 @@ namespace CreativeCookies.VideoHosting.Domain.Stripe
                 Success = true,
                 ErrorMessage = string.Empty
             };
+            _logger.LogInformation($"IStripeService.GetAccountStatus(string idStoredInDatabase) called, returned: {JsonConvert.SerializeObject(result)}");
             return result;
         }
 
@@ -92,13 +94,17 @@ namespace CreativeCookies.VideoHosting.Domain.Stripe
                 var account = accountResponse.Data;
 
                 var link = GenerateLink(account.Id);
-                return new StripeResult<IAccountCreationResult>() 
-                    { 
-                        Data = new AccountCreationResult() { 
-                            AccountId = accountResponse.Data.Id,
-                            AccountOnboardingUrl = link.Url },
-                        Success = true 
-                    };
+                var result = new StripeResult<IAccountCreationResult>()
+                {
+                    Data = new AccountCreationResult()
+                    {
+                        AccountId = accountResponse.Data.Id,
+                        AccountOnboardingUrl = link.Url
+                    },
+                    Success = true
+                };
+                _logger.LogInformation($"IStripeService.GenerateConnectAccountLink() called, returned: {JsonConvert.SerializeObject(result)}");
+                return result;
             }
             catch (Exception ex)
             {
@@ -110,6 +116,37 @@ namespace CreativeCookies.VideoHosting.Domain.Stripe
                 };
             }
         }
+
+        public IStripeResult<IAccountCreationResult> GenerateConnectAccountLink(string existingAccountId)
+        {
+            try
+            {
+                StripeConfiguration.ApiKey = _stripeSecretAPIKey;
+
+                var link = GenerateLink(existingAccountId);
+                var result = new StripeResult<IAccountCreationResult>()
+                {
+                    Data = new AccountCreationResult()
+                    {
+                        AccountId = existingAccountId,
+                        AccountOnboardingUrl = link.Url
+                    },
+                    Success = true
+                };
+                _logger.LogInformation($"IStripeService.GenerateConnectAccountLink(string existingAccountId) called, returned: {JsonConvert.SerializeObject(result)}");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred in ReturnConnectAccountLink()");
+                return new StripeResult<IAccountCreationResult>()
+                {
+                    Success = false,
+                    ErrorMessage = $"Exception occured: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.StackTrace: {ex.StackTrace}, ex.Source: {ex.Source} \nCreativeCookies.VideoHosting.Domain.Stripe.StripeService line 97"
+                };
+            }
+        }
+
         #region private methods
 
         /// <summary>

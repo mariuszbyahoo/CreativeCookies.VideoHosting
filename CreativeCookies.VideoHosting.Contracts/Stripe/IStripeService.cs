@@ -15,7 +15,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Stripe
         /// </summary>
         /// <param name="idStoredInDatabase">ID of an account to return it's status</param>
         /// <returns>
-        /// object with Success = false and an ErrorMessage = StripeException.message if none found, 
+        /// object with Success = true and an ErrorMessage = StripeException.message if none found, 
         /// or object with Success = true and Data = StripeConnectAccountStatus if an account found
         /// </returns>
         public IStripeResult<StripeConnectAccountStatus> GetAccountStatus(string idStoredInDatabase);
@@ -26,5 +26,14 @@ namespace CreativeCookies.VideoHosting.Contracts.Stripe
         /// <returns>If no exceptions occur = IStripeResult with Success = true, a new account's Id in Data.AccountOnboardingUrl and Success = true
         /// otherwise, retrns IStripeResult with Success = false and an exception's message in ErrorMessage field. </returns>
         public IStripeResult<IAccountCreationResult> GenerateConnectAccountLink();
+
+        /// <summary>
+        /// Generates an Onboarding link for an existing connect account and returns an IStripeResult with an IAccountCreationResult
+        /// </summary>
+        /// <param name="existingAccountId">An existing connect account's Id</param>
+        /// <returns>If no exceptions occur = IStripeResult with Success = true, a new account's Id in Data.AccountOnboardingUrl and Success = true
+        /// otherwise, retrns IStripeResult with Success = false and an exception's message in ErrorMessage field. </returns>
+        public IStripeResult<IAccountCreationResult> GenerateConnectAccountLink(string existingAccountId);
+
     }
 }

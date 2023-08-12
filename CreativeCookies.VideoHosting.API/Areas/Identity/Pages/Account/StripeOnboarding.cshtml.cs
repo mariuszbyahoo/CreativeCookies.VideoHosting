@@ -1,6 +1,8 @@
 using CreativeCookies.VideoHosting.Contracts.Enums;
+using CreativeCookies.VideoHosting.Contracts.ExceptionCodes;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Stripe;
+using CreativeCookies.VideoHosting.Contracts.Wrappers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -10,39 +12,65 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
     {
         private readonly IConnectAccountsRepository _connectAccountsRepo;
         private readonly IStripeService _stripeService;
+        private readonly ILogger<StripeOnboardingModel> _logger;
         public StripeConnectAccountStatus AccountStatus { get; set; }
 
-        public StripeOnboardingModel(IConnectAccountsRepository connectAccountsRepo, IStripeService stripeService)
+        public StripeOnboardingModel(IConnectAccountsRepository connectAccountsRepo, IStripeService stripeService, ILogger<StripeOnboardingModel> logger)
         {
             _connectAccountsRepo = connectAccountsRepo;
             _stripeService = stripeService;
+            _logger = logger;
         }
 
         public async Task OnGet()
         {
-            var accountId = await _connectAccountsRepo.GetConnectedAccountId();
-            if (!string.IsNullOrEmpty(accountId))
+            var accountStatus = StripeConnectAccountStatus.Disconnected;
+            var connectedAccountId = await _connectAccountsRepo.GetConnectedAccountId();
+            TempData["ConnectedAccountId"] = connectedAccountId;
+            if (!string.IsNullOrEmpty(connectedAccountId))
             {
-                var result = _stripeService.GetAccountStatus(accountId);
+                var result = _stripeService.GetAccountStatus(connectedAccountId);
                 if (result.Success)
-                    AccountStatus = result.Data;
+                {
+                    accountStatus = result.Data;
+                }
                 else
-                    AccountStatus = StripeConnectAccountStatus.Disconnected;
+                {
+                    _logger.LogError($"Unexpected error occured inside StripeOnboardingViewModel: {result.ErrorMessage}");
+                    LocalRedirect($"~/StatusCode?statusCode={ExceptionCodes.StripeIntegrationException}");
+                }
             }
-            else
-            {
-                AccountStatus = StripeConnectAccountStatus.Disconnected;
-            }
+            TempData["AccountStatus"] = accountStatus;
         }
 
-        public IActionResult OnPostConnect()
+        public async Task<IActionResult> OnPostConnect()
         {
-            // 1. If AccountStatus = Restricted, then retrieve it's Id and pass it to GenerateConnectAccountLink()
-            var accountLinkResult = _stripeService.GenerateConnectAccountLink();
-            if (accountLinkResult.Success)
-                return Redirect(accountLinkResult.Data.AccountOnboardingUrl);
+            IStripeResult<IAccountCreationResult> accountLinkResult = null;
+            var accountStatus = (StripeConnectAccountStatus)Enum.Parse(typeof(StripeConnectAccountStatus), TempData["AccountStatus"]?.ToString());
+            var connectedAccountId = TempData["ConnectedAccountId"]?.ToString() ?? string.Empty;
+            if(accountStatus == StripeConnectAccountStatus.Disconnected)
+                accountLinkResult = _stripeService.GenerateConnectAccountLink();
+            else if (accountStatus == StripeConnectAccountStatus.Restricted)
+            {
+                if (string.IsNullOrWhiteSpace(connectedAccountId)) 
+                    accountLinkResult = _stripeService.GenerateConnectAccountLink();
+                else 
+                    accountLinkResult = _stripeService.GenerateConnectAccountLink(connectedAccountId);
+            }
             else
-                return BadRequest("Exception occured inside of a StripeService, check Logs.");
+            {
+                // Stripe correctly connected, this actually shouldn't being fired at all.
+                return Page();
+            }
+            if (accountLinkResult != null && accountLinkResult.Success)
+            {
+                return Redirect(accountLinkResult.Data.AccountOnboardingUrl);
+            }
+            else 
+            {
+                _logger.LogError($"Unexpected error occured inside StripeOnboardingViewModel, accountLinkResult's errorMsg: {accountLinkResult?.ErrorMessage}");
+                return LocalRedirect($"~/StatusCode?statusCode={ExceptionCodes.StripeIntegrationException}");
+            }
         }
     }
 
