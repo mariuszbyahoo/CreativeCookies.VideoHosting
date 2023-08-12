@@ -37,6 +37,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 
         public IActionResult OnPostConnect()
         {
+            // 1. If AccountStatus = Restricted, then retrieve it's Id and pass it to GenerateConnectAccountLink()
             var accountLinkResult = _stripeService.GenerateConnectAccountLink();
             if (accountLinkResult.Success)
                 return Redirect(accountLinkResult.Data.AccountOnboardingUrl);
