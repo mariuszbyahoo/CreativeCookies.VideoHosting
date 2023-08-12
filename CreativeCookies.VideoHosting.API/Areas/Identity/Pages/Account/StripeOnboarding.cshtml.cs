@@ -18,23 +18,30 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             _stripeService = stripeService;
         }
 
-        public void OnGet()
+        public async Task OnGet()
         {
-            var accountId = _connectAccountsRepo.GetConnectedAccountId().Result;
+            var accountId = await _connectAccountsRepo.GetConnectedAccountId();
             if (!string.IsNullOrEmpty(accountId))
             {
-                AccountStatus = _stripeService.GetAccountStatus(accountId);
+                var result = _stripeService.GetAccountStatus(accountId);
+                if (result.Success)
+                    AccountStatus = result.Data;
+                else
+                    AccountStatus = StripeConnectAccountStatus.Disconnected;
             }
             else
             {
-                AccountStatus = StripeConnectAccountStatus.Disconnected; 
+                AccountStatus = StripeConnectAccountStatus.Disconnected;
             }
         }
 
-        public async Task<IActionResult> OnPostConnect()
+        public IActionResult OnPostConnect()
         {
-            var accountLinkResult = await _stripeService.GetConnectAccountLink();
-            return Redirect(accountLinkResult.Data);
+            var accountLinkResult = _stripeService.GenerateConnectAccountLink();
+            if (accountLinkResult.Success)
+                return Redirect(accountLinkResult.Data.AccountOnboardingUrl);
+            else
+                return BadRequest("Exception occured inside of a StripeService, check Logs.");
         }
     }
 

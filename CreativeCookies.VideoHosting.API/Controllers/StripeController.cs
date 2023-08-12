@@ -1,6 +1,8 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Stripe;
+using CreativeCookies.VideoHosting.Contracts.Wrappers;
+using CreativeCookies.VideoHosting.Domain.Wrappers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -30,9 +32,14 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         [HttpGet("IsSetUp")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
-        public async Task<ActionResult<StripeConnectAccountStatus>> IsStripeAccountSetUp()
+        public async Task<ActionResult<IStripeResult<StripeConnectAccountStatus>>> IsStripeAccountSetUp()
         {
-            var result = StripeConnectAccountStatus.Disconnected;
+            IStripeResult<StripeConnectAccountStatus> result = new StripeResult<StripeConnectAccountStatus>()
+            {
+                Data = StripeConnectAccountStatus.Disconnected,
+                Success = true,
+                ErrorMessage = "account_missing"
+            };
             var idStoredInDatabase = await _connectAccountsRepository.GetConnectedAccountId();
             if (!string.IsNullOrWhiteSpace(idStoredInDatabase))
             {
@@ -44,8 +51,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         [HttpGet("OnboardingRefresh")]
         public async Task<IActionResult> RefreshOnboarding()
         {
-            var accountLinkResponse = _stripeService.GetConnectAccountLink();
-            return Redirect(accountLinkResponse.Data);
+            var accountLinkResponse = _stripeService.GenerateConnectAccountLink();
+            return Redirect(accountLinkResponse.Data.AccountOnboardingUrl);
         }
 
         [HttpPost("AccountUpdatedWebhook")]
@@ -67,7 +74,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     var accountIdInDatabase = await _connectAccountsRepository.GetConnectedAccountId();
                     var accountStatusResult = _stripeService.GetAccountStatus(accountIdInDatabase);
                     if (accountStatusResult.Data == StripeConnectAccountStatus.Disconnected && !accountStatusResult.Success)
-                    {
+                    { 
                         await _connectAccountsRepository.SaveAccountId(account.Id);
                     }
                 }
