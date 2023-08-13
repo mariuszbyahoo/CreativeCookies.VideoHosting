@@ -1,0 +1,89 @@
+﻿@page
+@using CreativeCookies.VideoHosting.Contracts.Enums;
+@model CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.StripeOnboardingModel
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+
+<style>
+    .container {
+        width: 75%;
+        margin: auto;
+        text-align: center;
+    }
+
+    .space {
+        margin-top: 7%;
+    }
+</style>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#connectStripeButton").click(function () {
+            $('#infoModal').modal('show');
+            $("#connectStripeForm").submit();
+        });
+    });
+</script>
+@{
+    var connectBtnTxt = "";
+    var connectFormMsg = "";
+    var deleteBtnTxt = "";
+    var deleteFormTxt = "";
+    switch (Model.AccountStatus)
+    {
+        case StripeConnectAccountStatus.Disconnected:
+            connectBtnTxt = "Connect Stripe";
+            connectFormMsg = "In order to start setting up payment vendor, please select below:";
+            break;
+        case StripeConnectAccountStatus.Restricted:
+            connectFormMsg = "For some reason, you've stopped Stripe onboarding. In order to continue your last attempt on payment setup, please select below:";
+            connectBtnTxt = "Continue Onboarding";
+            break;
+    }
+}
+<div class="container">
+    <h3>Stripe Connect Onboarding</h3>
+    @switch(Model.AccountStatus)
+    {
+        case StripeConnectAccountStatus.Disconnected:
+            <p>@connectFormMsg</p>
+            <form method="post" asp-page-handler="Connect" id="connectStripeForm">
+                <button class="btn btn-outline-primary" type="button" id="connectStripeButton">Connect Stripe</button>
+            </form>
+            break;
+        case StripeConnectAccountStatus.Restricted:
+            <h4>Account restricted</h4>
+            <p>@connectFormMsg</p>
+            <form method="post" asp-page-handler="Connect" id="connectStripeForm">
+                <button class="btn btn-outline-primary" type="button" id="connectStripeButton">Connect Stripe</button>
+            </form>
+            break;
+        case StripeConnectAccountStatus.PendingSave:
+            <p>You've submitted new account to Stripe recently, come back after a minute or so to check how it's going</p>
+            break;
+        case StripeConnectAccountStatus.Connected:
+            <p>Your MyHub is fully connected to the Stripe infrastructure and you're free to create your subscription plan</p>
+            break;
+        default:
+            <p>Unexpected value received in Razor Page - please contact support</p>
+            break;
+
+    }
+</div>
+
+
+<div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="infoModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="infoModalLabel">Redirecting</h5>
+      </div>
+      <div class="modal-body">
+        <div class="spinner-border spinner-border-lg text-primary" role="status">
+            <span class="sr-only"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

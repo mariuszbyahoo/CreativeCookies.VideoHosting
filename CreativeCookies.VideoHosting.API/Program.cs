@@ -5,11 +5,13 @@ using CreativeCookies.VideoHosting.API.Helpers;
 using CreativeCookies.VideoHosting.Contracts.Azure;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
+using CreativeCookies.VideoHosting.Contracts.Stripe;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.Domain.Azure;
 using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
 using CreativeCookies.VideoHosting.Domain.Repositories;
 using CreativeCookies.VideoHosting.Domain.Repositories.OAuth;
+using CreativeCookies.VideoHosting.Domain.Stripe;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -148,9 +150,11 @@ namespace CreativeCookies.VideoHosting.API
                 return new BlobServiceClientWrapper(blobServiceClient);
             });
             builder.Services.AddSingleton<ISasTokenRepository, SasTokenRepository>();
+            builder.Services.AddSingleton<IStripeService, StripeService>();
             builder.Services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
             builder.Services.AddScoped<IFilmsRepository, FilmsRepository>();
-
+            builder.Services.AddScoped<IConnectAccountsRepository, ConnectAccountsRepository>();
+            
             builder.Services.AddHostedService<TokenCleanupWorker>();
 
             var clientId = builder.Configuration.GetValue<string>("ClientId");
