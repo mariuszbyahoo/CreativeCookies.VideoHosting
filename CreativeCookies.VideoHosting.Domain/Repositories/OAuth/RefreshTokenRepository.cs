@@ -3,7 +3,6 @@ using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using CreativeCookies.VideoHosting.Domain.DTOs.OAuth;
-using CreativeCookies.VideoHosting.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -56,7 +55,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             _context.RefreshTokens.Add(refreshTokenDao);
             await _context.SaveChangesAsync();
 
-            return new RefreshToken
+            return new RefreshTokenDto
             {
                 Id = refreshTokenDao.Id,
                 Token = refreshTokenDao.Token,
@@ -75,7 +74,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
                 return null;
             }
 
-            return new RefreshToken
+            return new RefreshTokenDto
             {
                 Id = refreshTokenDAO.Id,
                 Token = refreshTokenDAO.Token,
