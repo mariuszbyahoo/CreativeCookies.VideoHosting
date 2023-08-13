@@ -43,7 +43,14 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             var idStoredInDatabase = await _connectAccountsRepository.GetConnectedAccountId();
             if (!string.IsNullOrWhiteSpace(idStoredInDatabase))
             {
-                result = _stripeService.GetAccountStatus(idStoredInDatabase);
+                var olderThanMinute = await _connectAccountsRepository.CanBeQueriedOnStripe(idStoredInDatabase);
+                if (olderThanMinute) result = _stripeService.GetAccountStatus(idStoredInDatabase);
+                else 
+                { 
+                    result.Data = StripeConnectAccountStatus.PendingSave;
+                    result.Success = true;
+                    result.ErrorMessage = "An account has been recently submitted, check at least one minute after creating";
+                }
             }
             return Ok(result);
         }
@@ -71,12 +78,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 if (stripeEvent.Type == Events.AccountUpdated)
                 {
                     var account = stripeEvent.Data.Object as Account;
-                    var accountIdInDatabase = await _connectAccountsRepository.GetConnectedAccountId();
-                    var accountStatusResult = _stripeService.GetAccountStatus(accountIdInDatabase);
-                    if (accountStatusResult.Data == StripeConnectAccountStatus.Disconnected && !accountStatusResult.Success)
-                    { 
-                        await _connectAccountsRepository.SaveAccountId(account.Id);
-                    }
+                    await _connectAccountsRepository.EnsureSaved(account.Id);
                 }
                 else
                 {
@@ -95,14 +97,6 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
 
             return Ok();
-        }
-
-        [HttpDelete("DeleteStoredAccounts")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
-        public async Task<IActionResult> DeleteStoredAccounts()
-        {
-            await _connectAccountsRepository.DeleteConnectAccounts();
-            return NoContent();
         }
     }
 }

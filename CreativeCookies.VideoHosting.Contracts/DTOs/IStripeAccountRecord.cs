@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.DAL.DAOs
+namespace CreativeCookies.VideoHosting.Contracts.DTOs
 {
-    public class StripeAccountRecord
+    public interface IStripeAccountRecord
     {
         public Guid Id { get; set; }
         public string StripeConnectedAccountId { get; set; }

@@ -30,51 +30,55 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             return record.StripeConnectedAccountId;
         }
 
-        public async Task<bool> SaveAccountId(string accountId)
+        public async Task EnsureSaved(string accountId)
         {
-            try
+            var lookup = _ctx.StripeAccountRecords.FirstOrDefault(a => a.Id.Equals(accountId));
+            if (lookup == null)
             {
-                await SaveConnectedAccount(accountId);
-                return true;
+                await DeleteStoredAccounts(string.Empty);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "And error occured while saving account Id to the database");
-                return false;
-            }
+            else await DeleteStoredAccounts(lookup.StripeConnectedAccountId);
+
+            await SaveConnectedAccount(accountId);
         }
 
         private async Task SaveConnectedAccount(string accountId)
         {
-            var newAccountRecord = new DAL.DAOs.StripeAccountRecord() { Id = Guid.NewGuid(), StripeConnectedAccountId = accountId };
+            var newAccountRecord = new DAL.DAOs.StripeAccountRecord() { Id = Guid.NewGuid(), StripeConnectedAccountId = accountId, DateCreated = DateTime.UtcNow };
             _ctx.StripeAccountRecords.Add(newAccountRecord);
             await _ctx.SaveChangesAsync();
         }
 
-        public async Task DeleteConnectAccounts()
+        private async Task DeleteStoredAccounts(string accountToPersist)
         {
             try
             {
-                StripeConfiguration.ApiKey = _stripeSecretAPIKey;
-
-
                 var list = await _ctx.StripeAccountRecords.ToListAsync();
                 for(int i = 0; i < list.Count; i++)
                 {
-                    _ctx.Remove(list[i]);
+                    if(!string.IsNullOrWhiteSpace(accountToPersist) && !list[i].Id.Equals(accountToPersist))
+                    {
+                        _ctx.Remove(list[i]);
+                    }
+                    else
+                    {
+                        _ctx.Remove(list[i]);
+                    }
                 }
                 await _ctx.SaveChangesAsync();
             }
 
             catch(Exception ex)
             {
-                _logger.LogError(ex, "And error occured while deleting the account Ids from the database - entities has not been removed");
+                _logger.LogError(ex, "And error occured while deleting the account Ids from the database - not all entities has been removed");
             }
         }
 
-        public bool HasAnyEntity()
+        public async Task<bool> CanBeQueriedOnStripe(string accountId)
         {
-            return _ctx.StripeAccountRecords.ToList().Any();
+            var lookup = await _ctx.StripeAccountRecords.Where(a => a.StripeConnectedAccountId.Equals(accountId)).FirstOrDefaultAsync();
+            if (lookup == null) return true;
+            else return DateTime.UtcNow - lookup.DateCreated > TimeSpan.FromMinutes(1);
         }
     }
 }

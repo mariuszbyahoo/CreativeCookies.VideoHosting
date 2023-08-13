@@ -25,23 +25,28 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 
         public async Task OnGet()
         {
-            var accountStatus = StripeConnectAccountStatus.Disconnected;
+            AccountStatus = StripeConnectAccountStatus.Disconnected;
             var connectedAccountId = await _connectAccountsRepo.GetConnectedAccountId();
             TempData["ConnectedAccountId"] = connectedAccountId;
-            if (!string.IsNullOrEmpty(connectedAccountId))
+            var isEligibleToQueryAPI = await _connectAccountsRepo.CanBeQueriedOnStripe(connectedAccountId);
+            if (!string.IsNullOrEmpty(connectedAccountId) && isEligibleToQueryAPI)
             {
                 var result = _stripeService.GetAccountStatus(connectedAccountId);
                 if (result.Success)
                 {
-                    accountStatus = result.Data;
-                }
+                    AccountStatus = result.Data;
+                } 
                 else
                 {
                     _logger.LogError($"Unexpected error occured inside StripeOnboardingViewModel: {result.ErrorMessage}");
                     LocalRedirect($"~/StatusCode?statusCode={ExceptionCodes.StripeIntegrationException}");
                 }
             }
-            TempData["AccountStatus"] = accountStatus;
+            else if (!string.IsNullOrEmpty(connectedAccountId) && !isEligibleToQueryAPI)
+            {
+                AccountStatus = StripeConnectAccountStatus.PendingSave;
+            }
+            TempData["AccountStatus"] = AccountStatus;
         }
 
         public async Task<IActionResult> OnPostConnect()
@@ -49,13 +54,9 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             IStripeResult<IAccountCreationResult> accountLinkResult = null;
             var accountStatus = (StripeConnectAccountStatus)Enum.Parse(typeof(StripeConnectAccountStatus), TempData["AccountStatus"]?.ToString());
             var connectedAccountId = TempData["ConnectedAccountId"]?.ToString() ?? string.Empty;
+
             if (accountStatus == StripeConnectAccountStatus.Disconnected)
             {
-                if (!string.IsNullOrWhiteSpace(connectedAccountId))
-                {
-                    // HACK TODO: Delete an account from stripe
-                    await _connectAccountsRepo.DeleteConnectAccounts();
-                }
                 accountLinkResult = _stripeService.GenerateConnectAccountLink();
             }
             else if (accountStatus == StripeConnectAccountStatus.Restricted)
@@ -67,11 +68,13 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             }
             else
             {
-                // Stripe correctly connected, this actually shouldn't being fired at all.
+                // Stripe correctly connected or is not eligible to be queried, this actually shouldn't being fired at all.
                 return Page();
             }
+
             if (accountLinkResult != null && accountLinkResult.Success)
             {
+                await _connectAccountsRepo.EnsureSaved(accountLinkResult.Data.AccountId);
                 return Redirect(accountLinkResult.Data.AccountOnboardingUrl);
             }
             else 

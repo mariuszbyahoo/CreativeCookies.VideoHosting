@@ -10,6 +10,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Enums
     {
         Disconnected,
         Restricted,
-        Connected
+        Connected,
+        PendingSave
     }
 }
