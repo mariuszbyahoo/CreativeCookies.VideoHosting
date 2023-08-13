@@ -44,16 +44,25 @@
 }
 <div class="container">
     <h3>Stripe Connect Onboarding</h3>
-    @if (Model.AccountStatus == StripeConnectAccountStatus.Restricted || Model.AccountStatus == StripeConnectAccountStatus.Disconnected)
+    @switch(Model.AccountStatus)
     {
-        <p>@connectFormMsg</p>
-        <form method="post" asp-page-handler="Connect" id="connectStripeForm">
-            <button class="btn btn-outline-primary" type="button" id="connectStripeButton">Connect Stripe</button>
-        </form>
-    }
-    @if (Model.AccountStatus == StripeConnectAccountStatus.Connected)
-    {
-        <p>Your MyHub is fully connected to the Stripe infrastructure and you're free to create your subscription plan</p>
+        case StripeConnectAccountStatus.Disconnected:
+        case StripeConnectAccountStatus.Restricted:
+            <p>@connectFormMsg</p>
+            <form method="post" asp-page-handler="Connect" id="connectStripeForm">
+                <button class="btn btn-outline-primary" type="button" id="connectStripeButton">Connect Stripe</button>
+            </form>
+            break;
+        case StripeConnectAccountStatus.PendingSave:
+            <p>You've submitted new account to Stripe recently, come back after a minute or so to check how it's going</p>
+            break;
+        case StripeConnectAccountStatus.Connected:
+            <p>Your MyHub is fully connected to the Stripe infrastructure and you're free to create your subscription plan</p>
+            break;
+        default:
+            <p>Unexpected value received in Razor Page - please contact support</p>
+            break;
+
     }
 </div>
 
