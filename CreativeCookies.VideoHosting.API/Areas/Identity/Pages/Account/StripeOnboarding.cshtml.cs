@@ -1,3 +1,4 @@
+using CreativeCookies.VideoHosting.Contracts.DTOs;
 using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.ExceptionCodes;
 using CreativeCookies.VideoHosting.Contracts.Repositories;

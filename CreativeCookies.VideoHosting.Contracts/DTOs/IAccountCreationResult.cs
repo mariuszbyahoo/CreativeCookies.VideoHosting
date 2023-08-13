@@ -1,13 +1,12 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Wrappers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Domain.Wrappers
+namespace CreativeCookies.VideoHosting.Contracts.DTOs
 {
-    public class AccountCreationResult : IAccountCreationResult
+    public interface IAccountCreationResult
     {
         public string AccountOnboardingUrl { get; set; }
         public string AccountId { get; set; }

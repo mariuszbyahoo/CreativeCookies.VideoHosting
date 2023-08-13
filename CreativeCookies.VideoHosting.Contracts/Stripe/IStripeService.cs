@@ -1,4 +1,5 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Enums;
+﻿using CreativeCookies.VideoHosting.Contracts.DTOs;
+using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Wrappers;
 using System;
 using System.Collections.Generic;

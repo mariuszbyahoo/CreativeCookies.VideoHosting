@@ -1,7 +1,9 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Enums;
+﻿using CreativeCookies.VideoHosting.Contracts.DTOs;
+using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Wrappers;
 using CreativeCookies.VideoHosting.DAL.Contexts;
+using CreativeCookies.VideoHosting.Domain.DTOs;
 using CreativeCookies.VideoHosting.Domain.Repositories;
 using CreativeCookies.VideoHosting.Domain.Wrappers;
 using Microsoft.Extensions.Configuration;
