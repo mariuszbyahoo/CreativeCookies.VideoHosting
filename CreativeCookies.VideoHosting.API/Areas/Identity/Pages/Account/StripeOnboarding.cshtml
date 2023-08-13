@@ -37,7 +37,7 @@
             connectFormMsg = "In order to start setting up payment vendor, please select below:";
             break;
         case StripeConnectAccountStatus.Restricted:
-            connectFormMsg = "In order to continue your last attempt on payment setup, please select below:";
+            connectFormMsg = "For some reason, you've stopped Stripe onboarding. In order to continue your last attempt on payment setup, please select below:";
             connectBtnTxt = "Continue Onboarding";
             break;
     }
@@ -47,7 +47,13 @@
     @switch(Model.AccountStatus)
     {
         case StripeConnectAccountStatus.Disconnected:
+            <p>@connectFormMsg</p>
+            <form method="post" asp-page-handler="Connect" id="connectStripeForm">
+                <button class="btn btn-outline-primary" type="button" id="connectStripeButton">Connect Stripe</button>
+            </form>
+            break;
         case StripeConnectAccountStatus.Restricted:
+            <h4>Account restricted</h4>
             <p>@connectFormMsg</p>
             <form method="post" asp-page-handler="Connect" id="connectStripeForm">
                 <button class="btn btn-outline-primary" type="button" id="connectStripeButton">Connect Stripe</button>
