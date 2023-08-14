@@ -7,8 +7,8 @@ using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.Contracts.Stripe;
-using CreativeCookies.VideoHosting.DAL.Config;
 using CreativeCookies.VideoHosting.DAL.Contexts;
+using CreativeCookies.VideoHosting.DAL.Repositories;
 using CreativeCookies.VideoHosting.Domain.Azure;
 using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
 using CreativeCookies.VideoHosting.Domain.Repositories;
@@ -26,6 +26,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
+using Stripe;
 using System.Configuration;
 using System.Text;
 
@@ -95,11 +96,35 @@ namespace CreativeCookies.VideoHosting.API
                 connectionString = builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
             }
 
-            builder.Services.AddDataAccessLayer(connectionString);
-
-            var apiUrl = builder.Configuration.GetValue<string>("ApiUrl");
-
             builder.Services.AddHttpContextAccessor();
+
+            var apiUrl = builder.Configuration.GetValue<string>("ApiUrl");            
+            var accountName = builder.Configuration.GetValue<string>("Storage:AccountName");
+            var accountKey = builder.Configuration.GetValue<string>("Storage:AccountKey");
+            var blobServiceUrl = builder.Configuration.GetValue<string>("Storage:BlobServiceUrl");
+            var clientId = builder.Configuration.GetValue<string>("ClientId");
+            var jwtSecretKey = builder.Configuration.GetValue<string>("JWTSecretKey");
+
+            builder.Services.AddDbContext<AppDbContext>(options =>
+            {
+                options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
+                {
+                    sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null);
+                });
+            });
+
+            builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+            {
+                options.SignIn.RequireConfirmedAccount = true;
+                options.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
+                options.Tokens.ProviderMap[TokenOptions.DefaultAuthenticatorProvider] = new TokenProviderDescriptor(typeof(IUserTwoFactorTokenProvider<IdentityUser>));
+            })
+                .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<AppDbContext>();
+
             builder.Services.AddScoped<IClientStore, ClientStore>();
 
             builder.Services.AddScoped<IUsersRepository, UsersRepository>();
@@ -108,7 +133,9 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             builder.Services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
             builder.Services.AddScoped<IConnectAccountsRepository, ConnectAccountsRepository>();
+            builder.Services.AddScoped<IFilmsRepository, FilmsRepository>();
             builder.Services.AddSingleton<ISasTokenRepository, SasTokenRepository>();
+            
 
             builder.Services.AddScoped<IFilmService, FilmService>();
 
@@ -133,9 +160,6 @@ namespace CreativeCookies.VideoHosting.API
             });
 
 
-            var accountName = builder.Configuration.GetValue<string>("Storage:AccountName");
-            var accountKey = builder.Configuration.GetValue<string>("Storage:AccountKey");
-            var blobServiceUrl = builder.Configuration.GetValue<string>("Storage:BlobServiceUrl");
             builder.Services.AddSingleton(x => new StorageSharedKeyCredential(accountName, accountKey));
             builder.Services.AddSingleton(x => new BlobServiceClient(new Uri(blobServiceUrl), x.GetRequiredService<StorageSharedKeyCredential>()));
             builder.Services.AddSingleton<IBlobServiceClientWrapper>(sp =>
@@ -146,10 +170,6 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddSingleton<IStripeService, StripeService>();
             
             builder.Services.AddHostedService<TokenCleanupWorker>();
-
-            var clientId = builder.Configuration.GetValue<string>("ClientId");
-
-            var jwtSecretKey = builder.Configuration.GetValue<string>("JWTSecretKey");
 
             builder.Services.AddAuthentication(options =>
             {
