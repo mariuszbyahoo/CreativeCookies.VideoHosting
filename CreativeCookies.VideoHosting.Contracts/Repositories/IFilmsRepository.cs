@@ -13,6 +13,6 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
         Task<FilmsPaginatedResultDto> GetFilmsPaginatedResult(string search, int pageNumber, int pageSize);
         Task<VideoMetadataDto> SaveVideoMetadata(VideoMetadataDto metadata);
         Task<VideoMetadataDto> EditVideoMetadata(VideoMetadataDto metadata);
-        Task DeleteVideoBlobWithMetadata(Guid id);
+        Task DeleteVideoMetadata(Guid id);
     }
 }

@@ -5,13 +5,17 @@ using CreativeCookies.VideoHosting.API.Helpers;
 using CreativeCookies.VideoHosting.Contracts.Azure;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
+using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.Contracts.Stripe;
+using CreativeCookies.VideoHosting.DAL.Config;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.Domain.Azure;
 using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
 using CreativeCookies.VideoHosting.Domain.Repositories;
 using CreativeCookies.VideoHosting.Domain.Repositories.OAuth;
 using CreativeCookies.VideoHosting.Domain.Stripe;
+using CreativeCookies.VideoHosting.Infrastructure;
+using CreativeCookies.VideoHosting.Services;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -91,34 +95,24 @@ namespace CreativeCookies.VideoHosting.API
                 connectionString = builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
             }
 
-            builder.Services.AddDbContext<AppDbContext>(options =>
-            {
-                options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
-                {
-                    sqlOptions.EnableRetryOnFailure(
-                        maxRetryCount: 5,
-                        maxRetryDelay: TimeSpan.FromSeconds(30),
-                        errorNumbersToAdd: null);
-                });
-            });
-
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => 
-                    {
-                        options.SignIn.RequireConfirmedAccount = true;
-                        options.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
-                        options.Tokens.ProviderMap[TokenOptions.DefaultAuthenticatorProvider] = new TokenProviderDescriptor(typeof(IUserTwoFactorTokenProvider<IdentityUser>));
-                    })
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<AppDbContext>();
+            builder.Services.AddDataAccessLayer(connectionString);
 
             var apiUrl = builder.Configuration.GetValue<string>("ApiUrl");
 
             builder.Services.AddHttpContextAccessor();
-            builder.Services.AddScoped<IUsersRepository, UsersRepository>();
             builder.Services.AddScoped<IClientStore, ClientStore>();
+
+            builder.Services.AddScoped<IUsersRepository, UsersRepository>();
             builder.Services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
             builder.Services.AddScoped<IJWTRepository, JWTRepository>();
             builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+            builder.Services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
+            builder.Services.AddScoped<IConnectAccountsRepository, ConnectAccountsRepository>();
+            builder.Services.AddSingleton<ISasTokenRepository, SasTokenRepository>();
+
+            builder.Services.AddScoped<IFilmService, FilmService>();
+
+            builder.Services.AddScoped<IMyHubBlobService, MyHubBlobService>();
 
             builder.Services.AddTransient<IEmailService>(serviceProvider =>
             {
@@ -149,11 +143,7 @@ namespace CreativeCookies.VideoHosting.API
                 var blobServiceClient = sp.GetRequiredService<BlobServiceClient>();
                 return new BlobServiceClientWrapper(blobServiceClient);
             });
-            builder.Services.AddSingleton<ISasTokenRepository, SasTokenRepository>();
             builder.Services.AddSingleton<IStripeService, StripeService>();
-            builder.Services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
-            builder.Services.AddScoped<IFilmsRepository, FilmsRepository>();
-            builder.Services.AddScoped<IConnectAccountsRepository, ConnectAccountsRepository>();
             
             builder.Services.AddHostedService<TokenCleanupWorker>();
 

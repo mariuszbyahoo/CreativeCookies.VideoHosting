@@ -7,16 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MailKit" Version="4.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.8" />
-    <PackageReference Include="Stripe.net" Version="41.27.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.5" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CreativeCookies.VideoHosting.Contracts\CreativeCookies.VideoHosting.Contracts.csproj" />
     <ProjectReference Include="..\CreativeCookies.VideoHosting.DAL\CreativeCookies.VideoHosting.DAL.csproj" />
-    <ProjectReference Include="..\CreativeCookies.VideoHosting.DTOs\CreativeCookies.VideoHosting.DTOs.csproj" />
   </ItemGroup>
 
 </Project>

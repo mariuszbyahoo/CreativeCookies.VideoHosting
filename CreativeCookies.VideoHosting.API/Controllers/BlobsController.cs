@@ -9,6 +9,7 @@ using System.Security.Permissions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using CreativeCookies.VideoHosting.DTOs.Films;
+using CreativeCookies.VideoHosting.Contracts.Services;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
@@ -16,12 +17,12 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     [ApiController]
     public class BlobsController : ControllerBase
     {
-        private readonly IFilmsRepository _filmsRepository;
+        private readonly IFilmService _filmService;
         private ILogger<BlobsController> _logger;
 
-        public BlobsController(IFilmsRepository filmsRepository, ILogger<BlobsController> logger)
+        public BlobsController(IFilmService filmService, ILogger<BlobsController> logger)
         {
-            _filmsRepository = filmsRepository;
+            _filmService = filmService;
             _logger = logger;
         }
 
@@ -29,7 +30,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         [Route("films")]
         public async Task<IActionResult> GetFilms([FromQuery] string search = "", int pageNumber = 1, int pageSize = 24)
         {
-            var res = await _filmsRepository.GetFilmsPaginatedResult(search, pageNumber, pageSize);
+            var res = await _filmService.GetFilmsPaginatedResult(search, pageNumber, pageSize);
 
             return Ok(res);
         }
@@ -41,7 +42,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             Guid videoId;
             if(Guid.TryParse(Id, out videoId))
             {
-                var res = await _filmsRepository.GetVideoMetadata(videoId);
+                var res = await _filmService.GetVideoMetadata(videoId);
                 if (res != null)
                 {
                     return Ok(res);
@@ -62,7 +63,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
         public async Task<IActionResult> EditVideoMetadata([FromBody] VideoMetadataDto metadata)
         {
-            var res = await _filmsRepository.EditVideoMetadata(metadata);
+            var res = await _filmService.EditVideoMetadata(metadata);
             if (res != null)
             {
                 return Ok(res);
@@ -76,7 +77,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         {
             try
             {
-                var res = await _filmsRepository.SaveVideoMetadata(metadata);
+                var res = await _filmService.SaveVideoMetadata(metadata);
                 if (res != null)
                 {
                     return new CreatedObjectResult(res);
@@ -98,7 +99,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         {
             Guid videoId;
             if (Guid.TryParse(Id, out videoId))
-                await _filmsRepository.DeleteVideoBlobWithMetadata(videoId);
+                await _filmService.DeleteVideoBlobWithMetadata(videoId);
             else return BadRequest("Id supplied in an argument is not a valid GUID");
             return NoContent();
         }

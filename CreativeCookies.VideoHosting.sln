@@ -11,7 +11,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreativeCookies.VideoHostin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreativeCookies.VideoHosting.Contracts", "CreativeCookies.VideoHosting.Contracts\CreativeCookies.VideoHosting.Contracts.csproj", "{FDA3B34D-CDEC-4541-AA14-2B5B1FF830E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreativeCookies.VideoHosting.DTOs", "CreativeCookies.VideoHosting.DTOs\CreativeCookies.VideoHosting.DTOs.csproj", "{D71572B4-A9ED-4E19-9740-8E469126CA5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreativeCookies.VideoHosting.DTOs", "CreativeCookies.VideoHosting.DTOs\CreativeCookies.VideoHosting.DTOs.csproj", "{D71572B4-A9ED-4E19-9740-8E469126CA5E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreativeCookies.VideoHosting.Services", "CreativeCookies.VideoHosting.Services\CreativeCookies.VideoHosting.Services.csproj", "{DA350C1E-E478-474A-80A5-028C5801D4BE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreativeCookies.VideoHosting.Infrastructure", "CreativeCookies.VideoHosting.Infrastructure\CreativeCookies.VideoHosting.Infrastructure.csproj", "{3E83D520-077F-48AB-8366-589C3BE9501B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreativeCookies.VideoHosting.DAL.Config", "CreativeCookies.VideoHosting.DAL.Config\CreativeCookies.VideoHosting.DAL.Config.csproj", "{FA2A3BE2-5028-49E3-B59F-7FDF162B2856}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +45,18 @@ Global
 		{D71572B4-A9ED-4E19-9740-8E469126CA5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D71572B4-A9ED-4E19-9740-8E469126CA5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D71572B4-A9ED-4E19-9740-8E469126CA5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA350C1E-E478-474A-80A5-028C5801D4BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA350C1E-E478-474A-80A5-028C5801D4BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA350C1E-E478-474A-80A5-028C5801D4BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA350C1E-E478-474A-80A5-028C5801D4BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E83D520-077F-48AB-8366-589C3BE9501B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E83D520-077F-48AB-8366-589C3BE9501B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E83D520-077F-48AB-8366-589C3BE9501B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E83D520-077F-48AB-8366-589C3BE9501B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA2A3BE2-5028-49E3-B59F-7FDF162B2856}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA2A3BE2-5028-49E3-B59F-7FDF162B2856}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA2A3BE2-5028-49E3-B59F-7FDF162B2856}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA2A3BE2-5028-49E3-B59F-7FDF162B2856}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
