@@ -140,26 +140,18 @@ namespace CreativeCookies.VideoHosting.Domain.Stripe
         /// IStripeResult with an account as data and Success = true if everything was ok or,
         /// IStripeResult with an Success = false and an ErrorMessage = StripeException.message if none found
         /// </returns>
-        private StripeResult<Account> GetStripeAccount(string accountId)
+        private StripeResultDto<Account> GetStripeAccount(string accountId)
         {
             try
             {
                 var service = new AccountService();
                 var account = service.Get(accountId);
-                return new StripeResult<Account>
-                {
-                    Success = true,
-                    Data = account
-                };
+                return new StripeResultDto<Account>(true, account, string.Empty);
             }
             catch (StripeException ex)
             {
                 _logger.LogError(ex, $"Error fetching account with ID {accountId}");
-                return new StripeResult<Account>
-                {
-                    Success = false,
-                    ErrorMessage = ex.Message
-                };
+                return new StripeResultDto<Account>(false, null, ex.Message);
             }
         }
 
@@ -170,26 +162,18 @@ namespace CreativeCookies.VideoHosting.Domain.Stripe
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
-        private StripeResult<Account> CreateStripeAccount(AccountCreateOptions options)
+        private StripeResultDto<Account> CreateStripeAccount(AccountCreateOptions options)
         {
             try
             {
                 var service = new AccountService();
                 var account = service.Create(options);
-                return new StripeResult<Account>
-                {
-                    Success = true,
-                    Data = account
-                };
+                return new StripeResultDto<Account>(true, account, string.Empty);
             }
             catch (StripeException ex)
             {
                 _logger.LogError(ex, "Error creating Stripe account");
-                return new StripeResult<Account>
-                {
-                    Success = false,
-                    ErrorMessage = ex.Message
-                };
+                return new StripeResultDto<Account>(false, null, ex.Message);
             }
         }
         #endregion
