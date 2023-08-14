@@ -4,11 +4,13 @@ using CreativeCookies.VideoHosting.Contracts.ExceptionCodes;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 {
+    [Authorize(Roles = "admin,ADMIN")]
     public class StripeOnboardingModel : PageModel
     {
         private readonly IConnectAccountsRepository _connectAccountsRepo;
