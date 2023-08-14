@@ -1,17 +1,8 @@
-﻿using Azure;
-using CreativeCookies.VideoHosting.Contracts.DTOs;
-using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
-using CreativeCookies.VideoHosting.Contracts.Repositories;
+﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.Contexts;
-using CreativeCookies.VideoHosting.Domain.DTOs;
-using CreativeCookies.VideoHosting.Domain.DTOs.OAuth;
+using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CreativeCookies.VideoHosting.Domain.Repositories
 {
@@ -26,7 +17,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             _userManager = userManager;
         }
 
-        public async Task<IUsersPaginatedResult> GetUsersList(string search, int pageNumber, int pageSize, string role)
+        public async Task<UsersPaginatedResultDto> GetUsersList(string search, int pageNumber, int pageSize, string role)
         {
             var usersQuery = _context.Users.Where(user => string.IsNullOrEmpty(search) || user.Email.Contains(search) || user.UserName.Contains(search));
             double usersCount = await usersQuery.CountAsync();
@@ -37,7 +28,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
                 .ToList();
             var hasMore = users.Count > usersCount;
             int totalPages = int.Parse(Math.Ceiling(usersCount / pageSize).ToString());
-            var result = new List<IMyHubUser>();
+            var result = new List<MyHubUserDto>();
 
             foreach (var user in users)
             {
@@ -54,7 +45,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
                 if (toAdd) result.Add(new MyHubUserDto(Guid.Parse(user.Id.ToUpperInvariant()), user.Email ?? user.UserName, matchingRole, user.EmailConfirmed));
 
             }
-            return new UsersPaginatedResult(result, usersCount > result.Count(), pageNumber, totalPages);
+            return new UsersPaginatedResultDto(result, usersCount > result.Count(), pageNumber, totalPages);
         }
     }
 }

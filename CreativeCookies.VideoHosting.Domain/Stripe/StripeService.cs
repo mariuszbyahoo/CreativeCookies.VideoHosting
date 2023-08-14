@@ -1,11 +1,7 @@
-﻿using CreativeCookies.VideoHosting.Contracts.DTOs;
-using CreativeCookies.VideoHosting.Contracts.Enums;
+﻿using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Stripe;
-using CreativeCookies.VideoHosting.Contracts.Wrappers;
-using CreativeCookies.VideoHosting.DAL.Contexts;
-using CreativeCookies.VideoHosting.Domain.DTOs;
 using CreativeCookies.VideoHosting.Domain.Repositories;
-using CreativeCookies.VideoHosting.Domain.Wrappers;
+using CreativeCookies.VideoHosting.DTOs.Stripe;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -20,7 +16,7 @@ namespace CreativeCookies.VideoHosting.Domain.Stripe
         private readonly string _stripeSecretAPIKey;
         private readonly string _apiUrl;
         private readonly string _clientUrl;
-        
+
         public StripeService(IConfiguration configuration, ILogger<ConnectAccountsRepository> logger)
         {
             _configuration = configuration;
@@ -30,7 +26,7 @@ namespace CreativeCookies.VideoHosting.Domain.Stripe
             _clientUrl = _configuration.GetValue<string>("ClientUrl");
         }
 
-        public IStripeResult<StripeConnectAccountStatus> GetAccountStatus(string idStoredInDatabase)
+        public StripeResultDto<StripeConnectAccountStatus> GetAccountStatus(string idStoredInDatabase)
         {
             StripeConfiguration.ApiKey = _stripeSecretAPIKey;
             var status = StripeConnectAccountStatus.Disconnected;
@@ -38,11 +34,7 @@ namespace CreativeCookies.VideoHosting.Domain.Stripe
             if (!string.IsNullOrWhiteSpace(stripeAccountResponse.ErrorMessage))
             {
                 _logger.LogError(stripeAccountResponse.ErrorMessage);
-                return new StripeResult<StripeConnectAccountStatus>() 
-                { 
-                    Data = status, Success = true, 
-                    ErrorMessage = stripeAccountResponse.ErrorMessage 
-                }; 
+                return new StripeResultDto<StripeConnectAccountStatus>(true, status, stripeAccountResponse.ErrorMessage);
             }
 
             var stripeAccount = stripeAccountResponse.Data;
@@ -68,17 +60,12 @@ namespace CreativeCookies.VideoHosting.Domain.Stripe
                     status = StripeConnectAccountStatus.Restricted;
                 }
             }
-            var result = new StripeResult<StripeConnectAccountStatus>()
-            {
-                Data = status,
-                Success = true,
-                ErrorMessage = string.Empty
-            };
+            var result = new StripeResultDto<StripeConnectAccountStatus>(true, status, string.Empty);
             _logger.LogInformation($"IStripeService.GetAccountStatus(string idStoredInDatabase) called, returned: {JsonConvert.SerializeObject(result)}");
             return result;
         }
 
-        public IStripeResult<IAccountCreationResult> GenerateConnectAccountLink()
+        public StripeResultDto<AccountCreationResultDto> GenerateConnectAccountLink()
         {
             try
             {
@@ -90,62 +77,38 @@ namespace CreativeCookies.VideoHosting.Domain.Stripe
                 if (!accountResponse.Success)
                 {
                     _logger.LogError(accountResponse.ErrorMessage);
-                    return new StripeResult<IAccountCreationResult>() { Success = false, ErrorMessage = accountResponse.ErrorMessage };
+                    return new StripeResultDto<AccountCreationResultDto>(false, null, accountResponse.ErrorMessage);
                 }
 
                 var account = accountResponse.Data;
 
                 var link = GenerateLink(account.Id);
-                var result = new StripeResult<IAccountCreationResult>()
-                {
-                    Data = new AccountCreationResult()
-                    {
-                        AccountId = accountResponse.Data.Id,
-                        AccountOnboardingUrl = link.Url
-                    },
-                    Success = true
-                };
+                var result = new StripeResultDto<AccountCreationResultDto>(true, new AccountCreationResultDto(link.Url, accountResponse.Data.Id), string.Empty);
                 _logger.LogInformation($"IStripeService.GenerateConnectAccountLink() called, returned: {JsonConvert.SerializeObject(result)}");
                 return result;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred in ReturnConnectAccountLink()");
-                return new StripeResult<IAccountCreationResult>() 
-                { 
-                    Success = false, 
-                    ErrorMessage = $"Exception occured: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.StackTrace: {ex.StackTrace}, ex.Source: {ex.Source} \nCreativeCookies.VideoHosting.Domain.Stripe.StripeService line 97" 
-                };
-            }
+                return new StripeResultDto<AccountCreationResultDto>(false, null, $"Exception occured: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.StackTrace: {ex.StackTrace}, ex.Source: {ex.Source} \nCreativeCookies.VideoHosting.Domain.Stripe.StripeService line 97");
+            };
         }
 
-        public IStripeResult<IAccountCreationResult> GenerateConnectAccountLink(string existingAccountId)
+        public StripeResultDto<AccountCreationResultDto> GenerateConnectAccountLink(string existingAccountId)
         {
             try
             {
                 StripeConfiguration.ApiKey = _stripeSecretAPIKey;
 
                 var link = GenerateLink(existingAccountId);
-                var result = new StripeResult<IAccountCreationResult>()
-                {
-                    Data = new AccountCreationResult()
-                    {
-                        AccountId = existingAccountId,
-                        AccountOnboardingUrl = link.Url
-                    },
-                    Success = true
-                };
+                var result = new StripeResultDto<AccountCreationResultDto>(true, new AccountCreationResultDto(link.Url, existingAccountId), string.Empty);
                 _logger.LogInformation($"IStripeService.GenerateConnectAccountLink(string existingAccountId) called, returned: {JsonConvert.SerializeObject(result)}");
                 return result;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred in ReturnConnectAccountLink()");
-                return new StripeResult<IAccountCreationResult>()
-                {
-                    Success = false,
-                    ErrorMessage = $"Exception occured: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.StackTrace: {ex.StackTrace}, ex.Source: {ex.Source} \nCreativeCookies.VideoHosting.Domain.Stripe.StripeService line 97"
-                };
+                return new StripeResultDto<AccountCreationResultDto>(false, null, $"Exception occured: {ex.Message}, ex.InnerException: {ex.InnerException}, ex.StackTrace: {ex.StackTrace}, ex.Source: {ex.Source} \nCreativeCookies.VideoHosting.Domain.Stripe.StripeService line 97");
             }
         }
 
@@ -177,26 +140,18 @@ namespace CreativeCookies.VideoHosting.Domain.Stripe
         /// IStripeResult with an account as data and Success = true if everything was ok or,
         /// IStripeResult with an Success = false and an ErrorMessage = StripeException.message if none found
         /// </returns>
-        private StripeResult<Account> GetStripeAccount(string accountId)
+        private StripeResultDto<Account> GetStripeAccount(string accountId)
         {
             try
             {
                 var service = new AccountService();
                 var account = service.Get(accountId);
-                return new StripeResult<Account>
-                {
-                    Success = true,
-                    Data = account
-                };
+                return new StripeResultDto<Account>(true, account, string.Empty);
             }
             catch (StripeException ex)
             {
                 _logger.LogError(ex, $"Error fetching account with ID {accountId}");
-                return new StripeResult<Account>
-                {
-                    Success = false,
-                    ErrorMessage = ex.Message
-                };
+                return new StripeResultDto<Account>(false, null, ex.Message);
             }
         }
 
@@ -207,26 +162,18 @@ namespace CreativeCookies.VideoHosting.Domain.Stripe
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
-        private StripeResult<Account> CreateStripeAccount(AccountCreateOptions options)
+        private StripeResultDto<Account> CreateStripeAccount(AccountCreateOptions options)
         {
             try
             {
                 var service = new AccountService();
                 var account = service.Create(options);
-                return new StripeResult<Account>
-                {
-                    Success = true,
-                    Data = account
-                };
+                return new StripeResultDto<Account>(true, account, string.Empty);
             }
             catch (StripeException ex)
             {
                 _logger.LogError(ex, "Error creating Stripe account");
-                return new StripeResult<Account>
-                {
-                    Success = false,
-                    ErrorMessage = ex.Message
-                };
+                return new StripeResultDto<Account>(false, null, ex.Message);
             }
         }
         #endregion

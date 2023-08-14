@@ -1,7 +1,7 @@
-﻿using CreativeCookies.VideoHosting.Contracts.DTOs;
-using CreativeCookies.VideoHosting.Contracts.Repositories;
+﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs;
+using CreativeCookies.VideoHosting.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -19,19 +19,23 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             _ctx = ctx;
         }
 
-        public IEnumerable<IErrorLog> GetErrorLogs()
+        public IEnumerable<ErrorLogDto> GetErrorLogs()
         {
             var res = _ctx.ClientErrors.ToList();
-            return res;
+            return res.Cast<ErrorLogDto>();
         }
 
-        public async Task<IErrorLog> LogNewError(string errorLog)
+        public async Task<ErrorLogDto> LogNewError(string errorLog)
         {
             var newError = new ClientException() { Id = Guid.NewGuid(), Log = errorLog };
 
             var res = await _ctx.AddAsync(newError);
             await _ctx.SaveChangesAsync();
-            return res?.Entity as IErrorLog;
+            if (res == null) return null;
+            else
+            {
+                return new ErrorLogDto(res.Entity.Log);
+            }
         }
     }
 }

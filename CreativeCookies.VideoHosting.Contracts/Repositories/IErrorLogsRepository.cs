@@ -1,11 +1,11 @@
-﻿using CreativeCookies.VideoHosting.Contracts.DTOs;
+﻿using CreativeCookies.VideoHosting.DTOs;
 
 namespace CreativeCookies.VideoHosting.Contracts.Repositories
 {
     public interface IErrorLogsRepository
     {
-        IEnumerable<IErrorLog> GetErrorLogs();
+        IEnumerable<ErrorLogDto> GetErrorLogs();
 
-        Task<IErrorLog> LogNewError(string errorLog);
+        Task<ErrorLogDto> LogNewError(string errorLog);
     }
 }

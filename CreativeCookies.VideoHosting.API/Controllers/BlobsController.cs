@@ -4,12 +4,11 @@ using Azure.Storage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
-using CreativeCookies.VideoHosting.Contracts.DTOs;
-using CreativeCookies.VideoHosting.Domain.DTOs;
 using CreativeCookies.VideoHosting.API.Utils;
 using System.Security.Permissions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using CreativeCookies.VideoHosting.DTOs.Films;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
@@ -61,7 +60,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         [HttpPatch]
         [Route("editMetadata")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
-        public async Task<IActionResult> EditVideoMetadata([FromBody] VideoMetadata metadata)
+        public async Task<IActionResult> EditVideoMetadata([FromBody] VideoMetadataDto metadata)
         {
             var res = await _filmsRepository.EditVideoMetadata(metadata);
             if (res != null)
@@ -73,7 +72,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         [HttpPost]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
-        public async Task<IActionResult> SaveVideoMetadata([FromBody] VideoMetadata metadata)
+        public async Task<IActionResult> SaveVideoMetadata([FromBody] VideoMetadataDto metadata)
         {
             try
             {

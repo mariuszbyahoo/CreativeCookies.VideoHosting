@@ -1,9 +1,8 @@
-﻿using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
-using CreativeCookies.VideoHosting.Contracts.Repositories;
+﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
-using CreativeCookies.VideoHosting.Domain.DTOs.OAuth;
 using CreativeCookies.VideoHosting.Domain.OAuth;
+using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -69,7 +68,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             return authorizationCode;
         }
 
-        public async Task<IMyHubUser> GetUserByAuthCodeAsync(string code)
+        public async Task<MyHubUserDto> GetUserByAuthCodeAsync(string code)
         {
             var codeEntry = await _ctx.AuthorizationCodes.Where(c => c.Code.Equals(code)).FirstOrDefaultAsync();
             if (codeEntry == null) 
@@ -82,7 +81,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
                 var roleId = intermediateLookup.RoleId;
                 var role = await _ctx.Roles.FirstOrDefaultAsync(r => r.Id.Equals(roleId));
                 var user = await _ctx.Users.Where(u => u.Id.Equals(codeEntry.UserId))
-                    .Select<IdentityUser, IMyHubUser>(r => new MyHubUserDto(Guid.Parse(r.Id), r.NormalizedEmail, role.NormalizedName, r.EmailConfirmed))
+                    .Select<IdentityUser, MyHubUserDto>(r => new MyHubUserDto(Guid.Parse(r.Id), r.NormalizedEmail, role.NormalizedName, r.EmailConfirmed))
                     .FirstOrDefaultAsync();
                 return user;
             }

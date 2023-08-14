@@ -1,4 +1,4 @@
-﻿using CreativeCookies.VideoHosting.Contracts.DTOs;
+﻿using CreativeCookies.VideoHosting.DTOs.Films;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +9,10 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
 {
     public interface IFilmsRepository
     {
-        Task<IVideoMetadata> GetVideoMetadata(Guid videoId);
-        Task<IFilmsPaginatedResult> GetFilmsPaginatedResult(string search, int pageNumber, int pageSize);
-        Task<IVideoMetadata> SaveVideoMetadata(IVideoMetadata metadata);
-        Task<IVideoMetadata> EditVideoMetadata(IVideoMetadata metadata);
+        Task<VideoMetadataDto> GetVideoMetadata(Guid videoId);
+        Task<FilmsPaginatedResultDto> GetFilmsPaginatedResult(string search, int pageNumber, int pageSize);
+        Task<VideoMetadataDto> SaveVideoMetadata(VideoMetadataDto metadata);
+        Task<VideoMetadataDto> EditVideoMetadata(VideoMetadataDto metadata);
         Task DeleteVideoBlobWithMetadata(Guid id);
     }
 }

@@ -2,15 +2,9 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
 using CreativeCookies.VideoHosting.Contracts.Azure;
-using CreativeCookies.VideoHosting.Contracts.DTOs;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Domain.Endpoints;
-using CreativeCookies.VideoHosting.Domain.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using CreativeCookies.VideoHosting.DTOs.Azure;
 
 namespace CreativeCookies.VideoHosting.Domain.Repositories
 {
@@ -29,39 +23,39 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             _thumbnailsContainerName = "thumbnails";
         }
 
-        public ISasTokenResult GetSasTokenForContainer(string containerName)
+        public SasTokenResultDto GetSasTokenForContainer(string containerName)
         {
             var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(containerName);
             var sasToken = GenerateSasToken(containerClient, EndpointType.ListBlobs);
-            return new SasTokenResult(sasToken);
+            return new SasTokenResultDto(sasToken);
         }
 
-        public ISasTokenResult GetSasTokenForFilm(string filmName)
+        public SasTokenResultDto GetSasTokenForFilm(string filmName)
         {
             var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(_filmsContainerName);
             var sasToken = GenerateSasToken(containerClient, EndpointType.BlobRead, filmName);
-            return new SasTokenResult(sasToken);
+            return new SasTokenResultDto(sasToken);
         }
 
-        public ISasTokenResult GetSasTokenForFilmUpload(string filmName)
+        public SasTokenResultDto GetSasTokenForFilmUpload(string filmName)
         {
             var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(_filmsContainerName);
             var sasToken = GenerateSasToken(containerClient, EndpointType.BlobUpload, filmName);
-            return new SasTokenResult(sasToken);
+            return new SasTokenResultDto(sasToken);
         }
 
-        public ISasTokenResult GetSasTokenForThumbnail(string thumbnailName)
+        public SasTokenResultDto GetSasTokenForThumbnail(string thumbnailName)
         {
             var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(_thumbnailsContainerName);
             var sasToken = GenerateSasToken(containerClient, EndpointType.BlobRead, thumbnailName);
-            return new SasTokenResult(sasToken);
+            return new SasTokenResultDto(sasToken);
         }
 
-        public ISasTokenResult GetSasTokenForThumbnailUpload(string thumbnailName)
+        public SasTokenResultDto GetSasTokenForThumbnailUpload(string thumbnailName)
         {
             var containerClient = _blobServiceClientWrapper.GetBlobContainerClient(_thumbnailsContainerName);
             var sasToken = GenerateSasToken(containerClient, EndpointType.BlobUpload, thumbnailName);
-            return new SasTokenResult(sasToken);
+            return new SasTokenResultDto(sasToken);
         }
 
         private string GenerateSasToken(BlobContainerClient containerClient, EndpointType endpointType, string blobTitle = "")
