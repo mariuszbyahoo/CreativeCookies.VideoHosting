@@ -1,8 +1,7 @@
-﻿using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
-using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
+﻿using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
-using CreativeCookies.VideoHosting.Domain.DTOs.OAuth;
+using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -29,7 +28,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
         /// </summary>
         /// <param name="userId"></param>
         /// <returns>new object compliant with IRefreshToken interface</returns>
-        public async Task<IRefreshToken> CreateRefreshToken(Guid userId)
+        public async Task<RefreshTokenDto> CreateRefreshToken(Guid userId)
         {
             var refreshTokenDto = _jwtRepository.GenerateRefreshToken(userId);
 
@@ -55,17 +54,10 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             _context.RefreshTokens.Add(refreshTokenDao);
             await _context.SaveChangesAsync();
 
-            return new RefreshTokenDto
-            {
-                Id = refreshTokenDao.Id,
-                Token = refreshTokenDao.Token,
-                CreationDate = refreshTokenDao.CreatedAt,
-                ExpirationDate = refreshTokenDao.Expires,
-                UserId = Guid.Parse(refreshTokenDao.UserId)
-            };
+            return new RefreshTokenDto(refreshTokenDao.Id, Guid.Parse(refreshTokenDao.UserId), refreshTokenDao.Token, refreshTokenDao.CreatedAt, refreshTokenDao.Expires);
         }
 
-        public async Task<IRefreshToken> FindRefreshToken(string token)
+        public async Task<RefreshTokenDto> FindRefreshToken(string token)
         {
             var refreshTokenDAO = (await _context.RefreshTokens.ToListAsync()).FirstOrDefault(rt => rt.Token.Equals(token, StringComparison.InvariantCultureIgnoreCase));
 
@@ -74,14 +66,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
                 return null;
             }
 
-            return new RefreshTokenDto
-            {
-                Id = refreshTokenDAO.Id,
-                Token = refreshTokenDAO.Token,
-                CreationDate = refreshTokenDAO.CreatedAt,
-                ExpirationDate = refreshTokenDAO.Expires,
-                UserId = Guid.Parse(refreshTokenDAO.UserId)
-            };
+            return new RefreshTokenDto(refreshTokenDAO.Id, Guid.Parse(refreshTokenDAO.UserId), refreshTokenDAO.Token, refreshTokenDAO.CreatedAt, refreshTokenDAO.Expires);
         }
 
         public async Task<bool> IsTokenValid(string refresh_token)
@@ -91,7 +76,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             else return false;
         }
 
-        public async Task<IMyHubUser> GetUserByRefreshToken(string? refresh_token)
+        public async Task<MyHubUserDto> GetUserByRefreshToken(string? refresh_token)
         {
             var tokenEntry = await _context.RefreshTokens.Where(t => t.Token.Equals(refresh_token)).FirstOrDefaultAsync();
             if (tokenEntry == null) return null;

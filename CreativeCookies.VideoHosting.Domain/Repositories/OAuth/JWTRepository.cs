@@ -1,16 +1,11 @@
-﻿using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
-using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
-using CreativeCookies.VideoHosting.Domain.DTOs.OAuth;
+﻿using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
+using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
 {
@@ -45,7 +40,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             return tokenHandler.WriteToken(token);
         }
 
-        public IRefreshToken GenerateRefreshToken(Guid userId)
+        public RefreshTokenDto GenerateRefreshToken(Guid userId)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             var stringChars = new char[RefreshTokenLength];
@@ -62,14 +57,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
                 }
             }
 
-            var refreshToken = new RefreshTokenDto
-            {
-                Id = Guid.NewGuid(),
-                Token = new string(stringChars),
-                UserId = userId,
-                CreationDate = DateTime.UtcNow,
-                ExpirationDate = DateTime.UtcNow.AddHours(8),
-            };
+            var refreshToken = new RefreshTokenDto(Guid.NewGuid(), userId, new string(stringChars), DateTime.UtcNow, DateTime.UtcNow.AddHours(8));
 
             return refreshToken;
         }

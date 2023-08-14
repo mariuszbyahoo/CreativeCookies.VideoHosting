@@ -1,11 +1,9 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Stripe;
-using CreativeCookies.VideoHosting.Contracts.Wrappers;
-using CreativeCookies.VideoHosting.Domain.Wrappers;
+using CreativeCookies.VideoHosting.DTOs.Stripe;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
 
@@ -32,14 +30,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         [HttpGet("IsSetUp")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
-        public async Task<ActionResult<IStripeResult<StripeConnectAccountStatus>>> IsStripeAccountSetUp()
+        public async Task<ActionResult<StripeResultDto<StripeConnectAccountStatus>>> IsStripeAccountSetUp()
         {
-            IStripeResult<StripeConnectAccountStatus> result = new StripeResult<StripeConnectAccountStatus>()
-            {
-                Data = StripeConnectAccountStatus.Disconnected,
-                Success = true,
-                ErrorMessage = "account_missing"
-            };
+            StripeResultDto<StripeConnectAccountStatus> result = new StripeResultDto<StripeConnectAccountStatus>(true, StripeConnectAccountStatus.Disconnected, "account_missing");
             var idStoredInDatabase = await _connectAccountsRepository.GetConnectedAccountId();
             if (!string.IsNullOrWhiteSpace(idStoredInDatabase))
             {

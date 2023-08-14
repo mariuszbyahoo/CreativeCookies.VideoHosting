@@ -1,6 +1,5 @@
-﻿using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
-using CreativeCookies.VideoHosting.Contracts.Repositories;
-using CreativeCookies.VideoHosting.Domain.DTOs.OAuth;
+﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
+using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -24,7 +23,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
-        public async Task<ActionResult<IList<IMyHubUser>>> GetAll(int pageNumber = 1, int pageSize = 10, string search = "", string role = "any")
+        public async Task<ActionResult<IList<MyHubUserDto>>> GetAll(int pageNumber = 1, int pageSize = 10, string search = "", string role = "any")
         { 
             if (pageNumber <= 0 || pageSize <= 0)
             {

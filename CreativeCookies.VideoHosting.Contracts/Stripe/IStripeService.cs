@@ -1,11 +1,5 @@
-﻿using CreativeCookies.VideoHosting.Contracts.DTOs;
-using CreativeCookies.VideoHosting.Contracts.Enums;
-using CreativeCookies.VideoHosting.Contracts.Wrappers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CreativeCookies.VideoHosting.Contracts.Enums;
+using CreativeCookies.VideoHosting.DTOs.Stripe;
 
 namespace CreativeCookies.VideoHosting.Contracts.Stripe
 {
@@ -19,14 +13,14 @@ namespace CreativeCookies.VideoHosting.Contracts.Stripe
         /// object with Success = true and an ErrorMessage = StripeException.message if none found, 
         /// or object with Success = true and Data = StripeConnectAccountStatus if an account found
         /// </returns>
-        public IStripeResult<StripeConnectAccountStatus> GetAccountStatus(string idStoredInDatabase);
+        public StripeResultDto<StripeConnectAccountStatus> GetAccountStatus(string idStoredInDatabase);
 
         /// <summary>
         /// Generates an Onboarding link for a new connect account and returns an IStripeResult with IAccountCreationResult
         /// </summary>
         /// <returns>If no exceptions occur = IStripeResult with Success = true, a new account's Id in Data.AccountOnboardingUrl and Success = true
         /// otherwise, retrns IStripeResult with Success = false and an exception's message in ErrorMessage field. </returns>
-        public IStripeResult<IAccountCreationResult> GenerateConnectAccountLink();
+        public StripeResultDto<AccountCreationResultDto> GenerateConnectAccountLink();
 
         /// <summary>
         /// Generates an Onboarding link for an existing connect account and returns an IStripeResult with an IAccountCreationResult
@@ -34,7 +28,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Stripe
         /// <param name="existingAccountId">An existing connect account's Id</param>
         /// <returns>If no exceptions occur = IStripeResult with Success = true, a new account's Id in Data.AccountOnboardingUrl and Success = true
         /// otherwise, retrns IStripeResult with Success = false and an exception's message in ErrorMessage field. </returns>
-        public IStripeResult<IAccountCreationResult> GenerateConnectAccountLink(string existingAccountId);
+        public StripeResultDto<AccountCreationResultDto> GenerateConnectAccountLink(string existingAccountId);
 
     }
 }

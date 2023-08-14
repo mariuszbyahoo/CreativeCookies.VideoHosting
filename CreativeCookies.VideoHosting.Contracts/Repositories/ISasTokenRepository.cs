@@ -1,4 +1,4 @@
-﻿using CreativeCookies.VideoHosting.Contracts.DTOs;
+﻿using CreativeCookies.VideoHosting.DTOs.Azure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +9,10 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
 {
     public interface ISasTokenRepository
     {
-        ISasTokenResult GetSasTokenForContainer(string containerName);
-        ISasTokenResult GetSasTokenForFilm(string filmName);
-        ISasTokenResult GetSasTokenForFilmUpload(string filmName);
-        ISasTokenResult GetSasTokenForThumbnail(string thumbnailName);
-        ISasTokenResult GetSasTokenForThumbnailUpload(string thumbnailName);
+        SasTokenResultDto GetSasTokenForContainer(string containerName);
+        SasTokenResultDto GetSasTokenForFilm(string filmName);
+        SasTokenResultDto GetSasTokenForFilmUpload(string filmName);
+        SasTokenResultDto GetSasTokenForThumbnail(string thumbnailName);
+        SasTokenResultDto GetSasTokenForThumbnailUpload(string thumbnailName);
     }
 }

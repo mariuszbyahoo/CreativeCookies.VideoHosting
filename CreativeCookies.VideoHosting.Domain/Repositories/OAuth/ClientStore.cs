@@ -1,9 +1,8 @@
-﻿using CreativeCookies.VideoHosting.Contracts.DTOs.OAuth;
-using CreativeCookies.VideoHosting.Contracts.Enums;
+﻿using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
-using CreativeCookies.VideoHosting.Domain.DTOs.OAuth;
+using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -23,7 +22,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
         {
             _ctx = ctx;
         }
-        public async Task<IOAuthClient> FindByClientIdAsync(Guid clientId)
+        public async Task<OAuthClientDto> FindByClientIdAsync(Guid clientId)
         {
             var client = await _ctx.OAuthClients
                         .Include(c => c.AllowedScopes)
@@ -34,18 +33,8 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             }
             else
             {
-                var clientDto = new OAuthClientDto
-                {
-                    ClientSecret = client.ClientSecret,
-                    RedirectUri = client.RedirectUri,
-                    AllowedScopes = client.AllowedScopes.Select(scope => new AllowedScopeDto
-                    {
-                        Id = scope.Id,
-                        OAuthClientId = scope.OAuthClientId,
-                        Scope = scope.Scope
-                    }).Cast<IAllowedScope>().ToList(),
-                    Id = client.Id
-                };
+                var clientDto = new OAuthClientDto(client.Id, client.ClientSecret, client.RedirectUri, 
+                    client.AllowedScopes.Select(scope => new AllowedScopeDto(scope.Id, scope.Scope, scope.OAuthClientId)).ToList());
                 return clientDto;
             }
         }

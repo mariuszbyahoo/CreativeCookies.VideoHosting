@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Contracts.DTOs
+namespace CreativeCookies.VideoHosting.DTOs.Films
 {
-    public interface IVideoMetadata
+    public class VideoMetadataDto
     {
         /// <summary>
         /// Unique identifier
@@ -40,5 +40,17 @@ namespace CreativeCookies.VideoHosting.Contracts.DTOs
         /// When this video has been uploaded
         /// </summary>
         public DateTimeOffset CreatedOn { get; set; }
+
+        public VideoMetadataDto(Guid id, string name, string description, string length, string thumbnailName, string blobUrl, string videoType, DateTimeOffset createdOn)
+        {
+            Id = id;
+            Name = name;
+            Description = description;
+            Length = length;
+            ThumbnailName = thumbnailName;
+            BlobUrl = blobUrl;
+            VideoType = videoType;
+            CreatedOn = createdOn;
+        }
     }
 }

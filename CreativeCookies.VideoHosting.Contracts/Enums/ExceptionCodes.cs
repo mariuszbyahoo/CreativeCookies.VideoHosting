@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Contracts.DTOs
+namespace CreativeCookies.VideoHosting.Contracts.Enums
 {
-    public interface IErrorLog
+    public enum ExceptionCodes
     {
-        string Log { get; set; }
+        StripeIntegrationException = 599
     }
 }

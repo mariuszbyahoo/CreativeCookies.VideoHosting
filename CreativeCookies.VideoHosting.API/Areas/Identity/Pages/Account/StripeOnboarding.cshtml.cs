@@ -1,9 +1,7 @@
-using CreativeCookies.VideoHosting.Contracts.DTOs;
 using CreativeCookies.VideoHosting.Contracts.Enums;
-using CreativeCookies.VideoHosting.Contracts.ExceptionCodes;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Stripe;
-using CreativeCookies.VideoHosting.Contracts.Wrappers;
+using CreativeCookies.VideoHosting.DTOs.Stripe;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -53,7 +51,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostConnect()
         {
-            IStripeResult<IAccountCreationResult> accountLinkResult = null;
+            StripeResultDto<AccountCreationResultDto> accountLinkResult = null;
             var accountStatus = (StripeConnectAccountStatus)Enum.Parse(typeof(StripeConnectAccountStatus), TempData["AccountStatus"]?.ToString());
             var connectedAccountId = TempData["ConnectedAccountId"]?.ToString() ?? string.Empty;
 
