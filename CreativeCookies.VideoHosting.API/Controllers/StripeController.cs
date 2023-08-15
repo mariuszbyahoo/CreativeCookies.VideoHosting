@@ -1,7 +1,6 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Enums;
-using CreativeCookies.VideoHosting.Contracts.Infrastructure.Services;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
-using CreativeCookies.VideoHosting.Contracts.Stripe;
 using CreativeCookies.VideoHosting.DTOs.Stripe;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -15,12 +14,12 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     public class StripeController : ControllerBase
     {
         private readonly IConnectAccountsService _connectAccountsSrv;
-        private readonly IStripeService _stripeService;
+        private readonly IStripeOnboardingService _stripeService;
         private readonly ILogger<StripeController> _logger;
         private readonly IConfiguration _configuration;
 
         public StripeController(
-            IConnectAccountsService connectAccountsSrv, IStripeService stripeService, 
+            IConnectAccountsService connectAccountsSrv, IStripeOnboardingService stripeService, 
             ILogger<StripeController> logger, IConfiguration configuration)
         {
             _connectAccountsSrv = connectAccountsSrv;

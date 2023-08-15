@@ -1,4 +1,4 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Infrastructure.Services;
+﻿using CreativeCookies.VideoHosting.Contracts.Infrastructure.Azure;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.DTOs.Films;

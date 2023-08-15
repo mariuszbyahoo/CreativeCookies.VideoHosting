@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using CreativeCookies.VideoHosting.Contracts.Infrastructure.Services;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Services
+namespace CreativeCookies.VideoHosting.Services.OAuth
 {
     public class AccessTokenService : IAccessTokenService
     {

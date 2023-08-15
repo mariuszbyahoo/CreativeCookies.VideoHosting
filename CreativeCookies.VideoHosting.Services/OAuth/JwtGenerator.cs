@@ -7,7 +7,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace CreativeCookies.VideoHosting.Services
+namespace CreativeCookies.VideoHosting.Services.OAuth
 {
     public class JwtGenerator : IJWTGenerator
     {

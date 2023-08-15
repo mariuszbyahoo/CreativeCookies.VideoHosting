@@ -1,9 +1,9 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.DTOs.Stripe;
 
-namespace CreativeCookies.VideoHosting.Contracts.Stripe
+namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
 {
-    public interface IStripeService
+    public interface IStripeOnboardingService
     {
         /// <summary>
         /// Gets an account's status from Stripe API 

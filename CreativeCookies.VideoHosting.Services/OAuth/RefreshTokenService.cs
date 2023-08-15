@@ -2,7 +2,7 @@
 using CreativeCookies.VideoHosting.Contracts.Services.OAuth;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 
-namespace CreativeCookies.VideoHosting.Services
+namespace CreativeCookies.VideoHosting.Services.OAuth
 {
     public class RefreshTokenService : IRefreshTokenService
     {
@@ -18,7 +18,7 @@ namespace CreativeCookies.VideoHosting.Services
         public async Task<RefreshTokenDto> GetNewRefreshToken(Guid userId)
         {
             var existingRefreshTokens = await _refreshTokenRepository.GetRefreshTokens(userId);
-            if(existingRefreshTokens != null && existingRefreshTokens.Length > 0)
+            if (existingRefreshTokens != null && existingRefreshTokens.Length > 0)
             {
                 if (existingRefreshTokens.Length > 1)
                 {

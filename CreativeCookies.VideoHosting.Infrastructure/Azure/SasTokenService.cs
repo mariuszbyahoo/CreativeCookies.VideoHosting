@@ -2,7 +2,6 @@
 using Azure.Storage.Sas;
 using Azure.Storage;
 using CreativeCookies.VideoHosting.Contracts.Azure;
-using CreativeCookies.VideoHosting.Contracts.Infrastructure.Services;
 using CreativeCookies.VideoHosting.DTOs.Azure;
 using System;
 using System.Collections.Generic;
@@ -10,10 +9,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CreativeCookies.VideoHosting.Infrastructure.Enums;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 
-namespace CreativeCookies.VideoHosting.Infrastructure
+namespace CreativeCookies.VideoHosting.Infrastructure.Azure
 {
-    public  class SasTokenService : ISasTokenService
+    public class SasTokenService : ISasTokenService
     {
         private readonly IBlobServiceClientWrapper _blobServiceClientWrapper;
         private readonly StorageSharedKeyCredential _storageSharedKeyCredential;

@@ -1,5 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Enums;
-using CreativeCookies.VideoHosting.Contracts.Stripe;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.DTOs.Stripe;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -8,15 +8,15 @@ using Stripe;
 
 namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 {
-    public class StripeService : IStripeService
+    public class StripeOnboardingService : IStripeOnboardingService
     {
         private readonly IConfiguration _configuration;
-        private readonly ILogger<StripeService> _logger;
+        private readonly ILogger<StripeOnboardingService> _logger;
         private readonly string _stripeSecretAPIKey;
         private readonly string _apiUrl;
         private readonly string _clientUrl;
 
-        public StripeService(IConfiguration configuration, ILogger<StripeService> logger)
+        public StripeOnboardingService(IConfiguration configuration, ILogger<StripeOnboardingService> logger)
         {
             _configuration = configuration;
             _logger = logger;

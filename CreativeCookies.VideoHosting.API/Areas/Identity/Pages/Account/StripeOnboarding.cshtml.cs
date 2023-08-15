@@ -1,7 +1,6 @@
 using CreativeCookies.VideoHosting.Contracts.Enums;
-using CreativeCookies.VideoHosting.Contracts.Infrastructure.Services;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
-using CreativeCookies.VideoHosting.Contracts.Stripe;
 using CreativeCookies.VideoHosting.DTOs.Stripe;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +12,11 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
     public class StripeOnboardingModel : PageModel
     {
         private readonly IConnectAccountsService _connectAccountsSrv;
-        private readonly IStripeService _stripeService;
+        private readonly IStripeOnboardingService _stripeService;
         private readonly ILogger<StripeOnboardingModel> _logger;
         public StripeConnectAccountStatus AccountStatus { get; set; }
 
-        public StripeOnboardingModel(IConnectAccountsService connectAccountsSrv, IStripeService stripeService, ILogger<StripeOnboardingModel> logger)
+        public StripeOnboardingModel(IConnectAccountsService connectAccountsSrv, IStripeOnboardingService stripeService, ILogger<StripeOnboardingModel> logger)
         {
             _connectAccountsSrv = connectAccountsSrv;
             _stripeService = stripeService;

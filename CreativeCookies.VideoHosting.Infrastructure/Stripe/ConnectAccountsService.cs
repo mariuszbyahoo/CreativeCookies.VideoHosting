@@ -1,8 +1,7 @@
-﻿
-using CreativeCookies.VideoHosting.Contracts.Infrastructure.Services;
+﻿using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 
-namespace CreativeCookies.VideoHosting.Services
+namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 {
     public class ConnectAccountsService : IConnectAccountsService
     {

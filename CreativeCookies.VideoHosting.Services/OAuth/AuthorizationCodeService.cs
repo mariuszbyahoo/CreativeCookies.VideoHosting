@@ -3,7 +3,7 @@ using CreativeCookies.VideoHosting.Contracts.Services.OAuth;
 using CreativeCookies.VideoHosting.Domain.OAuth;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 
-namespace CreativeCookies.VideoHosting.Services
+namespace CreativeCookies.VideoHosting.Services.OAuth
 {
     public class AuthorizationCodeService : IAuthorizationCodeService
     {

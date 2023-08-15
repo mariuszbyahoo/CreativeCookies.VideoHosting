@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Infrastructure
+namespace CreativeCookies.VideoHosting.Infrastructure.Azure
 {
     public class BlobServiceClientWrapper : IBlobServiceClientWrapper
     {
@@ -16,7 +16,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure
         {
             _client = client;
         }
-        public async Task<global::Azure.Storage.Blobs.BlobContainerClient> CreateBlobContainerAsync(string containerName, global::Azure.Storage.Blobs.Models.PublicAccessType publicAccessType = 0, IDictionary<string, string> metadata = null, CancellationToken cancellationToken = default)
+        public async Task<BlobContainerClient> CreateBlobContainerAsync(string containerName, global::Azure.Storage.Blobs.Models.PublicAccessType publicAccessType = 0, IDictionary<string, string> metadata = null, CancellationToken cancellationToken = default)
         {
             return await _client.CreateBlobContainerAsync(containerName, publicAccessType, metadata, cancellationToken);
         }
@@ -26,7 +26,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             await _client.DeleteBlobContainerAsync(containerName, null, cancellationToken);
         }
 
-        public global::Azure.Storage.Blobs.BlobContainerClient GetBlobContainerClient(string containerName)
+        public BlobContainerClient GetBlobContainerClient(string containerName)
         {
             return _client.GetBlobContainerClient(containerName);
         }

@@ -5,8 +5,6 @@ using CreativeCookies.VideoHosting.API.Helpers;
 using CreativeCookies.VideoHosting.Contracts.Azure;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.Contracts.Services;
-using CreativeCookies.VideoHosting.Contracts.Stripe;
-using CreativeCookies.VideoHosting.Infrastructure;
 using CreativeCookies.VideoHosting.Services;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -20,10 +18,13 @@ using Serilog.Events;
 using System.Configuration;
 using System.Text;
 using CreativeCookies.VideoHosting.DAL.Config;
-using CreativeCookies.VideoHosting.Contracts.Infrastructure.Services;
 using CreativeCookies.VideoHosting.Contracts.Services.OAuth;
 using CreativeCookies.VideoHosting.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
+using CreativeCookies.VideoHosting.Services.OAuth;
+using CreativeCookies.VideoHosting.Infrastructure.Azure;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Azure;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -143,7 +144,7 @@ namespace CreativeCookies.VideoHosting.API
                 var blobServiceClient = sp.GetRequiredService<BlobServiceClient>();
                 return new BlobServiceClientWrapper(blobServiceClient);
             });
-            builder.Services.AddSingleton<IStripeService, StripeService>();
+            builder.Services.AddSingleton<IStripeOnboardingService, StripeOnboardingService>();
             
             builder.Services.AddHostedService<TokenCleanupWorker>();
 
