@@ -1,6 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.API.Utils;
-using CreativeCookies.VideoHosting.Contracts.Repositories;
-using CreativeCookies.VideoHosting.DAL.Contexts;
+using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,19 +10,17 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     [ApiController]
     public class ErrorController : ControllerBase
     {
-        private readonly IErrorLogsRepository _repo;
-        private AppDbContext _context;
+        private readonly IErrorLogsService _srv;
 
-        public ErrorController(AppDbContext context, IErrorLogsRepository repo)
+        public ErrorController(IErrorLogsService srv)
         {
-            _context = context;
-            _repo = repo;
+            _srv = srv;
         }
 
         [HttpGet]
         public IActionResult Index()
         {
-            var res = _context.ClientErrors.ToList();
+            var res = _srv.GetErrorLogs();
             return Ok(res);
         }
 
@@ -37,7 +34,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 return BadRequest("ErrorLog cannot be null or empty.");
             }
 
-            var newError = await _repo.LogNewError(errorLogRequest.Log);
+            var newError = await _srv.AddNewLog(errorLogRequest.Log);
 
             if (newError != null)
             {

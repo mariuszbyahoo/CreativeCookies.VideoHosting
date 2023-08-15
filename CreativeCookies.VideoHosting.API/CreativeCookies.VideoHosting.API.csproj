@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.16.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.15.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.5" />
@@ -35,7 +34,6 @@
     <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
     <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="4.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageReference Include="Stripe.net" Version="41.27.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.29.0" />
   </ItemGroup>
@@ -45,8 +43,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CreativeCookies.VideoHosting.DAL\CreativeCookies.VideoHosting.DAL.csproj" />
+    <ProjectReference Include="..\CreativeCookies.VideoHosting.DAL.Config\CreativeCookies.VideoHosting.DAL.Config.csproj" />
     <ProjectReference Include="..\CreativeCookies.VideoHosting.Domain\CreativeCookies.VideoHosting.Domain.csproj" />
+    <ProjectReference Include="..\CreativeCookies.VideoHosting.DTOs\CreativeCookies.VideoHosting.DTOs.csproj" />
+    <ProjectReference Include="..\CreativeCookies.VideoHosting.Infrastructure\CreativeCookies.VideoHosting.Infrastructure.csproj" />
+    <ProjectReference Include="..\CreativeCookies.VideoHosting.Services\CreativeCookies.VideoHosting.Services.csproj" />
   </ItemGroup>
 
   <ItemGroup>

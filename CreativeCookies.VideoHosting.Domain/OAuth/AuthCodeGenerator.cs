@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace CreativeCookies.VideoHosting.Domain.OAuth
 {
-    internal static class AuthCodeGenerator
+    public static class AuthCodeGenerator
     {
         /// <summary>
         /// Generates an Authorization code
         /// </summary>
         /// <returns>URL safe Base-64 encoded Authorization Code</returns>
-        internal static string GenerateAuthorizationCode()
+        public static string GenerateAuthorizationCode()
         {
             int codeLength = 32; 
             byte[] randomBytes = new byte[codeLength];

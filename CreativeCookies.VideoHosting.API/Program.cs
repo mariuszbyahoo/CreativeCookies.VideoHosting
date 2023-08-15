@@ -3,19 +3,12 @@ using Azure.Storage;
 using Azure.Storage.Blobs;
 using CreativeCookies.VideoHosting.API.Helpers;
 using CreativeCookies.VideoHosting.Contracts.Azure;
-using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
-using CreativeCookies.VideoHosting.Contracts.Stripe;
-using CreativeCookies.VideoHosting.DAL.Contexts;
-using CreativeCookies.VideoHosting.Domain.Azure;
-using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
-using CreativeCookies.VideoHosting.Domain.Repositories;
-using CreativeCookies.VideoHosting.Domain.Repositories.OAuth;
-using CreativeCookies.VideoHosting.Domain.Stripe;
+using CreativeCookies.VideoHosting.Contracts.Services;
+using CreativeCookies.VideoHosting.Services;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +17,14 @@ using Serilog;
 using Serilog.Events;
 using System.Configuration;
 using System.Text;
+using CreativeCookies.VideoHosting.DAL.Config;
+using CreativeCookies.VideoHosting.Contracts.Services.OAuth;
+using CreativeCookies.VideoHosting.Infrastructure.Stripe;
+using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
+using CreativeCookies.VideoHosting.Services.OAuth;
+using CreativeCookies.VideoHosting.Infrastructure.Azure;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Azure;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -91,34 +92,31 @@ namespace CreativeCookies.VideoHosting.API
                 connectionString = builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
             }
 
-            builder.Services.AddDbContext<AppDbContext>(options =>
-            {
-                options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
-                {
-                    sqlOptions.EnableRetryOnFailure(
-                        maxRetryCount: 5,
-                        maxRetryDelay: TimeSpan.FromSeconds(30),
-                        errorNumbersToAdd: null);
-                });
-            });
-
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => 
-                    {
-                        options.SignIn.RequireConfirmedAccount = true;
-                        options.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
-                        options.Tokens.ProviderMap[TokenOptions.DefaultAuthenticatorProvider] = new TokenProviderDescriptor(typeof(IUserTwoFactorTokenProvider<IdentityUser>));
-                    })
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<AppDbContext>();
-
-            var apiUrl = builder.Configuration.GetValue<string>("ApiUrl");
-
             builder.Services.AddHttpContextAccessor();
-            builder.Services.AddScoped<IUsersRepository, UsersRepository>();
-            builder.Services.AddScoped<IClientStore, ClientStore>();
-            builder.Services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
-            builder.Services.AddScoped<IJWTRepository, JWTRepository>();
-            builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+            var apiUrl = builder.Configuration.GetValue<string>("ApiUrl");            
+            var accountName = builder.Configuration.GetValue<string>("Storage:AccountName");
+            var accountKey = builder.Configuration.GetValue<string>("Storage:AccountKey");
+            var blobServiceUrl = builder.Configuration.GetValue<string>("Storage:BlobServiceUrl");
+            var clientId = builder.Configuration.GetValue<string>("ClientId");
+            var jwtSecretKey = builder.Configuration.GetValue<string>("JWTSecretKey");
+            var adminEmail = builder.Configuration.GetValue<string>("AdminEmail");
+
+            builder.Services.AddDataAccessLayer(connectionString);
+
+
+            builder.Services.AddSingleton<ISasTokenService, SasTokenService>();
+            builder.Services.AddSingleton<IJWTGenerator, JwtGenerator>();
+            builder.Services.AddScoped<IFilmService, FilmService>();
+            builder.Services.AddScoped<IErrorLogsService, ErrorLogsService>();
+            builder.Services.AddScoped<IUsersService, UsersService>();
+            builder.Services.AddScoped<IConnectAccountsService, ConnectAccountsService>();
+            builder.Services.AddScoped<IAuthorizationCodeService, AuthorizationCodeService>();
+            builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+            builder.Services.AddScoped<IAccessTokenService, AccessTokenService>();
+            builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
+
+            builder.Services.AddScoped<IMyHubBlobService, MyHubBlobService>();
 
             builder.Services.AddTransient<IEmailService>(serviceProvider =>
             {
@@ -139,9 +137,6 @@ namespace CreativeCookies.VideoHosting.API
             });
 
 
-            var accountName = builder.Configuration.GetValue<string>("Storage:AccountName");
-            var accountKey = builder.Configuration.GetValue<string>("Storage:AccountKey");
-            var blobServiceUrl = builder.Configuration.GetValue<string>("Storage:BlobServiceUrl");
             builder.Services.AddSingleton(x => new StorageSharedKeyCredential(accountName, accountKey));
             builder.Services.AddSingleton(x => new BlobServiceClient(new Uri(blobServiceUrl), x.GetRequiredService<StorageSharedKeyCredential>()));
             builder.Services.AddSingleton<IBlobServiceClientWrapper>(sp =>
@@ -149,17 +144,9 @@ namespace CreativeCookies.VideoHosting.API
                 var blobServiceClient = sp.GetRequiredService<BlobServiceClient>();
                 return new BlobServiceClientWrapper(blobServiceClient);
             });
-            builder.Services.AddSingleton<ISasTokenRepository, SasTokenRepository>();
-            builder.Services.AddSingleton<IStripeService, StripeService>();
-            builder.Services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
-            builder.Services.AddScoped<IFilmsRepository, FilmsRepository>();
-            builder.Services.AddScoped<IConnectAccountsRepository, ConnectAccountsRepository>();
+            builder.Services.AddSingleton<IStripeOnboardingService, StripeOnboardingService>();
             
             builder.Services.AddHostedService<TokenCleanupWorker>();
-
-            var clientId = builder.Configuration.GetValue<string>("ClientId");
-
-            var jwtSecretKey = builder.Configuration.GetValue<string>("JWTSecretKey");
 
             builder.Services.AddAuthentication(options =>
             {
@@ -203,40 +190,7 @@ namespace CreativeCookies.VideoHosting.API
 
             var app = builder.Build();
 
-            using (var scope = app.Services.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                db.Database.Migrate();
-
-                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-
-                // Ensure the roles exist
-                var roles = new[] { "admin", "subscriber", "nonsubscriber" };
-                foreach (var role in roles)
-                {
-                    if (!roleManager.RoleExistsAsync(role).Result)
-                    {
-                        roleManager.CreateAsync(new IdentityRole(role)).Wait();
-                    }
-                }
-
-                // Create an admin user
-                var adminEmail = builder.Configuration.GetValue<string>("AdminEmail");
-                var adminUser = userManager.FindByEmailAsync(adminEmail)?.Result;
-
-                if (adminUser == null)
-                {
-                    adminUser = new IdentityUser { UserName = adminEmail, Email = adminEmail };
-                    adminUser.EmailConfirmed = true;
-                    var result = userManager.CreateAsync(adminUser, "Pass123$").Result;
-                    if (result.Succeeded)
-                    {
-                        // HACK: Send an email about creation of the user to adminEmail
-                        userManager.AddToRoleAsync(adminUser, "Admin").Wait();
-                    }
-                }
-            }
+            app.MigrateAndPopulateDatabase(adminEmail);
 
             if (app.Environment.IsDevelopment())
             {

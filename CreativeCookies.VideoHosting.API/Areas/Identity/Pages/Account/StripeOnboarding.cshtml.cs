@@ -1,6 +1,6 @@
 using CreativeCookies.VideoHosting.Contracts.Enums;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
-using CreativeCookies.VideoHosting.Contracts.Stripe;
 using CreativeCookies.VideoHosting.DTOs.Stripe;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,14 +11,14 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
     [Authorize(Roles = "admin,ADMIN")]
     public class StripeOnboardingModel : PageModel
     {
-        private readonly IConnectAccountsRepository _connectAccountsRepo;
-        private readonly IStripeService _stripeService;
+        private readonly IConnectAccountsService _connectAccountsSrv;
+        private readonly IStripeOnboardingService _stripeService;
         private readonly ILogger<StripeOnboardingModel> _logger;
         public StripeConnectAccountStatus AccountStatus { get; set; }
 
-        public StripeOnboardingModel(IConnectAccountsRepository connectAccountsRepo, IStripeService stripeService, ILogger<StripeOnboardingModel> logger)
+        public StripeOnboardingModel(IConnectAccountsService connectAccountsSrv, IStripeOnboardingService stripeService, ILogger<StripeOnboardingModel> logger)
         {
-            _connectAccountsRepo = connectAccountsRepo;
+            _connectAccountsSrv = connectAccountsSrv;
             _stripeService = stripeService;
             _logger = logger;
         }
@@ -26,9 +26,9 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
         public async Task OnGet()
         {
             AccountStatus = StripeConnectAccountStatus.Disconnected;
-            var connectedAccountId = await _connectAccountsRepo.GetConnectedAccountId();
+            var connectedAccountId = await _connectAccountsSrv.GetConnectedAccountId();
             TempData["ConnectedAccountId"] = connectedAccountId;
-            var isEligibleToQueryAPI = await _connectAccountsRepo.CanBeQueriedOnStripe(connectedAccountId);
+            var isEligibleToQueryAPI = await _connectAccountsSrv.CanBeQueriedOnStripe(connectedAccountId);
             if (!string.IsNullOrEmpty(connectedAccountId) && isEligibleToQueryAPI)
             {
                 var result = _stripeService.GetAccountStatus(connectedAccountId);
@@ -74,7 +74,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 
             if (accountLinkResult != null && accountLinkResult.Success)
             {
-                await _connectAccountsRepo.EnsureSaved(accountLinkResult.Data.AccountId);
+                await _connectAccountsSrv.EnsureSaved(accountLinkResult.Data.AccountId);
                 return Redirect(accountLinkResult.Data.AccountOnboardingUrl);
             }
             else 

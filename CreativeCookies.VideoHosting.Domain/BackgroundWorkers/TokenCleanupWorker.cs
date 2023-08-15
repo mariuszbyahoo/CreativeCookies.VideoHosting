@@ -1,11 +1,6 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
+﻿using CreativeCookies.VideoHosting.Contracts.Services.OAuth;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CreativeCookies.VideoHosting.Domain.BackgroundWorkers
 {
@@ -27,7 +22,7 @@ namespace CreativeCookies.VideoHosting.Domain.BackgroundWorkers
                 {
                     using (var scope = _serviceScopeFactory.CreateScope())
                     {
-                        var authCodeRepository = scope.ServiceProvider.GetRequiredService<IAuthorizationCodeRepository>();
+                        var authCodeRepository = scope.ServiceProvider.GetRequiredService<IAuthorizationCodeService>();
                         // HACK: TODO Add expired tokens cleanup!
                         await authCodeRepository.ClearExpiredAuthorizationCodes();
                     }
