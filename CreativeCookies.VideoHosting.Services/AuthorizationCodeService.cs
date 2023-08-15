@@ -14,12 +14,12 @@ namespace CreativeCookies.VideoHosting.Services
             _repo = repo;
         }
 
-        public Task<string> GenerateAuthorizationCode(string client_id, string userId, string redirect_uri, string code_challenge, string code_challenge_method)
+        public async Task<string> GenerateAuthorizationCode(string client_id, string userId, string redirect_uri, string code_challenge, string code_challenge_method)
         {
             var authorizationCode = AuthCodeGenerator.GenerateAuthorizationCode();
-            // HACK: Add deletion of all previousely issued AuthCodes
-            var result = _repo.SaveAuthorizationCode(client_id, userId, redirect_uri, code_challenge, code_challenge_method, authorizationCode);
-            return result;
+            await _repo.DeletePreviousAuthCodesForUser(userId, client_id);
+            await _repo.SaveAuthorizationCode(client_id, userId, redirect_uri, code_challenge, code_challenge_method, authorizationCode);
+            return authorizationCode;
         }
         public async Task ClearExpiredAuthorizationCodes()
         {

@@ -31,16 +31,7 @@ namespace CreativeCookies.VideoHosting.DAL.OAuth
             _ctx.AuthorizationCodes.RemoveRange(expiredCodes);
             await _ctx.SaveChangesAsync();
         }
-        /// <summary>
-        /// Saves an AuthorizationCode for particular user and particular client_id to the database 
-        /// </summary>
-        /// <param name="client_id"></param>
-        /// <param name="userId"></param>
-        /// <param name="redirect_uri"></param>
-        /// <param name="code_challenge"></param>
-        /// <param name="code_challenge_method"></param>
-        /// <returns></returns>
-        public async Task<string> SaveAuthorizationCode(string client_id, string userId, string redirect_uri, string code_challenge, string code_challenge_method, string authorizationCode)
+        public async Task SaveAuthorizationCode(string client_id, string userId, string redirect_uri, string code_challenge, string code_challenge_method, string authorizationCode)
         {
             var codeEntry = new AuthorizationCode()
             {
@@ -54,20 +45,8 @@ namespace CreativeCookies.VideoHosting.DAL.OAuth
             };
             _logger.LogInformation($"code_challenge just before being saved to Dabatase : {codeEntry.CodeChallenge}");
 
-            #region toAnotherMethod
-
-            var issuedAuthCodes = _ctx.AuthorizationCodes
-                .Where(c =>
-                    c.ClientId.ToLower().Equals(client_id.ToLower()) &&
-                    c.UserId.ToLower().Equals(userId.ToLower()))
-                .AsEnumerable();
-
-            _ctx.RemoveRange(issuedAuthCodes);
-            #endregion
-
             _ctx.AuthorizationCodes.Add(codeEntry);
             await _ctx.SaveChangesAsync();
-            return authorizationCode;
         }
 
         public async Task<MyHubUserDto> GetUserByAuthCodeAsync(string code)
@@ -83,10 +62,22 @@ namespace CreativeCookies.VideoHosting.DAL.OAuth
                 var roleId = intermediateLookup.RoleId;
                 var role = await _ctx.Roles.FirstOrDefaultAsync(r => r.Id.Equals(roleId));
                 var user = await _ctx.Users.Where(u => u.Id.Equals(codeEntry.UserId))
-                    .Select<IdentityUser, MyHubUserDto>(r => new MyHubUserDto(Guid.Parse(r.Id), r.NormalizedEmail, role.NormalizedName, r.EmailConfirmed))
+                    .Select(r => new MyHubUserDto(Guid.Parse(r.Id), r.NormalizedEmail, role.NormalizedName, r.EmailConfirmed))
                     .FirstOrDefaultAsync();
                 return user;
             }
+        }
+
+        public async Task DeletePreviousAuthCodesForUser(string userId, string client_id)
+        {
+            var issuedAuthCodes = await _ctx.AuthorizationCodes
+                .Where(c =>
+                    c.ClientId.ToLower().Equals(client_id.ToLower()) &&
+                    c.UserId.ToLower().Equals(userId.ToLower()))
+                .ToArrayAsync();
+
+            _ctx.RemoveRange(issuedAuthCodes);
+            await _ctx.SaveChangesAsync();
         }
     }
 }
