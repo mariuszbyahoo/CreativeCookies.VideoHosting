@@ -1,4 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Enums;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Services;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Stripe;
 using CreativeCookies.VideoHosting.DTOs.Stripe;
@@ -13,16 +14,16 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     [ApiController]
     public class StripeController : ControllerBase
     {
-        private readonly IConnectAccountsRepository _connectAccountsRepository;
+        private readonly IConnectAccountsService _connectAccountsSrv;
         private readonly IStripeService _stripeService;
         private readonly ILogger<StripeController> _logger;
         private readonly IConfiguration _configuration;
 
         public StripeController(
-            IConnectAccountsRepository connectAccountsRepository, IStripeService stripeService, 
+            IConnectAccountsService connectAccountsSrv, IStripeService stripeService, 
             ILogger<StripeController> logger, IConfiguration configuration)
         {
-            _connectAccountsRepository = connectAccountsRepository;
+            _connectAccountsSrv = connectAccountsSrv;
             _stripeService = stripeService;
             _logger = logger;
             _configuration = configuration;
@@ -33,10 +34,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         public async Task<ActionResult<StripeResultDto<StripeConnectAccountStatus>>> IsStripeAccountSetUp()
         {
             StripeResultDto<StripeConnectAccountStatus> result = new StripeResultDto<StripeConnectAccountStatus>(true, StripeConnectAccountStatus.Disconnected, "account_missing");
-            var idStoredInDatabase = await _connectAccountsRepository.GetConnectedAccountId();
+            var idStoredInDatabase = await _connectAccountsSrv.GetConnectedAccountId();
             if (!string.IsNullOrWhiteSpace(idStoredInDatabase))
             {
-                var olderThanMinute = await _connectAccountsRepository.CanBeQueriedOnStripe(idStoredInDatabase);
+                var olderThanMinute = await _connectAccountsSrv.CanBeQueriedOnStripe(idStoredInDatabase);
                 if (olderThanMinute) result = _stripeService.GetAccountStatus(idStoredInDatabase);
                 else 
                 { 
@@ -71,7 +72,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 if (stripeEvent.Type == Events.AccountUpdated)
                 {
                     var account = stripeEvent.Data.Object as Account;
-                    await _connectAccountsRepository.EnsureSaved(account.Id);
+                    await _connectAccountsSrv.EnsureSaved(account.Id);
                 }
                 else
                 {

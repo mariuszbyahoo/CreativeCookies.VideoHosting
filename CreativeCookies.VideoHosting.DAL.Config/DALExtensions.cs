@@ -37,6 +37,7 @@ namespace CreativeCookies.VideoHosting.DAL.Config
             services.AddScoped<IFilmsRepository, FilmsRepository>();
             services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
             services.AddScoped<IUsersRepository, UsersRepository>();
+            services.AddScoped<IConnectAccountsRepository, ConnectAccountsRepository>();
             // ... other repository registrations
 
             return services;

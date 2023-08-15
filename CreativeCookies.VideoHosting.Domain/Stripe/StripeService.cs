@@ -12,12 +12,12 @@ namespace CreativeCookies.VideoHosting.Domain.Stripe
     public class StripeService : IStripeService
     {
         private readonly IConfiguration _configuration;
-        private readonly ILogger<ConnectAccountsRepository> _logger;
+        private readonly ILogger<StripeService> _logger;
         private readonly string _stripeSecretAPIKey;
         private readonly string _apiUrl;
         private readonly string _clientUrl;
 
-        public StripeService(IConfiguration configuration, ILogger<ConnectAccountsRepository> logger)
+        public StripeService(IConfiguration configuration, ILogger<StripeService> logger)
         {
             _configuration = configuration;
             _logger = logger;

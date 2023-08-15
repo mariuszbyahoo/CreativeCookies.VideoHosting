@@ -1,14 +1,11 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Enums;
-using CreativeCookies.VideoHosting.Contracts.Repositories;
+﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Stripe;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
-namespace CreativeCookies.VideoHosting.Domain.Repositories
+
+namespace CreativeCookies.VideoHosting.DAL.Repositories
 {
     public class ConnectAccountsRepository : IConnectAccountsRepository
     {
@@ -26,7 +23,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
         public async Task<string> GetConnectedAccountId()
         {
             var record = await _ctx.StripeAccountRecords.FirstOrDefaultAsync();
-            if(record == null) return string.Empty;
+            if (record == null) return string.Empty;
             return record.StripeConnectedAccountId;
         }
 
@@ -54,9 +51,9 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             try
             {
                 var list = await _ctx.StripeAccountRecords.ToListAsync();
-                for(int i = 0; i < list.Count; i++)
+                for (int i = 0; i < list.Count; i++)
                 {
-                    if(!string.IsNullOrWhiteSpace(accountToPersist) && !list[i].Id.Equals(accountToPersist))
+                    if (!string.IsNullOrWhiteSpace(accountToPersist) && !list[i].Id.Equals(accountToPersist))
                     {
                         _ctx.Remove(list[i]);
                     }
@@ -68,7 +65,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
                 await _ctx.SaveChangesAsync();
             }
 
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "And error occured while deleting the account Ids from the database - not all entities has been removed");
             }
