@@ -1,7 +1,7 @@
-﻿using Azure.Core;
-using CreativeCookies.VideoHosting.Contracts.Enums;
+﻿using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
+using CreativeCookies.VideoHosting.Contracts.Services.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -18,7 +18,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IClientStore _store;
-        private readonly IAuthorizationCodeRepository _codesRepo;
+        private readonly IAuthorizationCodeService _codesService;
         private readonly ILogger<AuthController> _logger;
         private readonly IConfiguration _configuration;
         private readonly IJWTRepository _jwtRepository;
@@ -35,13 +35,13 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly string _jwtSecretKey;
         private readonly string _apiUrl;
 
-        public AuthController(IClientStore store, IAuthorizationCodeRepository codesRepo, IJWTRepository jwtRepository,
+        public AuthController(IClientStore store, IAuthorizationCodeService codesService, IJWTRepository jwtRepository,
             ILogger<AuthController> logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor,
             IRefreshTokenRepository refreshTokenRepository, SignInManager<IdentityUser> signInManager,
             UserManager<IdentityUser> userManager)
         {
             _store = store;
-            _codesRepo = codesRepo;
+            _codesService = codesService;
             _logger = logger;
             _configuration = configuration;
             _jwtRepository = jwtRepository;
@@ -153,7 +153,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 }
 
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var authorizationCode = await _codesRepo.GetAuthorizationCode(client_id, userId, redirect_uri, code_challenge, code_challenge_method);
+                var authorizationCode = await _codesService.GenerateAuthorizationCode(client_id, userId, redirect_uri, code_challenge, code_challenge_method);
 
                 var redirectUriBuilder = new UriBuilder(redirect_uri);
                 var queryParameters = HttpUtility.ParseQueryString(redirectUriBuilder.Query);
@@ -280,7 +280,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             var request = _httpContextAccessor.HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
 
-            var extractedUser = await _codesRepo.GetUserByAuthCodeAsync(code);
+            var extractedUser = await _codesService.GetUserByAuthCodeAsync(code);
             if (extractedUser == null)
             {
                 _logger.LogError($"Codes repo returned null for GetUserByAuthCodeAsync when invoked inside Token action with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(grant_type)}: {grant_type}, {nameof(code)}: {code}, {nameof(code_verifier)}: {code_verifier}");

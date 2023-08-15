@@ -1,5 +1,6 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.Contexts;
+using CreativeCookies.VideoHosting.DAL.OAuth;
 using CreativeCookies.VideoHosting.DAL.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +39,7 @@ namespace CreativeCookies.VideoHosting.DAL.Config
             services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
             services.AddScoped<IUsersRepository, UsersRepository>();
             services.AddScoped<IConnectAccountsRepository, ConnectAccountsRepository>();
+            services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
             // ... other repository registrations
 
             return services;

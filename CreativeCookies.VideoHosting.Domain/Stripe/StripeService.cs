@@ -1,6 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Stripe;
-using CreativeCookies.VideoHosting.Domain.Repositories;
 using CreativeCookies.VideoHosting.DTOs.Stripe;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

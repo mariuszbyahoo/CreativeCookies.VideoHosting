@@ -31,6 +31,7 @@ using System.Configuration;
 using System.Text;
 using CreativeCookies.VideoHosting.DAL.Config;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Services;
+using CreativeCookies.VideoHosting.Contracts.Services.OAuth;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -111,7 +112,6 @@ namespace CreativeCookies.VideoHosting.API
 
             builder.Services.AddScoped<IClientStore, ClientStore>();
 
-            builder.Services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
             builder.Services.AddScoped<IJWTRepository, JWTRepository>();
             builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
@@ -120,6 +120,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddScoped<IErrorLogsService, ErrorLogsService>();
             builder.Services.AddScoped<IUsersService, UsersService>();
             builder.Services.AddScoped<IConnectAccountsService, ConnectAccountsService>();
+            builder.Services.AddScoped<Contracts.Services.OAuth.IAuthorizationCodeService, AuthorizationCodeService>();
 
             builder.Services.AddScoped<IMyHubBlobService, MyHubBlobService>();
 
