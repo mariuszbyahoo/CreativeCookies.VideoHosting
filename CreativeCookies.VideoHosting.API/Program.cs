@@ -7,6 +7,7 @@ using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.Contracts.Stripe;
+using Microsoft.Extensions.DependencyInjection;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.Repositories;
 using CreativeCookies.VideoHosting.Domain.Azure;
@@ -19,7 +20,6 @@ using CreativeCookies.VideoHosting.Services;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +29,7 @@ using Serilog.Events;
 using Stripe;
 using System.Configuration;
 using System.Text;
+using CreativeCookies.VideoHosting.DAL.Config;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -105,25 +106,7 @@ namespace CreativeCookies.VideoHosting.API
             var clientId = builder.Configuration.GetValue<string>("ClientId");
             var jwtSecretKey = builder.Configuration.GetValue<string>("JWTSecretKey");
 
-            builder.Services.AddDbContext<AppDbContext>(options =>
-            {
-                options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
-                {
-                    sqlOptions.EnableRetryOnFailure(
-                        maxRetryCount: 5,
-                        maxRetryDelay: TimeSpan.FromSeconds(30),
-                        errorNumbersToAdd: null);
-                });
-            });
-
-            builder.Services.AddDefaultIdentity<IdentityUser>(options =>
-            {
-                options.SignIn.RequireConfirmedAccount = true;
-                options.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
-                options.Tokens.ProviderMap[TokenOptions.DefaultAuthenticatorProvider] = new TokenProviderDescriptor(typeof(IUserTwoFactorTokenProvider<IdentityUser>));
-            })
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<AppDbContext>();
+            builder.Services.AddDataAccessLayer(connectionString);
 
             builder.Services.AddScoped<IClientStore, ClientStore>();
 
