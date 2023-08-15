@@ -4,7 +4,7 @@ using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace CreativeCookies.VideoHosting.Domain.Repositories
+namespace CreativeCookies.VideoHosting.DAL.Repositories
 {
     public class UsersRepository : IUsersRepository
     {
@@ -17,7 +17,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             _userManager = userManager;
         }
 
-        public async Task<UsersPaginatedResultDto> GetUsersList(string search, int pageNumber, int pageSize, string role)
+        public async Task<UsersPaginatedResultDto> GetUsersPaginatedResult(string search, int pageNumber, int pageSize, string role)
         {
             var usersQuery = _context.Users.Where(user => string.IsNullOrEmpty(search) || user.Email.Contains(search) || user.UserName.Contains(search));
             double usersCount = await usersQuery.CountAsync();

@@ -110,7 +110,6 @@ namespace CreativeCookies.VideoHosting.API
 
             builder.Services.AddScoped<IClientStore, ClientStore>();
 
-            builder.Services.AddScoped<IUsersRepository, UsersRepository>();
             builder.Services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
             builder.Services.AddScoped<IJWTRepository, JWTRepository>();
             builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
@@ -122,6 +121,7 @@ namespace CreativeCookies.VideoHosting.API
 
             builder.Services.AddScoped<IFilmService, FilmService>();
             builder.Services.AddScoped<IErrorLogsService, ErrorLogsService>();
+            builder.Services.AddScoped<IUsersService, UsersService>();
 
             builder.Services.AddScoped<IMyHubBlobService, MyHubBlobService>();
 

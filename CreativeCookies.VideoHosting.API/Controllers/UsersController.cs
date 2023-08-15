@@ -1,12 +1,8 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
+﻿using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
@@ -14,11 +10,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly IUsersRepository _usersRepo;
+        private readonly IUsersService _srv;
 
-        public UsersController(IUsersRepository usersRepo)
+        public UsersController(IUsersService usersRepo)
         {
-            _usersRepo = usersRepo;
+            _srv = usersRepo;
         }
 
         [HttpGet]
@@ -30,7 +26,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 return BadRequest("PageNumber and PageSize must be greater than zero.");
             }
 
-            var result = await _usersRepo.GetUsersList(search, pageNumber, pageSize, role);
+            var result = await _srv.GetUsersPaginatedResult(search, pageNumber, pageSize, role);
 
             return Ok(result);
         }
