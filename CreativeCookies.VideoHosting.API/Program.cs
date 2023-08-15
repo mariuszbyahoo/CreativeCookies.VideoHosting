@@ -115,11 +115,6 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddScoped<IJWTRepository, JWTRepository>();
             builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
-            #region toDelete
-            builder.Services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
-            builder.Services.AddScoped<IFilmsRepository, FilmsRepository>();
-            #endregion
-
             builder.Services.AddSingleton<ISasTokenService, SasTokenService>();
             builder.Services.AddScoped<IFilmService, FilmService>();
             builder.Services.AddScoped<IErrorLogsService, ErrorLogsService>();
