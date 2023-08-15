@@ -35,16 +35,12 @@ namespace CreativeCookies.VideoHosting.DAL.Config
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>();
 
-            // Register repository implementations
             services.AddScoped<IFilmsRepository, FilmsRepository>();
             services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
             services.AddScoped<IUsersRepository, UsersRepository>();
             services.AddScoped<IConnectAccountsRepository, ConnectAccountsRepository>();
             services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-            services.AddScoped<IJWTRepository, JWTRepository>();
-
-            // ... other repository registrations
 
             return services;
         }

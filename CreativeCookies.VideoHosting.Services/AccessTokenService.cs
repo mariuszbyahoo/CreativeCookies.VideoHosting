@@ -1,4 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
+using CreativeCookies.VideoHosting.Contracts.Services.OAuth;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -10,16 +11,16 @@ namespace CreativeCookies.VideoHosting.Services
 {
     public class AccessTokenService : IAccessTokenService
     {
-        private readonly IJWTRepository _jwtRepository;
+        private readonly IJWTGenerator _jwtGenerator;
 
-        public AccessTokenService(IJWTRepository jwtRepository)
+        public AccessTokenService(IJWTGenerator jwtRepository)
         {
-            _jwtRepository = jwtRepository;
+            _jwtGenerator = jwtRepository;
         }
 
         public string GetNewAccessToken(Guid userId, string userEmail, Guid clientId, IConfiguration configuration, string issuer, string userRole)
         {
-            var res = _jwtRepository.GenerateAccessToken(userId, userEmail, clientId, configuration, issuer, userRole);
+            var res = _jwtGenerator.GenerateAccessToken(userId, userEmail, clientId, configuration, issuer, userRole);
             return res;
         }
     }

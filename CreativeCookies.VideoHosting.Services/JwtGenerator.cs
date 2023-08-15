@@ -1,19 +1,15 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
+﻿using CreativeCookies.VideoHosting.Contracts.Services.OAuth;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.DAL.OAuth
+namespace CreativeCookies.VideoHosting.Services
 {
-    public class JWTRepository : IJWTRepository
+    public class JwtGenerator : IJWTGenerator
     {
         private const int RefreshTokenLength = 32;
 

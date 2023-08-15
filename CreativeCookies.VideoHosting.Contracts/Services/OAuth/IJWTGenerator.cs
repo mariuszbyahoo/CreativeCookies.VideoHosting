@@ -2,9 +2,9 @@
 using Microsoft.Extensions.Configuration;
 
 
-namespace CreativeCookies.VideoHosting.Contracts.Repositories.OAuth
+namespace CreativeCookies.VideoHosting.Contracts.Services.OAuth
 {
-    public interface IJWTRepository
+    public interface IJWTGenerator
     {
         string GenerateAccessToken(Guid userId, string userEmail, Guid clientId, IConfiguration configuration, string issuer, string userRole);
         RefreshTokenDto GenerateRefreshToken(Guid userId);

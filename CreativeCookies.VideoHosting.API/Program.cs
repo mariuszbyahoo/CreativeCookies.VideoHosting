@@ -113,6 +113,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddScoped<IClientStore, ClientStore>();
 
             builder.Services.AddSingleton<ISasTokenService, SasTokenService>();
+            builder.Services.AddSingleton<IJWTGenerator, JwtGenerator>();
             builder.Services.AddScoped<IFilmService, FilmService>();
             builder.Services.AddScoped<IErrorLogsService, ErrorLogsService>();
             builder.Services.AddScoped<IUsersService, UsersService>();

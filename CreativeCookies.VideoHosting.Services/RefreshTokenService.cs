@@ -7,12 +7,12 @@ namespace CreativeCookies.VideoHosting.Services
     public class RefreshTokenService : IRefreshTokenService
     {
         private readonly IRefreshTokenRepository _refreshTokenRepository;
-        private readonly IJWTRepository _jwtRepository;
+        private readonly IJWTGenerator _jwtGenerator;
 
-        public RefreshTokenService(IRefreshTokenRepository refreshTokenRepository, IJWTRepository jwtRepository)
+        public RefreshTokenService(IRefreshTokenRepository refreshTokenRepository, IJWTGenerator jwtGenerator)
         {
             _refreshTokenRepository = refreshTokenRepository;
-            _jwtRepository = jwtRepository;
+            _jwtGenerator = jwtGenerator;
         }
 
         public async Task<RefreshTokenDto> GetNewRefreshToken(Guid userId)
@@ -29,7 +29,7 @@ namespace CreativeCookies.VideoHosting.Services
                     await _refreshTokenRepository.DeleteRefreshToken(existingRefreshTokens.First());
                 }
             }
-            var refreshToken = _jwtRepository.GenerateRefreshToken(userId);
+            var refreshToken = _jwtGenerator.GenerateRefreshToken(userId);
             await _refreshTokenRepository.SaveRefreshToken(refreshToken);
             return refreshToken;
         }
