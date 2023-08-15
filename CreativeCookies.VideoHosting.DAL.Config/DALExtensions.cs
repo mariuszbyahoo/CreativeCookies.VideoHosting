@@ -1,4 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
+using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.OAuth;
 using CreativeCookies.VideoHosting.DAL.Repositories;
@@ -40,6 +41,8 @@ namespace CreativeCookies.VideoHosting.DAL.Config
             services.AddScoped<IUsersRepository, UsersRepository>();
             services.AddScoped<IConnectAccountsRepository, ConnectAccountsRepository>();
             services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
             // ... other repository registrations
 
             return services;

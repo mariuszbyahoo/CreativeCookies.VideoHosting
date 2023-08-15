@@ -4,10 +4,13 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories.OAuth
 {
     public interface IRefreshTokenRepository
     {
-        Task<RefreshTokenDto> CreateRefreshToken(Guid userId);
-        Task<RefreshTokenDto> FindRefreshToken(string refreshToken);
+        Task<RefreshTokenDto> SaveRefreshToken(RefreshTokenDto refreshTokenDto);
+        Task<RefreshTokenDto[]> GetRefreshTokens(Guid userId);
         Task<MyHubUserDto> GetUserByRefreshToken(string? refresh_token);
         Task<bool> IsTokenValid(string refresh_token);
+        Task DeleteRefreshToken(RefreshTokenDto refreshToken);
+        Task DeleteRefreshTokens(params RefreshTokenDto[] refreshTokens);
         Task RevokeRefreshToken(string refreshToken);
     }
 }
+    

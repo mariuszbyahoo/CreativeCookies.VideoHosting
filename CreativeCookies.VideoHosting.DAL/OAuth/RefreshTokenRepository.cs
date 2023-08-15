@@ -3,45 +3,48 @@ using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
+namespace CreativeCookies.VideoHosting.DAL.OAuth
 {
-
     public class RefreshTokenRepository : IRefreshTokenRepository
     {
         private readonly AppDbContext _context;
-        private readonly IJWTRepository _jwtRepository;
 
-        public RefreshTokenRepository(AppDbContext context, IJWTRepository jwtRepository)
+        public RefreshTokenRepository(AppDbContext context)
         {
             _context = context;
-            _jwtRepository = jwtRepository;
         }
 
-        /// <summary>
-        /// Creates a new token and deletes all other refreshTokens issued for particular userId
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <returns>new object compliant with IRefreshToken interface</returns>
-        public async Task<RefreshTokenDto> CreateRefreshToken(Guid userId)
+        public async Task<RefreshTokenDto[]> GetRefreshTokens(Guid userId)
         {
-            var refreshTokenDto = _jwtRepository.GenerateRefreshToken(userId);
-
             var issuedTokens = await _context.RefreshTokens
                 .Where(t => t.UserId.Equals(userId.ToString()))
-                .ToListAsync();
+                .Select(t => new RefreshTokenDto(t.Id, Guid.Parse(t.UserId), t.Token, t.CreatedAt, t.Expires))
+                .ToArrayAsync();
+            return issuedTokens;
+        }
 
-            if(issuedTokens.Count > 0)
+        public async Task DeleteRefreshToken(RefreshTokenDto refreshToken)
+        {
+            var dao = await _context.RefreshTokens.FirstOrDefaultAsync(t => t.Id.Equals(refreshToken.Id));
+
+            if (dao != null)
             {
-                _context.RefreshTokens.RemoveRange(issuedTokens);
+                _context.RefreshTokens.Remove(dao);
+
                 await _context.SaveChangesAsync();
             }
+        }
 
+        public async Task DeleteRefreshTokens(params RefreshTokenDto[] refreshTokens)
+        {
+            _context.RemoveRange(refreshTokens);
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<RefreshTokenDto> SaveRefreshToken(RefreshTokenDto refreshTokenDto)
+        {
             var refreshTokenDao = new RefreshTokenDAO
             {
                 UserId = refreshTokenDto.UserId.ToString(),
@@ -55,18 +58,6 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             await _context.SaveChangesAsync();
 
             return new RefreshTokenDto(refreshTokenDao.Id, Guid.Parse(refreshTokenDao.UserId), refreshTokenDao.Token, refreshTokenDao.CreatedAt, refreshTokenDao.Expires);
-        }
-
-        public async Task<RefreshTokenDto> FindRefreshToken(string token)
-        {
-            var refreshTokenDAO = (await _context.RefreshTokens.ToListAsync()).FirstOrDefault(rt => rt.Token.Equals(token, StringComparison.InvariantCultureIgnoreCase));
-
-            if (refreshTokenDAO == null || refreshTokenDAO.IsRevoked)
-            {
-                return null;
-            }
-
-            return new RefreshTokenDto(refreshTokenDAO.Id, Guid.Parse(refreshTokenDAO.UserId), refreshTokenDAO.Token, refreshTokenDAO.CreatedAt, refreshTokenDAO.Expires);
         }
 
         public async Task<bool> IsTokenValid(string refresh_token)
@@ -85,7 +76,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
                 var user = await _context.Users.Where(u => u.Id.Equals(tokenEntry.UserId)).FirstOrDefaultAsync();
                 var intermediateLookup = await _context.UserRoles.FirstOrDefaultAsync(r => r.UserId.Equals(tokenEntry.UserId));
                 var roleId = intermediateLookup.RoleId;
-                var role = await _context.Roles.FirstOrDefaultAsync(r => r.Id.Equals(roleId)); 
+                var role = await _context.Roles.FirstOrDefaultAsync(r => r.Id.Equals(roleId));
 
                 return new MyHubUserDto(Guid.Parse(tokenEntry.UserId), user.NormalizedEmail, role.NormalizedName, user.EmailConfirmed);
             }
@@ -102,5 +93,6 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
                 await _context.SaveChangesAsync();
             }
         }
+
     }
 }

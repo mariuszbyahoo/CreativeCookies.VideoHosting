@@ -23,7 +23,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly IConfiguration _configuration;
         private readonly IJWTRepository _jwtRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly IRefreshTokenService _refreshTokenSrv;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
 
@@ -37,7 +37,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         public AuthController(IClientStore store, IAuthorizationCodeService codesService, IJWTRepository jwtRepository,
             ILogger<AuthController> logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor,
-            IRefreshTokenRepository refreshTokenRepository, SignInManager<IdentityUser> signInManager,
+            IRefreshTokenService refreshTokenSrv, SignInManager<IdentityUser> signInManager,
             UserManager<IdentityUser> userManager)
         {
             _store = store;
@@ -46,7 +46,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _configuration = configuration;
             _jwtRepository = jwtRepository;
             _httpContextAccessor = httpContextAccessor;
-            _refreshTokenRepository = refreshTokenRepository;
+            _refreshTokenSrv = refreshTokenSrv;
             _signInManager = signInManager;
             _userManager = userManager;
             _jwtSecretKey = _configuration.GetValue<string>("JWTSecretKey");
@@ -214,7 +214,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             if (Request.Cookies.ContainsKey(ltrt))
             {
                 var refreshToken = Request.Cookies[ltrt].ToString();
-                await _refreshTokenRepository.RevokeRefreshToken(refreshToken);
+                await _refreshTokenSrv.RevokeRefreshToken(refreshToken);
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
@@ -289,7 +289,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             // HACK: Get user's role and pass it into GenerateAccessToken
 
             var accessToken = _jwtRepository.GenerateAccessToken(extractedUser.Id, extractedUser.UserEmail, Guid.Parse(client_id), _configuration, baseUrl, extractedUser.Role);
-            var refreshToken = await _refreshTokenRepository.CreateRefreshToken(extractedUser.Id);
+            var refreshToken = await _refreshTokenSrv.GetNewRefreshToken(extractedUser.Id);
             // HACK: TODO implement RBAC as describen in RFC6749 3.3
             var accessTokenCookieOptions = ReturnAuthCookieOptions(1);
             _httpContextAccessor.HttpContext.Response.Cookies.Append("stac", accessToken, accessTokenCookieOptions);
@@ -316,9 +316,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
 
             var refreshToken = Request.Cookies["ltrt"];
-            if (!string.IsNullOrWhiteSpace(refreshToken) && await _refreshTokenRepository.IsTokenValid(refreshToken))
+            if (!string.IsNullOrWhiteSpace(refreshToken) && await _refreshTokenSrv.IsTokenValid(refreshToken))
             {
-                var user = await _refreshTokenRepository.GetUserByRefreshToken(refreshToken);
+                var user = await _refreshTokenSrv.GetUserByRefreshToken(refreshToken);
 
                 if (user == null)
                 {
@@ -329,7 +329,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
 
                 var newAccessToken = _jwtRepository.GenerateAccessToken(user.Id, user.UserEmail, Guid.Parse(client_id), _configuration, baseUrl, user.Role);
-                var newRefreshToken = await _refreshTokenRepository.CreateRefreshToken(user.Id);
+                var newRefreshToken = await _refreshTokenSrv.GetNewRefreshToken(user.Id);
 
                 var accessTokenCookieOptions = ReturnAuthCookieOptions(1);
                 _httpContextAccessor.HttpContext.Response.Cookies.Append("stac", newAccessToken, accessTokenCookieOptions);
