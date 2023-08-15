@@ -2,7 +2,7 @@
 
 namespace CreativeCookies.VideoHosting.DAL.DAOs.OAuth
 {
-    public class MyHubUser : IdentityUser<Guid>
+    public class MyHubUser : IdentityUser<string>
     {
         public string StripeCustomerId { get; set; }
     }

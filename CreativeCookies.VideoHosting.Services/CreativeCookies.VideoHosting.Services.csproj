@@ -7,14 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CreativeCookies.VideoHosting.Contracts\CreativeCookies.VideoHosting.Contracts.csproj" />
     <ProjectReference Include="..\CreativeCookies.VideoHosting.DAL\CreativeCookies.VideoHosting.DAL.csproj" />
     <ProjectReference Include="..\CreativeCookies.VideoHosting.Domain\CreativeCookies.VideoHosting.Domain.csproj" />
     <ProjectReference Include="..\CreativeCookies.VideoHosting.DTOs\CreativeCookies.VideoHosting.DTOs.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="IdP\" />
   </ItemGroup>
 
 </Project>

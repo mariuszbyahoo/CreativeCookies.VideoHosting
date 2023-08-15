@@ -1,12 +1,6 @@
 ﻿using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CreativeCookies.VideoHosting.Contracts.Services.IdP
 {
@@ -22,7 +16,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Services.IdP
 
         Task<ExternalLoginInfo?> GetExternalLoginInfoAsync(string? expectedXsrf = null);
 
-        Task<IEnumerable<AuthenticationSchemes>> GetExternalAuthenticationSchemesAsync();
+        Task<IEnumerable<AuthenticationScheme>> GetExternalAuthenticationSchemesAsync();
 
         Task ForgetTwoFactorClientAsync();
 

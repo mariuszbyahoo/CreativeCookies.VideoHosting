@@ -1,6 +1,6 @@
 ﻿
 using CreativeCookies.VideoHosting.DTOs.OAuth;
-using Microsoft.AspNet.Identity;
+using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 
 namespace CreativeCookies.VideoHosting.Contracts.Services.IdP
