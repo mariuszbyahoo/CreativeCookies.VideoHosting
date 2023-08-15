@@ -13,4 +13,8 @@
     <ProjectReference Include="..\CreativeCookies.VideoHosting.DTOs\CreativeCookies.VideoHosting.DTOs.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="IdP\" />
+  </ItemGroup>
+
 </Project>
