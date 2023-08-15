@@ -12,7 +12,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.DAL.OAuth
+namespace CreativeCookies.VideoHosting.DAL.Repositories.OAuth
 {
     public class AuthorizationCodeRepository : IAuthorizationCodeRepository
     {

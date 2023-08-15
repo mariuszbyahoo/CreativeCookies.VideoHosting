@@ -4,7 +4,7 @@ using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.EntityFrameworkCore;
 
-namespace CreativeCookies.VideoHosting.DAL.OAuth
+namespace CreativeCookies.VideoHosting.DAL.Repositories.OAuth
 {
     public class RefreshTokenRepository : IRefreshTokenRepository
     {

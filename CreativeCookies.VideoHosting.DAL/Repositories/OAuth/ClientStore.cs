@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace CreativeCookies.VideoHosting.DAL.Repositories
+namespace CreativeCookies.VideoHosting.DAL.Repositories.OAuth
 {
     public class ClientStore : IClientStore
     {

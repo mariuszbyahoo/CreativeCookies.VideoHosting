@@ -1,8 +1,8 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.Contexts;
-using CreativeCookies.VideoHosting.DAL.OAuth;
 using CreativeCookies.VideoHosting.DAL.Repositories;
+using CreativeCookies.VideoHosting.DAL.Repositories.OAuth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
