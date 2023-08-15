@@ -42,6 +42,7 @@ namespace CreativeCookies.VideoHosting.DAL.Config
             services.AddScoped<IConnectAccountsRepository, ConnectAccountsRepository>();
             services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+            services.AddScoped<IJWTRepository, JWTRepository>();
 
             // ... other repository registrations
 

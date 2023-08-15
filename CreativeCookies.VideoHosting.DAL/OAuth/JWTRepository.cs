@@ -2,12 +2,16 @@
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
+namespace CreativeCookies.VideoHosting.DAL.OAuth
 {
     public class JWTRepository : IJWTRepository
     {
@@ -17,7 +21,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
         {
             var secretKey = configuration["JWTSecretKey"];
 
-            if(string.IsNullOrWhiteSpace(secretKey)) throw new ArgumentNullException(nameof(secretKey));
+            if (string.IsNullOrWhiteSpace(secretKey)) throw new ArgumentNullException(nameof(secretKey));
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
@@ -26,14 +30,14 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.NameIdentifier, userId.ToString().ToUpperInvariant()), 
+                    new Claim(ClaimTypes.NameIdentifier, userId.ToString().ToUpperInvariant()),
                     new Claim("client_id", clientId.ToString().ToUpperInvariant()),
                     new Claim(ClaimTypes.Email, userEmail.ToUpperInvariant()),
-                    new Claim(ClaimTypes.Role, userRole) 
+                    new Claim(ClaimTypes.Role, userRole)
                 }),
-                Expires = DateTime.UtcNow.AddHours(1), 
-                Issuer = issuer, 
-                Audience = clientId.ToString().ToUpperInvariant(), 
+                Expires = DateTime.UtcNow.AddHours(1),
+                Issuer = issuer,
+                Audience = clientId.ToString().ToUpperInvariant(),
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);

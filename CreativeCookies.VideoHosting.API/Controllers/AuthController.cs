@@ -21,7 +21,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly IAuthorizationCodeService _codesService;
         private readonly ILogger<AuthController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IJWTRepository _jwtRepository;
+        private readonly IAccessTokenService _accessTokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRefreshTokenService _refreshTokenSrv;
         private readonly SignInManager<IdentityUser> _signInManager;
@@ -35,7 +35,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly string _jwtSecretKey;
         private readonly string _apiUrl;
 
-        public AuthController(IClientStore store, IAuthorizationCodeService codesService, IJWTRepository jwtRepository,
+        public AuthController(IClientStore store, IAuthorizationCodeService codesService, IAccessTokenService accessTokenService,
             ILogger<AuthController> logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor,
             IRefreshTokenService refreshTokenSrv, SignInManager<IdentityUser> signInManager,
             UserManager<IdentityUser> userManager)
@@ -44,7 +44,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _codesService = codesService;
             _logger = logger;
             _configuration = configuration;
-            _jwtRepository = jwtRepository;
+            _accessTokenService = accessTokenService;
             _httpContextAccessor = httpContextAccessor;
             _refreshTokenSrv = refreshTokenSrv;
             _signInManager = signInManager;
@@ -288,7 +288,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
             // HACK: Get user's role and pass it into GenerateAccessToken
 
-            var accessToken = _jwtRepository.GenerateAccessToken(extractedUser.Id, extractedUser.UserEmail, Guid.Parse(client_id), _configuration, baseUrl, extractedUser.Role);
+            var accessToken = _accessTokenService.GetNewAccessToken(extractedUser.Id, extractedUser.UserEmail, Guid.Parse(client_id), _configuration, baseUrl, extractedUser.Role);
             var refreshToken = await _refreshTokenSrv.GetNewRefreshToken(extractedUser.Id);
             // HACK: TODO implement RBAC as describen in RFC6749 3.3
             var accessTokenCookieOptions = ReturnAuthCookieOptions(1);
@@ -328,7 +328,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 var request = _httpContextAccessor.HttpContext.Request;
                 var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
 
-                var newAccessToken = _jwtRepository.GenerateAccessToken(user.Id, user.UserEmail, Guid.Parse(client_id), _configuration, baseUrl, user.Role);
+                var newAccessToken = _accessTokenService.GetNewAccessToken(user.Id, user.UserEmail, Guid.Parse(client_id), _configuration, baseUrl, user.Role);
                 var newRefreshToken = await _refreshTokenSrv.GetNewRefreshToken(user.Id);
 
                 var accessTokenCookieOptions = ReturnAuthCookieOptions(1);
