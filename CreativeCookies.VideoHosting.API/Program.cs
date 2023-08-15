@@ -3,17 +3,12 @@ using Azure.Storage;
 using Azure.Storage.Blobs;
 using CreativeCookies.VideoHosting.API.Helpers;
 using CreativeCookies.VideoHosting.Contracts.Azure;
-using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.Contracts.Stripe;
-using Microsoft.Extensions.DependencyInjection;
 using CreativeCookies.VideoHosting.DAL.Contexts;
-using CreativeCookies.VideoHosting.DAL.Repositories;
 using CreativeCookies.VideoHosting.Domain.Azure;
 using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
-using CreativeCookies.VideoHosting.Domain.Repositories;
-using CreativeCookies.VideoHosting.Domain.Repositories.OAuth;
 using CreativeCookies.VideoHosting.Domain.Stripe;
 using CreativeCookies.VideoHosting.Infrastructure;
 using CreativeCookies.VideoHosting.Services;
@@ -26,7 +21,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
-using Stripe;
 using System.Configuration;
 using System.Text;
 using CreativeCookies.VideoHosting.DAL.Config;
@@ -110,7 +104,6 @@ namespace CreativeCookies.VideoHosting.API
 
             builder.Services.AddDataAccessLayer(connectionString);
 
-            builder.Services.AddScoped<IClientStore, ClientStore>();
 
             builder.Services.AddSingleton<ISasTokenService, SasTokenService>();
             builder.Services.AddSingleton<IJWTGenerator, JwtGenerator>();
@@ -121,6 +114,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddScoped<IAuthorizationCodeService, AuthorizationCodeService>();
             builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
             builder.Services.AddScoped<IAccessTokenService, AccessTokenService>();
+            builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
 
             builder.Services.AddScoped<IMyHubBlobService, MyHubBlobService>();
 

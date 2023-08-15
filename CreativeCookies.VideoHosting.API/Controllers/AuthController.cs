@@ -17,7 +17,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IClientStore _store;
+        private readonly IOAuthClientService _oAuthClientService;
         private readonly IAuthorizationCodeService _codesService;
         private readonly ILogger<AuthController> _logger;
         private readonly IConfiguration _configuration;
@@ -35,12 +35,12 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly string _jwtSecretKey;
         private readonly string _apiUrl;
 
-        public AuthController(IClientStore store, IAuthorizationCodeService codesService, IAccessTokenService accessTokenService,
+        public AuthController(IOAuthClientService oAuthClientService, IAuthorizationCodeService codesService, IAccessTokenService accessTokenService,
             ILogger<AuthController> logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor,
             IRefreshTokenService refreshTokenSrv, SignInManager<IdentityUser> signInManager,
             UserManager<IdentityUser> userManager)
         {
-            _store = store;
+            _oAuthClientService = oAuthClientService;
             _codesService = codesService;
             _logger = logger;
             _configuration = configuration;
@@ -350,7 +350,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         private async Task<IActionResult?> ValidateCodeAndCodeVerifier(string code, string code_verifier, string client_id)
         {
-            var verificationResponse = await _store.IsCodeWithVerifierValid(code_verifier, code, client_id);
+            var verificationResponse = await _oAuthClientService.IsCodeWithVerifierValid(code_verifier, code, client_id);
             switch (verificationResponse)
             {
                 case OAuthErrorResponse.InvalidRequest:
@@ -459,7 +459,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 }
             }
 
-            if (await _store.WasRedirectUriRegisteredToClient(redirect_uri, client_id))
+            if (await _oAuthClientService.WasRedirectUriRegisteredToClient(redirect_uri, client_id))
             {
                 // all good, no errors to return 
                 return null;
@@ -476,14 +476,14 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
             if (parsedSuccessfully && Guid.Empty != clientId)
             {
-                var lookup = await _store.FindByClientIdAsync(clientId);
+                var lookup = await _oAuthClientService.FindByClientIdAsync(clientId);
                 if (lookup == null) return OAuthErrorResponse.UnauthorisedClient;
             }
             return null;
         }
         private async Task<OAuthErrorResponse?> ValidateRedirectUriInternal(string inputRedirectUri)
         {
-            if (!string.IsNullOrWhiteSpace(inputRedirectUri) && await _store.IsRedirectUriPresentInDatabase(inputRedirectUri))
+            if (!string.IsNullOrWhiteSpace(inputRedirectUri) && await _oAuthClientService.IsRedirectUriPresentInDatabase(inputRedirectUri))
             {
                 return null;
             }

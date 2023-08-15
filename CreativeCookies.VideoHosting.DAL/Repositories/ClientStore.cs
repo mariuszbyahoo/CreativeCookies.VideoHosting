@@ -1,18 +1,12 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.Contexts;
-using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
+namespace CreativeCookies.VideoHosting.DAL.Repositories
 {
     public class ClientStore : IClientStore
     {
@@ -33,7 +27,7 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories.OAuth
             }
             else
             {
-                var clientDto = new OAuthClientDto(client.Id, client.ClientSecret, client.RedirectUri, 
+                var clientDto = new OAuthClientDto(client.Id, client.ClientSecret, client.RedirectUri,
                     client.AllowedScopes.Select(scope => new AllowedScopeDto(scope.Id, scope.Scope, scope.OAuthClientId)).ToList());
                 return clientDto;
             }
