@@ -1,12 +1,7 @@
-﻿using Azure.Storage.Blobs;
-using Azure.Storage.Sas;
-using Azure.Storage;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using CreativeCookies.VideoHosting.Domain.Endpoints;
-using CreativeCookies.VideoHosting.Contracts.Repositories;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Services;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
@@ -14,11 +9,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     [ApiController]
     public class SASController : ControllerBase
     {
-        private readonly ISasTokenRepository _sasTokenRepository;
+        private readonly ISasTokenService _sasTokenService;
         private readonly ILogger<SASController> _logger;
-        public SASController(ISasTokenRepository sasTokenRepository, ILogger<SASController> logger)
+        public SASController(ISasTokenService sasTokenService, ILogger<SASController> logger)
         {
-            _sasTokenRepository = sasTokenRepository;
+            _sasTokenService = sasTokenService;
             _logger = logger;
         }
 
@@ -27,7 +22,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         {
             try
             {
-                var res = _sasTokenRepository.GetSasTokenForContainer("films");
+                var res = _sasTokenService.GetSasTokenForContainer("films");
                 return Ok(res);
             }
             catch (Exception ex)
@@ -52,7 +47,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 {
                     return BadRequest($"Field: string blobTitle is mandatory!");
                 }
-                var res = _sasTokenRepository.GetSasTokenForFilm(blobTitle);
+                var res = _sasTokenService.GetSasTokenForFilm(blobTitle);
                 return Ok(res);
             }
             catch (Exception ex)
@@ -72,7 +67,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 {
                     return BadRequest($"Field: string blobTitle is mandatory!");
                 }
-                var res = _sasTokenRepository.GetSasTokenForFilmUpload(blobTitle);
+                var res = _sasTokenService.GetSasTokenForFilmUpload(blobTitle);
                 return Ok(res);
             }
             catch (Exception ex)
@@ -90,7 +85,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 {
                     return BadRequest($"Field: string blobTitle is mandatory!");
                 }
-                var res = _sasTokenRepository.GetSasTokenForThumbnail(blobTitle);
+                var res = _sasTokenService.GetSasTokenForThumbnail(blobTitle);
                 return Ok(res);
             }
             catch (Exception ex)
@@ -110,7 +105,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 {
                     return BadRequest($"Field: string blobTitle is mandatory!");
                 }
-                var res = _sasTokenRepository.GetSasTokenForThumbnailUpload(blobTitle);
+                var res = _sasTokenService.GetSasTokenForThumbnailUpload(blobTitle);
                 return Ok(res);
             }
             catch (Exception ex)

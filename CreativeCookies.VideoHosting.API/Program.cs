@@ -117,9 +117,8 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
             builder.Services.AddScoped<IConnectAccountsRepository, ConnectAccountsRepository>();
             builder.Services.AddScoped<IFilmsRepository, FilmsRepository>();
-            builder.Services.AddSingleton<ISasTokenRepository, SasTokenRepository>();
-            
 
+            builder.Services.AddSingleton<ISasTokenService, SasTokenService>();
             builder.Services.AddScoped<IFilmService, FilmService>();
             builder.Services.AddScoped<IErrorLogsService, ErrorLogsService>();
             builder.Services.AddScoped<IUsersService, UsersService>();

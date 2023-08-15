@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Contracts.Repositories
+namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Services
 {
-    public interface ISasTokenRepository
+    public interface ISasTokenService
     {
         SasTokenResultDto GetSasTokenForContainer(string containerName);
         SasTokenResultDto GetSasTokenForFilm(string filmName);
