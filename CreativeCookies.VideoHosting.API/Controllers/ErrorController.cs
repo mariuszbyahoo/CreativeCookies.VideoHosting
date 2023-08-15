@@ -1,6 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.API.Utils;
 using CreativeCookies.VideoHosting.Contracts.Services;
-using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,18 +11,16 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     public class ErrorController : ControllerBase
     {
         private readonly IErrorLogsService _srv;
-        private AppDbContext _context;
 
-        public ErrorController(AppDbContext context, IErrorLogsService srv)
+        public ErrorController(IErrorLogsService srv)
         {
-            _context = context;
             _srv = srv;
         }
 
         [HttpGet]
         public IActionResult Index()
         {
-            var res = _context.ClientErrors.ToList();
+            var res = _srv.GetErrorLogs();
             return Ok(res);
         }
 

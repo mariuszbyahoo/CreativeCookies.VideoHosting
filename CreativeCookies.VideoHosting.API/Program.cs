@@ -6,7 +6,6 @@ using CreativeCookies.VideoHosting.Contracts.Azure;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.Contracts.Stripe;
-using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.Domain.Azure;
 using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
 using CreativeCookies.VideoHosting.Domain.Stripe;
@@ -101,6 +100,7 @@ namespace CreativeCookies.VideoHosting.API
             var blobServiceUrl = builder.Configuration.GetValue<string>("Storage:BlobServiceUrl");
             var clientId = builder.Configuration.GetValue<string>("ClientId");
             var jwtSecretKey = builder.Configuration.GetValue<string>("JWTSecretKey");
+            var adminEmail = builder.Configuration.GetValue<string>("AdminEmail");
 
             builder.Services.AddDataAccessLayer(connectionString);
 
@@ -190,40 +190,7 @@ namespace CreativeCookies.VideoHosting.API
 
             var app = builder.Build();
 
-            using (var scope = app.Services.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                db.Database.Migrate();
-
-                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-
-                // Ensure the roles exist
-                var roles = new[] { "admin", "subscriber", "nonsubscriber" };
-                foreach (var role in roles)
-                {
-                    if (!roleManager.RoleExistsAsync(role).Result)
-                    {
-                        roleManager.CreateAsync(new IdentityRole(role)).Wait();
-                    }
-                }
-
-                // Create an admin user
-                var adminEmail = builder.Configuration.GetValue<string>("AdminEmail");
-                var adminUser = userManager.FindByEmailAsync(adminEmail)?.Result;
-
-                if (adminUser == null)
-                {
-                    adminUser = new IdentityUser { UserName = adminEmail, Email = adminEmail };
-                    adminUser.EmailConfirmed = true;
-                    var result = userManager.CreateAsync(adminUser, "Pass123$").Result;
-                    if (result.Succeeded)
-                    {
-                        // HACK: Send an email about creation of the user to adminEmail
-                        userManager.AddToRoleAsync(adminUser, "Admin").Wait();
-                    }
-                }
-            }
+            app.MigrateAndPopulateDatabase(adminEmail);
 
             if (app.Environment.IsDevelopment())
             {
