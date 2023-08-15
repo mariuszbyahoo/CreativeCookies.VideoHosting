@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stripe;
 
-namespace CreativeCookies.VideoHosting.Domain.Stripe
+namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 {
     public class StripeService : IStripeService
     {

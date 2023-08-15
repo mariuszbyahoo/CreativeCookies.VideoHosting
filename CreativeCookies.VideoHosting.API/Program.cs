@@ -6,9 +6,6 @@ using CreativeCookies.VideoHosting.Contracts.Azure;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.Contracts.Stripe;
-using CreativeCookies.VideoHosting.Domain.Azure;
-using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
-using CreativeCookies.VideoHosting.Domain.Stripe;
 using CreativeCookies.VideoHosting.Infrastructure;
 using CreativeCookies.VideoHosting.Services;
 using Microsoft.ApplicationInsights;
@@ -25,6 +22,8 @@ using System.Text;
 using CreativeCookies.VideoHosting.DAL.Config;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Services;
 using CreativeCookies.VideoHosting.Contracts.Services.OAuth;
+using CreativeCookies.VideoHosting.Infrastructure.Stripe;
+using CreativeCookies.VideoHosting.Domain.BackgroundWorkers.CreativeCookies.VideoHosting.Domain.Services;
 
 namespace CreativeCookies.VideoHosting.API
 {

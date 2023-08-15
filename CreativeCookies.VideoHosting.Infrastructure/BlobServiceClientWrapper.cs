@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Domain.Azure
+namespace CreativeCookies.VideoHosting.Infrastructure
 {
     public class BlobServiceClientWrapper : IBlobServiceClientWrapper
     {
