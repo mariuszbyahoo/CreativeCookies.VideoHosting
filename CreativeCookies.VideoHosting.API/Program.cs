@@ -30,6 +30,7 @@ using Stripe;
 using System.Configuration;
 using System.Text;
 using CreativeCookies.VideoHosting.DAL.Config;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Services;
 
 namespace CreativeCookies.VideoHosting.API
 {

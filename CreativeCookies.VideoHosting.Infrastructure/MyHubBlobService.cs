@@ -1,6 +1,6 @@
 ﻿using Azure.Storage.Blobs.Models;
 using CreativeCookies.VideoHosting.Contracts.Azure;
-using CreativeCookies.VideoHosting.Contracts.Services;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Services;
 
 namespace CreativeCookies.VideoHosting.Infrastructure
 {
