@@ -3,13 +3,8 @@ using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs;
 using CreativeCookies.VideoHosting.DTOs;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Domain.Repositories
+namespace CreativeCookies.VideoHosting.DAL.Repositories
 {
     public class ErrorLogsRepository : IErrorLogsRepository
     {
@@ -19,13 +14,13 @@ namespace CreativeCookies.VideoHosting.Domain.Repositories
             _ctx = ctx;
         }
 
-        public IEnumerable<ErrorLogDto> GetErrorLogs()
+        public async Task<IEnumerable<ErrorLogDto>> GetErrorLogs()
         {
-            var res = _ctx.ClientErrors.ToList();
+            var res = await _ctx.ClientErrors.ToListAsync();
             return res.Cast<ErrorLogDto>();
         }
 
-        public async Task<ErrorLogDto> LogNewError(string errorLog)
+        public async Task<ErrorLogDto> SaveNewLog(string errorLog)
         {
             var newError = new ClientException() { Id = Guid.NewGuid(), Log = errorLog };
 

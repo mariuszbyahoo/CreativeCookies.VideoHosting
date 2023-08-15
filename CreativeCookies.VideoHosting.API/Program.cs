@@ -121,6 +121,7 @@ namespace CreativeCookies.VideoHosting.API
             
 
             builder.Services.AddScoped<IFilmService, FilmService>();
+            builder.Services.AddScoped<IErrorLogsService, ErrorLogsService>();
 
             builder.Services.AddScoped<IMyHubBlobService, MyHubBlobService>();
 

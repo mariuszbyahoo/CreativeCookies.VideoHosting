@@ -4,8 +4,8 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
 {
     public interface IErrorLogsRepository
     {
-        IEnumerable<ErrorLogDto> GetErrorLogs();
+        Task<IEnumerable<ErrorLogDto>> GetErrorLogs();
 
-        Task<ErrorLogDto> LogNewError(string errorLog);
+        Task<ErrorLogDto> SaveNewLog(string errorLog);
     }
 }
