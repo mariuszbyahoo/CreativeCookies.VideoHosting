@@ -42,7 +42,7 @@ namespace CreativeCookies.VideoHosting.Services.IdP
         {
             var res = await _signInManager.GetTwoFactorAuthenticationUserAsync();
             if (res == null) return null;
-            var dto = new MyHubUserDto(Guid.Parse(res.Id), res.Email, "", res.EmailConfirmed);
+            var dto = new MyHubUserDto(Guid.Parse(res.Id), res.Email, "", res.EmailConfirmed, res.StripeCustomerId);
             return dto;
         }
 
@@ -54,6 +54,7 @@ namespace CreativeCookies.VideoHosting.Services.IdP
 
         public async Task RefreshSignInAsync(MyHubUserDto user)
         {
+            // HACK: Niezgodność typów KU**A! najpierw dostosuj DAL do MyHubUser a potem się z tym baw.
             throw new NotImplementedException();
         }
 
