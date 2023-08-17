@@ -1,5 +1,6 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DAL.Contexts;
+using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -9,9 +10,9 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
     public class UsersRepository : IUsersRepository
     {
         private readonly AppDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<MyHubUser> _userManager;
 
-        public UsersRepository(AppDbContext context, UserManager<IdentityUser> userManager)
+        public UsersRepository(AppDbContext context, UserManager<MyHubUser> userManager)
         {
             _context = context;
             _userManager = userManager;

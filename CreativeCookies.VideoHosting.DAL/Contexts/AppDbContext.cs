@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CreativeCookies.VideoHosting.DAL.Contexts
 {
-    public class AppDbContext : IdentityDbContext
+    public class AppDbContext : IdentityDbContext<MyHubUser>
     {
         public DbSet<ClientException> ClientErrors { get; set; }
         public DbSet<OAuthClient> OAuthClients { get; set; }
