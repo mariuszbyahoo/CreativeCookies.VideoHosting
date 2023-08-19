@@ -11,17 +11,18 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 
 namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 {
     public class LoginWith2faModel : PageModel
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IMyHubSignInManager _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ILogger<LoginWith2faModel> _logger;
 
         public LoginWith2faModel(
-            SignInManager<IdentityUser> signInManager,
+            IMyHubSignInManager signInManager,
             UserManager<IdentityUser> userManager,
             ILogger<LoginWith2faModel> logger)
         {

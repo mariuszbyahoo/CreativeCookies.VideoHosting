@@ -10,6 +10,7 @@ using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Web;
+using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
@@ -24,7 +25,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly IAccessTokenService _accessTokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRefreshTokenService _refreshTokenSrv;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IMyHubSignInManager _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
 
         public const string CacheControlHeader = "no-store";
@@ -37,7 +38,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         public AuthController(IOAuthClientService oAuthClientService, IAuthorizationCodeService codesService, IAccessTokenService accessTokenService,
             ILogger<AuthController> logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor,
-            IRefreshTokenService refreshTokenSrv, SignInManager<IdentityUser> signInManager,
+            IRefreshTokenService refreshTokenSrv, IMyHubSignInManager signInManager,
             UserManager<IdentityUser> userManager)
         {
             _oAuthClientService = oAuthClientService;

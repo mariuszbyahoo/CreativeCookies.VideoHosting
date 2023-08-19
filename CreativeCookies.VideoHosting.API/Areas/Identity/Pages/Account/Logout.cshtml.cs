@@ -2,17 +2,19 @@ using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using CreativeCookies.VideoHosting.Contracts.Services.IdP;
+
 
 namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 {
     public class LogoutModel : PageModel
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IMyHubSignInManager _signInManager;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly ILogger<LogoutModel> _logger;
         private readonly IConfiguration _configuration;
 
-        public LogoutModel(SignInManager<IdentityUser> signInManager, ILogger<LogoutModel> logger, IConfiguration configuration, IRefreshTokenRepository refreshTokenRepository)
+        public LogoutModel(IMyHubSignInManager signInManager, ILogger<LogoutModel> logger, IConfiguration configuration, IRefreshTokenRepository refreshTokenRepository)
         {
             _signInManager = signInManager;
             _refreshTokenRepository = refreshTokenRepository;

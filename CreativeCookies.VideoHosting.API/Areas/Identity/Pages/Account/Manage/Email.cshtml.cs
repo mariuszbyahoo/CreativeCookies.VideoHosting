@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using CreativeCookies.VideoHosting.API.Helpers;
+using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -19,13 +20,13 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
     public class EmailModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IMyHubSignInManager _signInManager;
         private readonly IEmailService _emailSender;
         private readonly IConfiguration _configuration;
         private readonly ILogger<EmailModel> _logger;
         public EmailModel(
             UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
+            IMyHubSignInManager signInManager,
             IEmailService emailSender,
             IConfiguration configuration,
             ILogger<EmailModel> logger)

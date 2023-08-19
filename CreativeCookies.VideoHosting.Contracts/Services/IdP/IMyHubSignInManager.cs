@@ -1,6 +1,7 @@
 ﻿using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace CreativeCookies.VideoHosting.Contracts.Services.IdP
 {
@@ -27,7 +28,9 @@ namespace CreativeCookies.VideoHosting.Contracts.Services.IdP
         Task<SignInResult> TwoFactorAuthenticatorSignInAsync(string code, bool isPersistent, bool rememberClient);
 
         Task<SignInResult> TwoFactorRecoveryCodeSignInAsync(string recoveryCode);
+        
+        Task<bool> IsTwoFactorClientRememberedAsync(MyHubUserDto dto);
 
-
+        bool IsSignedIn(ClaimsPrincipal claimsPrincipal);
     }
 }

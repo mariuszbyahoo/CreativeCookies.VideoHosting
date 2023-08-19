@@ -3,16 +3,19 @@ using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace CreativeCookies.VideoHosting.Services.IdP
 {
     public class MyHubSignInManager : IMyHubSignInManager
     {
         private readonly SignInManager<MyHubUser> _signInManager;
+        private readonly UserManager<MyHubUser> _userManager;
 
-        public MyHubSignInManager(SignInManager<MyHubUser> usrMgr)
+        public MyHubSignInManager(SignInManager<MyHubUser> signInManager, UserManager<MyHubUser> userManager)
         {
-            _signInManager = usrMgr;
+            _signInManager = signInManager;
+            _userManager = userManager;
         }
 
         public AuthenticationProperties ConfigureExternalAuthenticationProperties(string? provider, string? redirectUrl, string? userId = null)
@@ -54,28 +57,40 @@ namespace CreativeCookies.VideoHosting.Services.IdP
 
         public async Task RefreshSignInAsync(MyHubUserDto user)
         {
-            // HACK: Niezgodność typów KU**A! najpierw dostosuj DAL do MyHubUser a potem się z tym baw.
-            throw new NotImplementedException();
+            var dao = await _userManager.FindByIdAsync(user.Id.ToString());
+            if(dao != null) await _signInManager.RefreshSignInAsync(dao);
         }
 
-        public Task SignInAsync(MyHubUserDto user, bool isPersistent, string? authenticationMethod = null)
+        public async Task SignInAsync(MyHubUserDto user, bool isPersistent, string? authenticationMethod = null)
         {
-            throw new NotImplementedException();
+            var dao = await _userManager.FindByIdAsync(user.Id.ToString());
+            if (dao != null) await _signInManager.SignInAsync(dao, isPersistent, authenticationMethod);
         }
 
-        public Task SignOutAsync()
+        public async Task SignOutAsync()
         {
-            throw new NotImplementedException();
+            await _signInManager.SignOutAsync();
         }
 
-        public Task<Microsoft.AspNetCore.Identity.SignInResult> TwoFactorAuthenticatorSignInAsync(string code, bool isPersistent, bool rememberClient)
+        public async Task<SignInResult> TwoFactorAuthenticatorSignInAsync(string code, bool isPersistent, bool rememberClient)
         {
-            throw new NotImplementedException();
+            return await _signInManager.TwoFactorAuthenticatorSignInAsync(code, isPersistent, rememberClient);
         }
 
-        public Task<Microsoft.AspNetCore.Identity.SignInResult> TwoFactorRecoveryCodeSignInAsync(string recoveryCode)
+        public async Task<SignInResult> TwoFactorRecoveryCodeSignInAsync(string recoveryCode)
         {
-            throw new NotImplementedException();
+            return await _signInManager.TwoFactorRecoveryCodeSignInAsync(recoveryCode);
+        }
+
+        public async Task<bool> IsTwoFactorClientRememberedAsync(MyHubUserDto dto)
+        {
+            var dao = await _userManager.FindByIdAsync(dto.Id.ToString());
+            return await _signInManager.IsTwoFactorClientRememberedAsync(dao);
+        }
+
+        public bool IsSignedIn(ClaimsPrincipal claimsPrincipal)
+        {
+            return _signInManager.IsSignedIn(claimsPrincipal);
         }
     }
 }
