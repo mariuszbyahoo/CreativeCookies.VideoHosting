@@ -106,5 +106,12 @@ namespace CreativeCookies.VideoHosting.Contracts.Services.IdP
         string? GetUserName(ClaimsPrincipal claimsPrincipal);
 
         Task<string> GetPasswordHashAsync(MyHubUserDto user);
+
+        /// <summary>
+        /// Extracts code found in ASPNETCORE Identity's DownloadPersonalData.OnPost()  razor page.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns>Dictionary representing keys and values of personal data relevand due to GDPR</returns>
+        Task<Dictionary<string, string>> GetPersonalDataDictionaryToDownload(MyHubUserDto user);
     }
 }

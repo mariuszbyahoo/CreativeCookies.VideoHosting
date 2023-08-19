@@ -55,7 +55,7 @@ namespace CreativeCookies.VideoHosting.Services.IdP
 
         public async Task<IdentityResult> CreateAsync(MyHubUserDto user, string password)
         {
-            var dao = await _userManager.FindByIdAsync(user.Id.ToString());
+            var dao = new MyHubUser() { Email = user.UserEmail, UserName = user.UserEmail };
             return await _userManager.CreateAsync(dao, password);
         }
 
@@ -243,6 +243,29 @@ namespace CreativeCookies.VideoHosting.Services.IdP
         {
             var dao = await _userManager.FindByIdAsync(user.Id.ToString());
             return dao.PasswordHash;
+        }
+
+        public async Task<Dictionary<string, string>> GetPersonalDataDictionaryToDownload(MyHubUserDto user)
+        {
+            var res = new Dictionary<string, string>();
+            var dao = await _userManager.FindByIdAsync(user.Id.ToString());
+
+            var personalDataProps = typeof(MyHubUser).GetProperties().Where(
+                prop => Attribute.IsDefined(prop, typeof(PersonalDataAttribute)));
+            foreach (var p in personalDataProps)
+            {
+                res.Add(p.Name, p.GetValue(user)?.ToString() ?? "null");
+            }
+
+            var logins = await GetLoginsAsync(user);
+            foreach (var l in logins)
+            {
+                res.Add($"{l.LoginProvider} external login provider key", l.ProviderKey);
+            }
+
+            res.Add($"Authenticator Key", await _userManager.GetAuthenticatorKeyAsync(dao));
+
+            return res;
         }
     }
 }
