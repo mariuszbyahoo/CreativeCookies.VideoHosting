@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace CreativeCookies.VideoHosting.DAL.DAOs
 {
-    public class StripeAccountRecord
+    public class StripeConfig
     {
         public Guid Id { get; set; }
         public string StripeConnectedAccountId { get; set; }
+        public string StripeCustomerId { get; set; }
         public DateTime DateCreated { get; set; }
     }
 }

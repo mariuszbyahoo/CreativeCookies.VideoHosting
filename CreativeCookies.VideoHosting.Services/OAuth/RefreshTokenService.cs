@@ -17,21 +17,15 @@ namespace CreativeCookies.VideoHosting.Services.OAuth
 
         public async Task<RefreshTokenDto> GetNewRefreshToken(Guid userId)
         {
-            var existingRefreshTokens = await _refreshTokenRepository.GetRefreshTokens(userId);
-            if (existingRefreshTokens != null && existingRefreshTokens.Length > 0)
-            {
-                if (existingRefreshTokens.Length > 1)
-                {
-                    await _refreshTokenRepository.DeleteRefreshTokens(existingRefreshTokens);
-                }
-                else
-                {
-                    await _refreshTokenRepository.DeleteRefreshToken(existingRefreshTokens.First());
-                }
-            }
+            await DeleteTokensOfUser(userId);
             var refreshToken = _jwtGenerator.GenerateRefreshToken(userId);
             await _refreshTokenRepository.SaveRefreshToken(refreshToken);
             return refreshToken;
+        }
+
+        public async Task DeleteIssuedRefreshTokens(Guid userId)
+        {
+            await DeleteTokensOfUser(userId);
         }
 
         public async Task<MyHubUserDto> GetUserByRefreshToken(string? refresh_token)
@@ -49,6 +43,22 @@ namespace CreativeCookies.VideoHosting.Services.OAuth
         public async Task RevokeRefreshToken(string refreshToken)
         {
             await _refreshTokenRepository.RevokeRefreshToken(refreshToken);
+        }
+
+        private async Task DeleteTokensOfUser(Guid userId)
+        {
+            var existingRefreshTokens = await _refreshTokenRepository.GetRefreshTokens(userId);
+            if (existingRefreshTokens != null && existingRefreshTokens.Length > 0)
+            {
+                if (existingRefreshTokens.Length > 1)
+                {
+                    await _refreshTokenRepository.DeleteRefreshTokens(existingRefreshTokens);
+                }
+                else
+                {
+                    await _refreshTokenRepository.DeleteRefreshToken(existingRefreshTokens.First());
+                }
+            }
         }
     }
 }

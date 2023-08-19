@@ -6,6 +6,8 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
+using CreativeCookies.VideoHosting.Contracts.Services.OAuth;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -17,15 +19,18 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
     {
         private readonly IMyHubUserManager _userManager;
         private readonly IMyHubSignInManager _signInManager;
+        private readonly IRefreshTokenService _refreshTokenService;
         private readonly ILogger<DeletePersonalDataModel> _logger;
 
         public DeletePersonalDataModel(
             IMyHubUserManager userManager,
             IMyHubSignInManager signInManager,
+            IRefreshTokenService refreshTokenService,
             ILogger<DeletePersonalDataModel> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _refreshTokenService = refreshTokenService;
             _logger = logger;
         }
 
@@ -72,6 +77,12 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
         public async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+            };
             if (user == null)
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
@@ -86,9 +97,13 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                     return Page();
                 }
             }
+            var userId = await _userManager.GetUserIdAsync(user);
+            await _refreshTokenService.DeleteIssuedRefreshTokens(Guid.Parse(userId));
+
+            Response.Cookies.Delete("stac", cookieOptions);
+            Response.Cookies.Delete("ltrt", cookieOptions);
 
             var result = await _userManager.DeleteAsync(user);
-            var userId = await _userManager.GetUserIdAsync(user);
             if (!result.Succeeded)
             {
                 throw new InvalidOperationException($"Unexpected error occurred deleting user.");

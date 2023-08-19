@@ -41,7 +41,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
 
         private async Task SaveConnectedAccount(string accountId)
         {
-            var newAccountRecord = new DAL.DAOs.StripeAccountRecord() { Id = Guid.NewGuid(), StripeConnectedAccountId = accountId, DateCreated = DateTime.UtcNow };
+            var newAccountRecord = new DAL.DAOs.StripeConfig() { Id = Guid.NewGuid(), StripeConnectedAccountId = accountId, DateCreated = DateTime.UtcNow };
             _ctx.StripeAccountRecords.Add(newAccountRecord);
             await _ctx.SaveChangesAsync();
         }
