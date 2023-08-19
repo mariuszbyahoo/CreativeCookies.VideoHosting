@@ -16,10 +16,10 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 {
     public class ConfirmEmailChangeModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IMyHubUserManager _userManager;
         private readonly IMyHubSignInManager _signInManager;
 
-        public ConfirmEmailChangeModel(UserManager<IdentityUser> userManager, IMyHubSignInManager signInManager)
+        public ConfirmEmailChangeModel(IMyHubUserManager userManager, IMyHubSignInManager signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;

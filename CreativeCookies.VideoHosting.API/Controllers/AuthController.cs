@@ -26,7 +26,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRefreshTokenService _refreshTokenSrv;
         private readonly IMyHubSignInManager _signInManager;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IMyHubUserManager _userManager;
 
         public const string CacheControlHeader = "no-store";
         public const string RefreshTokenGrantType = "refresh_token";
@@ -39,7 +39,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         public AuthController(IOAuthClientService oAuthClientService, IAuthorizationCodeService codesService, IAccessTokenService accessTokenService,
             ILogger<AuthController> logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor,
             IRefreshTokenService refreshTokenSrv, IMyHubSignInManager signInManager,
-            UserManager<IdentityUser> userManager)
+            IMyHubUserManager userManager)
         {
             _oAuthClientService = oAuthClientService;
             _codesService = codesService;

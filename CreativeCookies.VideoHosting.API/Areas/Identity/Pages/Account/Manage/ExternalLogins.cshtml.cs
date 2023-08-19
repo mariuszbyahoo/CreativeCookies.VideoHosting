@@ -2,11 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
@@ -17,12 +12,12 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
 {
     public class ExternalLoginsModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IMyHubUserManager _userManager;
         private readonly IMyHubSignInManager _signInManager;
         private readonly IUserStore<IdentityUser> _userStore;
 
         public ExternalLoginsModel(
-            UserManager<IdentityUser> userManager,
+            IMyHubUserManager userManager,
             IMyHubSignInManager signInManager,
             IUserStore<IdentityUser> userStore)
         {
@@ -70,9 +65,9 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                 .ToList();
 
             string passwordHash = null;
-            if (_userStore is IUserPasswordStore<IdentityUser> userPasswordStore)
+            if (_userStore is IUserPasswordStore<IdentityUser> userPasswordStore) // HACK: Całą metodę wyciągnij do wrappera.
             {
-                passwordHash = await userPasswordStore.GetPasswordHashAsync(user, HttpContext.RequestAborted);
+                passwordHash = await userPasswordStore.GetPasswordHashAsync(user, HttpContext.RequestAborted); // HACK: Jeszcze UserPasswordStore
             }
 
             ShowRemoveButton = passwordHash != null || CurrentLogins.Count > 1;

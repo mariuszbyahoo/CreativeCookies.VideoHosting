@@ -15,12 +15,12 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
 {
     public class DeletePersonalDataModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IMyHubUserManager _userManager;
         private readonly IMyHubSignInManager _signInManager;
         private readonly ILogger<DeletePersonalDataModel> _logger;
 
         public DeletePersonalDataModel(
-            UserManager<IdentityUser> userManager,
+            IMyHubUserManager userManager,
             IMyHubSignInManager signInManager,
             ILogger<DeletePersonalDataModel> logger)
         {

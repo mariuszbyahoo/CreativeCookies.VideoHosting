@@ -13,12 +13,12 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
 {
     public class ChangePasswordModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IMyHubUserManager _userManager;
         private readonly IMyHubSignInManager _signInManager;
         private readonly ILogger<ChangePasswordModel> _logger;
 
         public ChangePasswordModel(
-            UserManager<IdentityUser> userManager,
+            IMyHubUserManager userManager,
             IMyHubSignInManager signInManager,
             ILogger<ChangePasswordModel> logger)
         {

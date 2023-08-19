@@ -18,12 +18,12 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
     public class LoginWith2faModel : PageModel
     {
         private readonly IMyHubSignInManager _signInManager;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IMyHubUserManager _userManager;
         private readonly ILogger<LoginWith2faModel> _logger;
 
         public LoginWith2faModel(
             IMyHubSignInManager signInManager,
-            UserManager<IdentityUser> userManager,
+            IMyHubUserManager userManager,
             ILogger<LoginWith2faModel> logger)
         {
             _signInManager = signInManager;

@@ -2,10 +2,10 @@
 @using Microsoft.AspNetCore.Identity
 
 @inject IMyHubSignInManager SignInManager
-@inject UserManager<IdentityUser> UserManager
+@inject IMyHubUserManager UserManager
 
 <ul class="navbar-nav">
-@if (SignInManager.IsSignedIn(User)) @*HACK TODO*@
+@if (SignInManager.IsSignedIn(User)) 
 {
     <li class="nav-item">
         <a id="manage" class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">@UserManager.GetUserName(User)</a>

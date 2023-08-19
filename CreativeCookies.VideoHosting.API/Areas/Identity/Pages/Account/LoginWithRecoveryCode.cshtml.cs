@@ -14,12 +14,12 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
     public class LoginWithRecoveryCodeModel : PageModel
     {
         private readonly IMyHubSignInManager _signInManager;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IMyHubUserManager _userManager;
         private readonly ILogger<LoginWithRecoveryCodeModel> _logger;
 
         public LoginWithRecoveryCodeModel(
             IMyHubSignInManager signInManager,
-            UserManager<IdentityUser> userManager,
+            IMyHubUserManager userManager,
             ILogger<LoginWithRecoveryCodeModel> logger)
         {
             _signInManager = signInManager;

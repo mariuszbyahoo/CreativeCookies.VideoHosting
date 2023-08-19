@@ -14,17 +14,18 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 
 namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
     public class ResendEmailConfirmationModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IMyHubUserManager _userManager;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
 
-        public ResendEmailConfirmationModel(UserManager<IdentityUser> userManager, IEmailService emailService, IConfiguration configuration)
+        public ResendEmailConfirmationModel(IMyHubUserManager userManager, IEmailService emailService, IConfiguration configuration)
         {
             _userManager = userManager;
             _emailService = emailService;

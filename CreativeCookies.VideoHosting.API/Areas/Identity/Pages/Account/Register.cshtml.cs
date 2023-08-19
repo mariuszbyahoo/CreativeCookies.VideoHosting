@@ -11,21 +11,23 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
+using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
+using CreativeCookies.VideoHosting.DTOs.OAuth;
 
 namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 {
     public class RegisterModel : PageModel
     {
         private readonly IMyHubSignInManager _signInManager;
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly IUserStore<IdentityUser> _userStore;
-        private readonly IUserEmailStore<IdentityUser> _emailStore;
+        private readonly IMyHubUserManager _userManager;
+        private readonly IUserStore<IdentityUser> _userStore; // HACK TODO Wrapper
+        private readonly IUserEmailStore<IdentityUser> _emailStore; // HACK TODO Wrapper
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
 
         public RegisterModel(
-            UserManager<IdentityUser> userManager,
+            IMyHubUserManager userManager,
             IUserStore<IdentityUser> userStore,
             IMyHubSignInManager signInManager,
             ILogger<RegisterModel> logger,
@@ -80,7 +82,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
-                var user = CreateUser();
+                var user = new MyHubUserDto(Guid.Empty, "", "", false, ""); // HACK TODO
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
@@ -131,7 +133,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             return Page();
         }
 
-        private IdentityUser CreateUser()
+        private MyHubUserDto CreateUser()
         {
             try
             {
@@ -147,7 +149,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 
         private IUserEmailStore<IdentityUser> GetEmailStore()
         {
-            if (!_userManager.SupportsUserEmail)
+            if (!_userManager.GetManagerSupportsUserEmail())
             {
                 throw new NotSupportedException("The default UI requires a user store with email support.");
             }

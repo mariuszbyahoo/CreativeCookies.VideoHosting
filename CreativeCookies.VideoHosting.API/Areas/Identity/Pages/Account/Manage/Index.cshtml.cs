@@ -2,24 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
+using CreativeCookies.VideoHosting.DTOs.OAuth;
 
 namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
 {
     public class IndexModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IMyHubUserManager _userManager;
         private readonly IMyHubSignInManager _signInManager;
 
         public IndexModel(
-            UserManager<IdentityUser> userManager,
+            IMyHubUserManager userManager,
             IMyHubSignInManager signInManager)
         {
             _userManager = userManager;
@@ -61,7 +59,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
             public string PhoneNumber { get; set; }
         }
 
-        private async Task LoadAsync(IdentityUser user)
+        private async Task LoadAsync(MyHubUserDto user)
         {
             var userName = await _userManager.GetUserNameAsync(user);
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);

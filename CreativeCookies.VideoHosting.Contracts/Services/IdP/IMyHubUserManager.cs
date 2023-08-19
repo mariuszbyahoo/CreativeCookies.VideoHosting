@@ -15,11 +15,11 @@ namespace CreativeCookies.VideoHosting.Contracts.Services.IdP
 
         Task<IdentityResult> AddToRoleAsync(MyHubUserDto user, string role);
 
-        Task<IList<string>> GetRolesAsync();
+        Task<IList<string>> GetRolesAsync(MyHubUserDto user);
 
         string? GetUserId(ClaimsPrincipal principal);
 
-        Task<MyHubUserDto?> FindByIdAsync(Guid id);
+        Task<MyHubUserDto?> FindByIdAsync(string id);
 
         Task<MyHubUserDto> GetUserAsync(ClaimsPrincipal principal);
 
@@ -33,7 +33,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Services.IdP
         /// Getter for UserManager's property
         /// </summary>
         /// <returns>SupportsUserEmail propperty</returns>
-        bool GetManagerSupportsuserEmail();
+        bool GetManagerSupportsUserEmail();
 
         Task<string> GenerateChangeEmailTokenAsync(MyHubUserDto user, string newEmail);
 
@@ -55,7 +55,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Services.IdP
 
         Task<bool> HasPasswordAsync(MyHubUserDto user);
 
-        Task<MyHubUserDto> ChangePasswordAsync(MyHubUserDto user, string currentPassword, string newPassword);
+        Task<IdentityResult> ChangePasswordAsync(MyHubUserDto user, string currentPassword, string newPassword);
 
         Task<bool> CheckPasswordAsync(MyHubUserDto user, string password);
 
@@ -71,7 +71,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Services.IdP
         /// Below method encapsulates an UserManager's field
         /// </summary>
         /// <returns>UserManager.Options.Tokens.AuthenticatorTokenProvider value</returns>
-        Task<string> GetAuthenticatorTokenProvider();
+        string GetAuthenticatorTokenProvider();
 
         Task<string?> GetAuthenticatorKeyAsync(MyHubUserDto user);
 
@@ -94,6 +94,15 @@ namespace CreativeCookies.VideoHosting.Contracts.Services.IdP
         Task<string?> GetPhoneNumberAsync(MyHubUserDto user);
 
         Task<IdentityResult> SetPhoneNumberAsync(MyHubUserDto user, string phoneNumber);
+        
+        Task<string> GetUserIdAsync(MyHubUserDto user);
 
+        Task<string> GetUserNameAsync(MyHubUserDto user);
+
+        Task<IdentityResult> AddLoginAsync(MyHubUserDto user, ExternalLoginInfo externalLoginInfo);
+
+        Task<IdentityResult> ResetPasswordAsync(MyHubUserDto user, string token, string newPassword);
+
+        string? GetUserName(ClaimsPrincipal claimsPrincipal);
     }
 }
