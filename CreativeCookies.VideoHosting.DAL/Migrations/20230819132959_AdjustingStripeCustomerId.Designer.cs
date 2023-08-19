@@ -4,6 +4,7 @@ using CreativeCookies.VideoHosting.DAL.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CreativeCookies.VideoHosting.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230819132959_AdjustingStripeCustomerId")]
+    partial class AdjustingStripeCustomerId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -142,9 +145,6 @@ namespace CreativeCookies.VideoHosting.DAL.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("StripeCustomerId")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
@@ -232,7 +232,7 @@ namespace CreativeCookies.VideoHosting.DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("StripeConfig");
+                    b.ToTable("StripeAccountRecords");
                 });
 
             modelBuilder.Entity("CreativeCookies.VideoHosting.DAL.DAOs.VideoMetadata", b =>
