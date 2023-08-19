@@ -22,14 +22,14 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         }
         public async Task<string> GetConnectedAccountId()
         {
-            var record = await _ctx.StripeAccountRecords.FirstOrDefaultAsync();
+            var record = await _ctx.StripeConfig.FirstOrDefaultAsync();
             if (record == null) return string.Empty;
             return record.StripeConnectedAccountId;
         }
 
         public async Task EnsureSaved(string accountId)
         {
-            var lookup = _ctx.StripeAccountRecords.FirstOrDefault(a => a.Id.Equals(accountId));
+            var lookup = _ctx.StripeConfig.FirstOrDefault(a => a.Id.Equals(accountId));
             if (lookup == null)
             {
                 await DeleteStoredAccounts(string.Empty);
@@ -42,7 +42,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         private async Task SaveConnectedAccount(string accountId)
         {
             var newAccountRecord = new DAL.DAOs.StripeConfig() { Id = Guid.NewGuid(), StripeConnectedAccountId = accountId, DateCreated = DateTime.UtcNow };
-            _ctx.StripeAccountRecords.Add(newAccountRecord);
+            _ctx.StripeConfig.Add(newAccountRecord);
             await _ctx.SaveChangesAsync();
         }
 
@@ -50,7 +50,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         {
             try
             {
-                var list = await _ctx.StripeAccountRecords.ToListAsync();
+                var list = await _ctx.StripeConfig.ToListAsync();
                 for (int i = 0; i < list.Count; i++)
                 {
                     if (!string.IsNullOrWhiteSpace(accountToPersist) && !list[i].Id.Equals(accountToPersist))
@@ -73,7 +73,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
 
         public async Task<bool> CanBeQueriedOnStripe(string accountId)
         {
-            var lookup = await _ctx.StripeAccountRecords.Where(a => a.StripeConnectedAccountId.Equals(accountId)).FirstOrDefaultAsync();
+            var lookup = await _ctx.StripeConfig.Where(a => a.StripeConnectedAccountId.Equals(accountId)).FirstOrDefaultAsync();
             if (lookup == null) return true;
             else return DateTime.UtcNow - lookup.DateCreated > TimeSpan.FromMinutes(1);
         }
