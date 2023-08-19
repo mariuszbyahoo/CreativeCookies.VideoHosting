@@ -238,5 +238,11 @@ namespace CreativeCookies.VideoHosting.Services.IdP
         {
             return _userManager.GetUserName(claimsPrincipal);
         }
+
+        public async Task<string> GetPasswordHashAsync(MyHubUserDto user)
+        {
+            var dao = await _userManager.FindByIdAsync(user.Id.ToString());
+            return dao.PasswordHash;
+        }
     }
 }

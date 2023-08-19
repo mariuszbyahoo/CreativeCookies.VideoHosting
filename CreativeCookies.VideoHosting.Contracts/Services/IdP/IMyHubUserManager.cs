@@ -104,5 +104,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Services.IdP
         Task<IdentityResult> ResetPasswordAsync(MyHubUserDto user, string token, string newPassword);
 
         string? GetUserName(ClaimsPrincipal claimsPrincipal);
+
+        Task<string> GetPasswordHashAsync(MyHubUserDto user);
     }
 }

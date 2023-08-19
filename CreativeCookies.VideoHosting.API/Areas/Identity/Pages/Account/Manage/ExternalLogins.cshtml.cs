@@ -14,16 +14,13 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
     {
         private readonly IMyHubUserManager _userManager;
         private readonly IMyHubSignInManager _signInManager;
-        private readonly IUserStore<IdentityUser> _userStore;
 
         public ExternalLoginsModel(
             IMyHubUserManager userManager,
-            IMyHubSignInManager signInManager,
-            IUserStore<IdentityUser> userStore)
+            IMyHubSignInManager signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _userStore = userStore;
         }
 
         /// <summary>
@@ -64,13 +61,9 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                 .Where(auth => CurrentLogins.All(ul => auth.Name != ul.LoginProvider))
                 .ToList();
 
-            string passwordHash = null;
-            if (_userStore is IUserPasswordStore<IdentityUser> userPasswordStore) // HACK: Całą metodę wyciągnij do wrappera.
-            {
-                passwordHash = await userPasswordStore.GetPasswordHashAsync(user, HttpContext.RequestAborted); // HACK: Jeszcze UserPasswordStore
-            }
+            string passwordHash = await _userManager.GetPasswordHashAsync(user);
 
-            ShowRemoveButton = passwordHash != null || CurrentLogins.Count > 1;
+            ShowRemoveButton = !string.IsNullOrWhiteSpace(passwordHash) || CurrentLogins.Count > 1;
             return Page();
         }
 
