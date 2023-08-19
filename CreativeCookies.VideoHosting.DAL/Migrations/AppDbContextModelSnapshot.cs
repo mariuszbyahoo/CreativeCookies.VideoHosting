@@ -227,9 +227,6 @@ namespace CreativeCookies.VideoHosting.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("StripeCustomerId")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.ToTable("StripeConfig");
