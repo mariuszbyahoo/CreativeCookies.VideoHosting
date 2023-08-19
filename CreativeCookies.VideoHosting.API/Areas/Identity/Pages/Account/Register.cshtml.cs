@@ -20,7 +20,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
     {
         private readonly IMyHubSignInManager _signInManager;
         private readonly IMyHubUserManager _userManager;
-        private readonly IUserStore<IdentityUser> _userStore; // HACK TODO Wrapper
+        private readonly IMyHubUserStore _userStore; 
         private readonly IUserEmailStore<IdentityUser> _emailStore; // HACK TODO Wrapper
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailService _emailService;
@@ -28,7 +28,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 
         public RegisterModel(
             IMyHubUserManager userManager,
-            IUserStore<IdentityUser> userStore,
+            IMyHubUserStore userStore,
             IMyHubSignInManager signInManager,
             ILogger<RegisterModel> logger,
             IConfiguration configuration,
