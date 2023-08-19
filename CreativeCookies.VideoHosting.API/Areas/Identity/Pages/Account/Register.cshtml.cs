@@ -76,7 +76,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
-                var user = new MyHubUserDto(Guid.Empty, Input.Email, string.Empty, false); 
+                var user = new MyHubUserDto(Guid.Empty, Input.Email, string.Empty, false, string.Empty); 
 
                 var result = await _userManager.CreateAsync(user, Input.Password);
 

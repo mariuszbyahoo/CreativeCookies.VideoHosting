@@ -69,14 +69,14 @@ namespace CreativeCookies.VideoHosting.Services.IdP
         {
             var dao = await _userManager.FindByEmailAsync(email);
             var roles = string.Join(',', await _userManager.GetRolesAsync(dao));
-            return new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, roles, dao.EmailConfirmed);
+            return new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, roles, dao.EmailConfirmed, dao.StripeCustomerId);
         }
 
         public async Task<MyHubUserDto?> FindByIdAsync(string id)
         {
             var dao = await _userManager.FindByIdAsync(id);
             var roles = string.Join(',', await _userManager.GetRolesAsync(dao));
-            return new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, roles, dao.EmailConfirmed);
+            return new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, roles, dao.EmailConfirmed, dao.StripeCustomerId);
         }
 
         public async Task<string> GenerateChangeEmailTokenAsync(MyHubUserDto user, string newEmail)
@@ -153,7 +153,7 @@ namespace CreativeCookies.VideoHosting.Services.IdP
         {
             var dao = await _userManager.GetUserAsync(principal);
             var roles = string.Join(',', await _userManager.GetRolesAsync(dao));
-            return new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, roles, dao.EmailConfirmed);
+            return new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, roles, dao.EmailConfirmed, dao.StripeCustomerId);
         }
 
         public string? GetUserId(ClaimsPrincipal principal)

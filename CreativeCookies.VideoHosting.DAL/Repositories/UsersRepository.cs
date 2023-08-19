@@ -43,7 +43,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
                 }
                 else if (!string.IsNullOrWhiteSpace(matchingRole)) toAdd = true;
 
-                if (toAdd) result.Add(new MyHubUserDto(Guid.Parse(user.Id.ToUpperInvariant()), user.Email ?? user.UserName, matchingRole, user.EmailConfirmed));
+                if (toAdd) result.Add(new MyHubUserDto(Guid.Parse(user.Id.ToUpperInvariant()), user.Email ?? user.UserName, matchingRole, user.EmailConfirmed, user.StripeCustomerId));
 
             }
             return new UsersPaginatedResultDto(result, usersCount > result.Count(), pageNumber, totalPages);
