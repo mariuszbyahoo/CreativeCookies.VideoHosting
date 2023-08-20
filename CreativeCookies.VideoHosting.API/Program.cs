@@ -74,7 +74,7 @@ namespace CreativeCookies.VideoHosting.API
             {
                 options.AddPolicy("Production",
                     builder => builder
-                    .WithOrigins("https://myhub.com.pl", "https://streambeacon.azurewebsites.net") 
+                    .WithOrigins("https://myhub.com.pl", "https://mytube.azurewebsites.net") 
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials());
