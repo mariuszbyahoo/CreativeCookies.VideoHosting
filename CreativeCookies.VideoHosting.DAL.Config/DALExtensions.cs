@@ -1,6 +1,7 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Repositories.OAuth;
 using CreativeCookies.VideoHosting.DAL.Contexts;
+using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using CreativeCookies.VideoHosting.DAL.Repositories;
 using CreativeCookies.VideoHosting.DAL.Repositories.OAuth;
 using Microsoft.AspNetCore.Builder;
@@ -27,11 +28,11 @@ namespace CreativeCookies.VideoHosting.DAL.Config
                 });
             });
 
-            services.AddDefaultIdentity<IdentityUser>(options =>
+            services.AddDefaultIdentity<MyHubUser>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = true;
                 options.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
-                options.Tokens.ProviderMap[TokenOptions.DefaultAuthenticatorProvider] = new TokenProviderDescriptor(typeof(IUserTwoFactorTokenProvider<IdentityUser>));
+                options.Tokens.ProviderMap[TokenOptions.DefaultAuthenticatorProvider] = new TokenProviderDescriptor(typeof(IUserTwoFactorTokenProvider<MyHubUser>));
             })
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>();
@@ -55,7 +56,7 @@ namespace CreativeCookies.VideoHosting.DAL.Config
                 db.Database.Migrate();
 
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<MyHubUser>>();
 
                 // Ensure the roles exist
                 var roles = new[] { "admin", "subscriber", "nonsubscriber" };
@@ -72,7 +73,7 @@ namespace CreativeCookies.VideoHosting.DAL.Config
 
                 if (adminUser == null)
                 {
-                    adminUser = new IdentityUser { UserName = adminEmail, Email = adminEmail };
+                    adminUser = new MyHubUser { UserName = adminEmail, Email = adminEmail };
                     adminUser.EmailConfirmed = true;
                     var result = userManager.CreateAsync(adminUser, "Pass123$").Result;
                     if (result.Succeeded)

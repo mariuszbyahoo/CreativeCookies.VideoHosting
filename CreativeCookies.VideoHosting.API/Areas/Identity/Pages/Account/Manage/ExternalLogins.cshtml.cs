@@ -2,11 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,18 +12,15 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
 {
     public class ExternalLoginsModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly IUserStore<IdentityUser> _userStore;
+        private readonly IMyHubUserManager _userManager;
+        private readonly IMyHubSignInManager _signInManager;
 
         public ExternalLoginsModel(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
-            IUserStore<IdentityUser> userStore)
+            IMyHubUserManager userManager,
+            IMyHubSignInManager signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _userStore = userStore;
         }
 
         /// <summary>
@@ -68,13 +61,9 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                 .Where(auth => CurrentLogins.All(ul => auth.Name != ul.LoginProvider))
                 .ToList();
 
-            string passwordHash = null;
-            if (_userStore is IUserPasswordStore<IdentityUser> userPasswordStore)
-            {
-                passwordHash = await userPasswordStore.GetPasswordHashAsync(user, HttpContext.RequestAborted);
-            }
+            string passwordHash = await _userManager.GetPasswordHashAsync(user);
 
-            ShowRemoveButton = passwordHash != null || CurrentLogins.Count > 1;
+            ShowRemoveButton = !string.IsNullOrWhiteSpace(passwordHash) || CurrentLogins.Count > 1;
             return Page();
         }
 

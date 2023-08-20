@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using CreativeCookies.VideoHosting.API.Helpers;
+using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -19,12 +20,12 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 {
     public class ForgotPasswordModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IMyHubUserManager _userManager;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
         private readonly ILogger<ForgotPasswordModel> _logger;
 
-        public ForgotPasswordModel(UserManager<IdentityUser> userManager, IEmailService emailService, IConfiguration configuration, ILogger<ForgotPasswordModel> logger)
+        public ForgotPasswordModel(IMyHubUserManager userManager, IEmailService emailService, IConfiguration configuration, ILogger<ForgotPasswordModel> logger)
         {
             _userManager = userManager;
             _emailService = emailService;

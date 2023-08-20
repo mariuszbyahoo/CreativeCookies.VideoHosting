@@ -25,6 +25,8 @@ using CreativeCookies.VideoHosting.Services.OAuth;
 using CreativeCookies.VideoHosting.Infrastructure.Azure;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Azure;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
+using CreativeCookies.VideoHosting.Contracts.Services.IdP;
+using CreativeCookies.VideoHosting.Services.IdP;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -104,9 +106,9 @@ namespace CreativeCookies.VideoHosting.API
 
             builder.Services.AddDataAccessLayer(connectionString);
 
-
             builder.Services.AddSingleton<ISasTokenService, SasTokenService>();
             builder.Services.AddSingleton<IJWTGenerator, JwtGenerator>();
+
             builder.Services.AddScoped<IFilmService, FilmService>();
             builder.Services.AddScoped<IErrorLogsService, ErrorLogsService>();
             builder.Services.AddScoped<IUsersService, UsersService>();
@@ -115,8 +117,11 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
             builder.Services.AddScoped<IAccessTokenService, AccessTokenService>();
             builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
+            builder.Services.AddScoped<IMyHubSignInManager, MyHubSignInManager>();
+            builder.Services.AddScoped<IMyHubUserManager, MyHubUserManager>();
 
             builder.Services.AddScoped<IMyHubBlobService, MyHubBlobService>();
+            builder.Services.AddScoped<IStripeCustomerService, StripeCustomerService>();
 
             builder.Services.AddTransient<IEmailService>(serviceProvider =>
             {

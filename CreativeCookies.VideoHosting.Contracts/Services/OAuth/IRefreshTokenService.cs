@@ -13,5 +13,6 @@ namespace CreativeCookies.VideoHosting.Contracts.Services.OAuth
         Task<MyHubUserDto> GetUserByRefreshToken(string? refresh_token);
         Task<bool> IsTokenValid(string refresh_token);
         Task RevokeRefreshToken(string refreshToken);
+        Task DeleteIssuedRefreshTokens(Guid userId);
     }
 }

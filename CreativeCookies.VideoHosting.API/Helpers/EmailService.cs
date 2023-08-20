@@ -1,18 +1,10 @@
 ﻿using MailKit.Security;
 using MimeKit.Text;
 using MimeKit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MailKit.Net.Smtp;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using CreativeCookies.VideoHosting.API.Templates;
@@ -109,7 +101,7 @@ namespace CreativeCookies.VideoHosting.API.Helpers
                     Text = htmlMessage
                 };
 
-                using (var client = new SmtpClient())
+                using (var client = new MailKit.Net.Smtp.SmtpClient())
                 {
                     await client.ConnectAsync(_smtpHost, _smtpPort, SecureSocketOptions.StartTls);
                     await client.AuthenticateAsync(_senderEmail, _smtpPass);

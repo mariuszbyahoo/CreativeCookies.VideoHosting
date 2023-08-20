@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CreativeCookies.VideoHosting.DAL.Contexts
 {
-    public class AppDbContext : IdentityDbContext
+    public class AppDbContext : IdentityDbContext<MyHubUser>
     {
         public DbSet<ClientException> ClientErrors { get; set; }
         public DbSet<OAuthClient> OAuthClients { get; set; }
@@ -18,7 +18,7 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
         public DbSet<AuthorizationCode> AuthorizationCodes { get; set; }
         public DbSet<RefreshTokenDAO> RefreshTokens { get; set; }
         public DbSet<VideoMetadata> VideosMetadata { get; set; }
-        public DbSet<StripeAccountRecord> StripeAccountRecords { get; set; }
+        public DbSet<StripeConfig> StripeConfig { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -29,6 +29,7 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
         {
             base.OnModelCreating(builder);
 
+            builder.Entity<MyHubUser>().Property(s => s.StripeCustomerId).IsRequired(false);
             builder.Entity<VideoMetadata>(o =>
             {
                 o.HasKey(o => o.Id);

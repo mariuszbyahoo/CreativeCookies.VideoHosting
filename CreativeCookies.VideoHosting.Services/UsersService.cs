@@ -18,5 +18,11 @@ namespace CreativeCookies.VideoHosting.Services
             var paginatedResult = await _repo.GetUsersPaginatedResult(search, pageNumber, pageSize, role);
             return paginatedResult;
         }
+
+        public async Task<bool> AssignStripeCustomerId(string userId, string stripeCustomerId)
+        {
+            var res = await _repo.AssignStripeCustomerId(userId, stripeCustomerId);
+            return res;
+        }
     }
 }

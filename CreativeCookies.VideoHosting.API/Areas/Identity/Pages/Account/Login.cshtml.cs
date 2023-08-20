@@ -15,16 +15,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
+using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 
 namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 {
     public class LoginModel : PageModel
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IMyHubSignInManager _signInManager;
         private readonly ILogger<LoginModel> _logger;
         private readonly IConnectAccountsRepository _stripeService;
 
-        public LoginModel(SignInManager<IdentityUser> signInManager, IConnectAccountsRepository stripeService, ILogger<LoginModel> logger)
+        public LoginModel(IMyHubSignInManager signInManager, IConnectAccountsRepository stripeService, ILogger<LoginModel> logger)
         {
             _signInManager = signInManager;
             _stripeService = stripeService;
