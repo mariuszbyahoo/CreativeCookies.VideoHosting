@@ -1,29 +1,26 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
-using CreativeCookies.VideoHosting.Contracts.Repositories;
-using CreativeCookies.VideoHosting.Contracts.Services.IdP;
+using CreativeCookies.VideoHosting.Contracts.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Stripe;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 {
     public class StripeCustomerService : IStripeCustomerService
     {
-        private readonly IUsersRepository _usersRepo;
+        private readonly IUsersService _usersSrv;
+        private readonly IConnectAccountsService _connectAccountsService;
         private readonly ILogger<StripeCustomerService> _logger;
         private readonly IConfiguration _configuration;
         private readonly string _stripeSecretAPIKey;
 
-        public StripeCustomerService(IUsersRepository usersRepo, ILogger<StripeCustomerService> logger, IConfiguration configuration)
+        public StripeCustomerService(IUsersService usersSrv, ILogger<StripeCustomerService> logger, IConnectAccountsService connectAccountsService,
+            IConfiguration configuration)
         {
-            _usersRepo = usersRepo;
+            _usersSrv = usersSrv;
             _logger = logger;
             _configuration = configuration;
+            _connectAccountsService = connectAccountsService;
             _stripeSecretAPIKey = _configuration.GetValue<string>("StripeSecretAPIKey");
         }
 
@@ -37,7 +34,8 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                 Description = "Customer for " + userEmail,
                 Metadata = new Dictionary<string, string>
                 {
-                    { "UserId", userId }
+                    { "UserId", userId },
+                    { "StripeConnectedAccountId", await _connectAccountsService.GetConnectedAccountId() }
                 }
             };
 
@@ -45,7 +43,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             {
                 var stripeCustomer = customerService.Create(customerOptions);
 
-                var hasAssigned = await _usersRepo.AssignStripeCustomerId(userId, stripeCustomer.Id);
+                var hasAssigned = await _usersSrv.AssignStripeCustomerId(userId, stripeCustomer.Id);
                 if (!hasAssigned)
                 {
                     _logger.LogError($"Error creating Stripe customer for user: {userId}. A stripe customer with an ID of: {stripeCustomer.Id} has been created, but it's Id has not been assigned to SQL column");
