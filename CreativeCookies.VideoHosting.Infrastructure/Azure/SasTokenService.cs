@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CreativeCookies.VideoHosting.Infrastructure.Enums;
-using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Azure;
 
 namespace CreativeCookies.VideoHosting.Infrastructure.Azure
 {
