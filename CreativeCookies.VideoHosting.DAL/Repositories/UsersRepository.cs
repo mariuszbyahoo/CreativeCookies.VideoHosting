@@ -18,6 +18,15 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             _userManager = userManager;
         }
 
+        public async Task<bool> AssignStripeCustomerId(string userId, string stripeCustomerId)
+        {
+            var dao = await _context.Users.Where(u => u.Id.Equals(userId.ToString())).FirstOrDefaultAsync();
+            if (dao == null) return false;
+            dao.StripeCustomerId = stripeCustomerId;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<UsersPaginatedResultDto> GetUsersPaginatedResult(string search, int pageNumber, int pageSize, string role)
         {
             var usersQuery = _context.Users.Where(user => string.IsNullOrEmpty(search) || user.Email.Contains(search) || user.UserName.Contains(search));

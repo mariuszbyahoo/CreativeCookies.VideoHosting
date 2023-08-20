@@ -121,6 +121,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddScoped<IMyHubUserManager, MyHubUserManager>();
 
             builder.Services.AddScoped<IMyHubBlobService, MyHubBlobService>();
+            builder.Services.AddScoped<IStripeCustomerService, StripeCustomerService>();
 
             builder.Services.AddTransient<IEmailService>(serviceProvider =>
             {

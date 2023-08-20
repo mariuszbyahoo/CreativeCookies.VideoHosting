@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -18,11 +19,15 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
     public class ConfirmEmailModel : PageModel
     {
         private readonly IMyHubUserManager _userManager;
+        private readonly IStripeCustomerService _stripeCustomerService;
 
-        public ConfirmEmailModel(IMyHubUserManager userManager)
+        public ConfirmEmailModel(IMyHubUserManager userManager, IStripeCustomerService stripeCustomerService)
         {
             _userManager = userManager;
+            _stripeCustomerService = stripeCustomerService;
         }
+
+
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -32,6 +37,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
         public string StatusMessage { get; set; }
         public async Task<IActionResult> OnGetAsync(string userId, string code)
         {
+            bool stripeResult = false;
             if (userId == null || code == null)
             {
                 return RedirectToPage("/Index");
@@ -45,7 +51,11 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
             var result = await _userManager.ConfirmEmailAsync(user, code);
-            StatusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
+            if (result.Succeeded)
+            {
+                stripeResult = await _stripeCustomerService.CreateStripeCustomer(user.Id.ToString(), user.UserEmail);
+            }
+            StatusMessage = result.Succeeded && stripeResult ? "Thank you for confirming your email." : "Error confirming your email.";
             return Page();
         }
     }
