@@ -1,8 +1,10 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Services;
+using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Stripe;
+using System.ComponentModel.DataAnnotations;
 
 namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 {
@@ -11,17 +13,16 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         private readonly IUsersService _usersSrv;
         private readonly IConnectAccountsService _connectAccountsService;
         private readonly ILogger<StripeCustomerService> _logger;
-        private readonly IConfiguration _configuration;
         private readonly string _stripeSecretAPIKey;
 
         public StripeCustomerService(IUsersService usersSrv, ILogger<StripeCustomerService> logger, IConnectAccountsService connectAccountsService,
-            IConfiguration configuration)
+            StripeSecretKeyWrapper wrapper)
         {
             _usersSrv = usersSrv;
             _logger = logger;
-            _configuration = configuration;
             _connectAccountsService = connectAccountsService;
-            _stripeSecretAPIKey = _configuration.GetValue<string>("StripeSecretAPIKey");
+            var _wrapper = wrapper;
+            _stripeSecretAPIKey = _wrapper.Value;
         }
 
         public async Task<bool> CreateStripeCustomer(string userId, string userEmail)

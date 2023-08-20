@@ -12,14 +12,12 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
     {
         private readonly AppDbContext _ctx;
         private readonly IConfiguration _configuration;
-        private readonly string _stripeSecretAPIKey;
         private readonly ILogger<ConnectAccountsRepository> _logger;
         public ConnectAccountsRepository(AppDbContext ctx, IConfiguration configuration, ILogger<ConnectAccountsRepository> logger)
         {
             _ctx = ctx;
             _configuration = configuration;
             _logger = logger;
-            _stripeSecretAPIKey = _configuration.GetValue<string>("StripeSecretAPIKey");
         }
         public async Task<string> GetConnectedAccountId()
         {

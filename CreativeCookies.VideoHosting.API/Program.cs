@@ -27,9 +27,8 @@ using CreativeCookies.VideoHosting.Contracts.Infrastructure.Azure;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using CreativeCookies.VideoHosting.Services.IdP;
-using Azure.Identity;
-using Stripe;
 using CreativeCookies.VideoHosting.Infrastructure;
+using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
 
 namespace CreativeCookies.VideoHosting.API
 {

@@ -1,6 +1,7 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.DTOs.Stripe;
+using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -16,11 +17,12 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         private readonly string _apiUrl;
         private readonly string _clientUrl;
 
-        public StripeOnboardingService(IConfiguration configuration, ILogger<StripeOnboardingService> logger)
+        public StripeOnboardingService(IConfiguration configuration, ILogger<StripeOnboardingService> logger, StripeSecretKeyWrapper wrapper)
         {
             _configuration = configuration;
             _logger = logger;
-            _stripeSecretAPIKey = _configuration.GetValue<string>("StripeSecretAPIKey");
+            var _wrapper = wrapper;
+            _stripeSecretAPIKey = _wrapper.Value;
             _apiUrl = _configuration.GetValue<string>("ApiUrl");
             _clientUrl = _configuration.GetValue<string>("ClientUrl");
         }

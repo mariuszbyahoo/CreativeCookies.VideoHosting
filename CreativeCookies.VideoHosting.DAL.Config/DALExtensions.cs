@@ -15,8 +15,6 @@ namespace CreativeCookies.VideoHosting.DAL.Config
     {
         public static IServiceCollection AddDataAccessLayer(this IServiceCollection services, string connectionString)
         {
-            // Register the DbContext, other DAL related services
-
             services.AddDbContext<AppDbContext>(options =>
             {
                 options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
