@@ -27,6 +27,9 @@ using CreativeCookies.VideoHosting.Contracts.Infrastructure.Azure;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using CreativeCookies.VideoHosting.Services.IdP;
+using Azure.Identity;
+using Stripe;
+using CreativeCookies.VideoHosting.Infrastructure;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -97,8 +100,8 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddHttpContextAccessor();
 
             var apiUrl = builder.Configuration.GetValue<string>("ApiUrl");            
-            var accountName = builder.Configuration.GetValue<string>("Storage:AccountName");
-            var accountKey = builder.Configuration.GetValue<string>("Storage:AccountKey");
+            var storageAccountName = builder.Configuration.GetValue<string>("Storage:AccountName");
+            var storageAccountKey = builder.Configuration.GetValue<string>("Storage:AccountKey");
             var blobServiceUrl = builder.Configuration.GetValue<string>("Storage:BlobServiceUrl");
             var clientId = builder.Configuration.GetValue<string>("ClientId");
             var jwtSecretKey = builder.Configuration.GetValue<string>("JWTSecretKey");
@@ -140,10 +143,10 @@ namespace CreativeCookies.VideoHosting.API
                 var tempDataProvider = serviceProvider.GetRequiredService<ITempDataProvider>();
                 return new EmailService(logger, host, smtpPort, user, password, razorViewEngine, tempDataProvider, serviceProvider);
             });
+            var keyVaultUrl = builder.Configuration.GetValue<string>("CentralKeyVaultUrl");
 
+            builder.Services.AddInfrastructureConfiguration(keyVaultUrl, storageAccountName, storageAccountKey, blobServiceUrl);
 
-            builder.Services.AddSingleton(x => new StorageSharedKeyCredential(accountName, accountKey));
-            builder.Services.AddSingleton(x => new BlobServiceClient(new Uri(blobServiceUrl), x.GetRequiredService<StorageSharedKeyCredential>()));
             builder.Services.AddSingleton<IBlobServiceClientWrapper>(sp =>
             {
                 var blobServiceClient = sp.GetRequiredService<BlobServiceClient>();
