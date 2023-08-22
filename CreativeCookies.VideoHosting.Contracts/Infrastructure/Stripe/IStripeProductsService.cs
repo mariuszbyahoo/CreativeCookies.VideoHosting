@@ -14,7 +14,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
         /// <param name="productName">Name of the product</param>
         /// <param name="productDescription">Description of this product</param>
         /// <returns>Product's Id</returns>
-        Task<string> CreateStripeProductAsync(string productName, string productDescription);
+        string CreateStripeProduct(string productName, string productDescription);
 
         /// <summary>
         /// Creates a Stripe Price object
@@ -23,6 +23,6 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
         /// <param name="currencyCode">Currency code, for an insight, see: <see href="https://stripe.com/docs/currencies">Stripe supported currencies</see></param>
         /// <param name="unitAmount">Smallest currency's amount, for example cents</param>
         /// <returns>Price's Id</returns>
-        Task<string> CreateStripePriceAsync(string productId, string currencyCode, int unitAmount);
+        string CreateStripePrice(string productId, string currencyCode, int unitAmount);
     }
 }
