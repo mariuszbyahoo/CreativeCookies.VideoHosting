@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CreativeCookies.VideoHosting.DTOs.Stripe;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
         /// <param name="productName">Name of the product</param>
         /// <param name="productDescription">Description of this product</param>
         /// <returns>Product's Id</returns>
-        string CreateStripeProduct(string productName, string productDescription);
+        ProductDto CreateStripeProduct(string productName, string productDescription);
 
         /// <summary>
         /// Creates a Stripe Price object
@@ -23,6 +24,20 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
         /// <param name="currencyCode">Currency code, for an insight, see: <see href="https://stripe.com/docs/currencies">Stripe supported currencies</see></param>
         /// <param name="unitAmount">Smallest currency's amount, for example cents</param>
         /// <returns>Price's Id</returns>
-        string CreateStripePrice(string productId, string currencyCode, int unitAmount);
+        PriceDto CreateStripePrice(string productId, string currencyCode, int unitAmount);
+
+        /// <summary>
+        /// Retrieves a product's DTO from the database which contains list of price DTOs
+        /// </summary>
+        /// <param name="productId">id of product to retrieve</param>
+        /// <returns>ProductDto</returns>
+        ProductDto GetStripeProduct(string productId);
+
+        /// <summary>
+        /// Retrieves list of available Prices assigned to the product with supplied Id
+        /// </summary>
+        /// <param name="productId">Id of product to which prices are assigned</param>
+        /// <returns>IList of PriceDto</returns>
+        IList<PriceDto> GetStripePrices(string productId);
     }
 }
