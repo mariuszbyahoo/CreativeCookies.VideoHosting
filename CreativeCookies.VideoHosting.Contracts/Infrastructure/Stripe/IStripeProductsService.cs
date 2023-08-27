@@ -15,7 +15,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
         /// <param name="productName">Name of the product</param>
         /// <param name="productDescription">Description of this product</param>
         /// <returns>Product's Id</returns>
-        ProductDto CreateStripeProduct(string productName, string productDescription);
+        SubscriptionPlanDto CreateStripeProduct(string productName, string productDescription);
 
         /// <summary>
         /// Creates a Stripe Price object
@@ -31,7 +31,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
         /// </summary>
         /// <param name="productId">id of product to retrieve</param>
         /// <returns>ProductDto</returns>
-        ProductDto GetStripeProduct(string productId);
+        SubscriptionPlanDto GetStripeProduct(string productId);
 
         /// <summary>
         /// Retrieves list of available Prices assigned to the product with supplied Id

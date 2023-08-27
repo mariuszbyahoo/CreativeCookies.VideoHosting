@@ -40,7 +40,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             return new PriceDto(price.Id, price.ProductId, price.Currency, price.UnitAmount, price.Recurring?.Interval ?? string.Empty);
         }
 
-        public ProductDto CreateStripeProduct(string productName, string productDescription)
+        public SubscriptionPlanDto CreateStripeProduct(string productName, string productDescription)
         {
             var productService = new ProductService();
             var productOptions = new ProductCreateOptions
@@ -51,7 +51,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             };
 
             var product = productService.Create(productOptions);
-            return new ProductDto(product.Id, product.Name, product.Description);
+            return new SubscriptionPlanDto(product.Id, product.Name, product.Description);
         }
 
         public IList<PriceDto> GetStripePrices(string productId)
@@ -59,12 +59,12 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             return GetStripePricesPrivate(productId);
         }
 
-        public ProductDto GetStripeProduct(string productId)
+        public SubscriptionPlanDto GetStripeProduct(string productId)
         {
             var productService = new ProductService();
             var product = productService.Get(productId);
 
-            var result = new ProductDto(product.Id, product.Name, product.Description);
+            var result = new SubscriptionPlanDto(product.Id, product.Name, product.Description);
             result.Prices = GetStripePricesPrivate(product.Id);
             return result;
         }
