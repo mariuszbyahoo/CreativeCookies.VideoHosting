@@ -11,16 +11,16 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class StripeController : ControllerBase
+    public class StripeAccountsController : ControllerBase
     {
         private readonly IConnectAccountsService _connectAccountsSrv;
         private readonly IStripeOnboardingService _stripeService;
-        private readonly ILogger<StripeController> _logger;
+        private readonly ILogger<StripeAccountsController> _logger;
         private readonly IConfiguration _configuration;
 
-        public StripeController(
+        public StripeAccountsController(
             IConnectAccountsService connectAccountsSrv, IStripeOnboardingService stripeService, 
-            ILogger<StripeController> logger, IConfiguration configuration)
+            ILogger<StripeAccountsController> logger, IConfiguration configuration)
         {
             _connectAccountsSrv = connectAccountsSrv;
             _stripeService = stripeService;

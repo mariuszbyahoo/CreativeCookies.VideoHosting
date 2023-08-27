@@ -61,7 +61,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             using (var scope = _serviceProvider.CreateScope())
             {
                 var service = scope.ServiceProvider.GetService<ISubscriptionPlanService>();
-                res = await service.SaveSubscriptionPlan(dto);
+                res = await service.UpsertSubscriptionPlan(dto);
             }
             return res;
         }
