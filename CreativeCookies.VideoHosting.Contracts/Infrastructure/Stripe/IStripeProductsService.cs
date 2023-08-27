@@ -24,8 +24,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
         /// <param name="currencyCode">Currency code, for an insight, see: <see href="https://stripe.com/docs/currencies">Stripe supported currencies</see></param>
         /// <param name="unitAmount">Smallest currency's amount, for example cents</param>
         /// <returns>Price's Id</returns>
-        PriceDto CreateStripePrice(string productId, string currencyCode, int unitAmount);
-
+        Task<PriceDto> CreateStripePrice(string productId, string currencyCode, int unitAmount);
         /// <summary>
         /// Retrieves a product's DTO from the database which contains list of price DTOs
         /// </summary>
@@ -39,5 +38,12 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
         /// <param name="productId">Id of product to which prices are assigned</param>
         /// <returns>IList of PriceDto</returns>
         IList<PriceDto> GetStripePrices(string productId);
+
+        /// <summary>
+        /// Deletes a Stripe Product from Stripe's infrastructure.
+        /// </summary>
+        /// <param name="productId">StripeProductId to delete</param>
+        /// <returns>void</returns>
+        Task DeleteStripeProduct(string productId);
     }
 }

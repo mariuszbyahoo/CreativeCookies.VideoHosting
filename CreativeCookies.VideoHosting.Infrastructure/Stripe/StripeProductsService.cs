@@ -25,8 +25,9 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             _serviceProvider = serviceProvider;
         }
 
-        public PriceDto CreateStripePrice(string productId, string currencyCode, int unitAmount)
+        public async Task<PriceDto> CreateStripePrice(string productId, string currencyCode, int unitAmount)
         {
+            var requestOptions = await GetRequestOptions();
             var priceService = new PriceService();
             var priceOptions = new PriceCreateOptions
             {
@@ -39,7 +40,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                 }
             };
 
-            var price = priceService.Create(priceOptions);
+            var price = priceService.Create(priceOptions, requestOptions);
             var res = new PriceDto(price.Id, price.ProductId, price.Currency, price.UnitAmount, price.Recurring?.Interval ?? string.Empty);
             return res;
         }
@@ -54,8 +55,8 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                 Type = "service",
                 Description = productDescription
             };
-
-            var product = productService.Create(productOptions);
+            var requestOptions = await GetRequestOptions();
+            var product = productService.Create(productOptions, requestOptions);
             var dto = new SubscriptionPlanDto(product.Id, product.Name, product.Description);
 
             using (var scope = _serviceProvider.CreateScope())
@@ -64,6 +65,12 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                 res = await service.UpsertSubscriptionPlan(dto);
             }
             return res;
+        }
+
+        public async Task DeleteStripeProduct(string productId)
+        {
+            var productService = new ProductService();
+            await productService.DeleteAsync(productId);
         }
 
         public IList<PriceDto> GetStripePrices(string productId)
@@ -93,7 +100,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             var priceListOptions = new PriceListOptions
             {
                 Product = productId,
-                Limit = 10  // Limit to 10, you can paginate for more
+                Limit = 10  
             };
 
             var prices = priceService.List(priceListOptions);
@@ -110,6 +117,20 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                         prices.Data[i].Recurring?.Interval ?? string.Empty));
             }
             return result;
+        }
+
+        private async Task<RequestOptions?> GetRequestOptions()
+        {
+            var accountId = string.Empty;
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var connectAccountsService = _serviceProvider.GetRequiredService<IConnectAccountsService>();
+                accountId = await connectAccountsService.GetConnectedAccountId();
+            }
+            var requestOptions = new RequestOptions();
+            requestOptions.StripeAccount = accountId;
+            if (string.IsNullOrWhiteSpace(accountId)) return null;
+            return requestOptions;
         }
 
         // HACK: Add editProduct method

@@ -1,4 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
+using CreativeCookies.VideoHosting.Contracts.Services.Stripe;
 using CreativeCookies.VideoHosting.DTOs.Stripe;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -14,27 +15,52 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     public class StripeProductsController : ControllerBase
     {
         private readonly IStripeProductsService _stripeProductsService;
+        private readonly ISubscriptionPlanService _subscriptionPlanService;
 
-        public StripeProductsController(IStripeProductsService stripeProductsService)
+        public StripeProductsController(IStripeProductsService stripeProductsService, ISubscriptionPlanService subscriptionPlanService)
         {
             _stripeProductsService = stripeProductsService;
+            _subscriptionPlanService = subscriptionPlanService;
         }
 
+        [HttpPost("CreateSubscriptionPlan")]
         public async Task<ActionResult<SubscriptionPlanDto>> CreateSubscriptionPlan(string name, string description)
         {
             if (string.IsNullOrEmpty(name)) return BadRequest("Name cannot be empty string");
             if (string.IsNullOrWhiteSpace(description)) return BadRequest("Description cannot be an empty string");
-            var res = _stripeProductsService.CreateStripeProduct(name, description);
+            var res = await _stripeProductsService.CreateStripeProduct(name, description);
             return Ok(res);
         }
 
+        [HttpPost("CreateStripePrice")]
         public async Task<ActionResult<PriceDto>> CreateStripePrice(string stripeProductId, string currencyCode, int unitAmount)
         {
             if (string.IsNullOrWhiteSpace(stripeProductId)) return BadRequest($"StripeProductId cannot be empty");
             if (unitAmount <= 0) return BadRequest($"Amount has to be greater than 0");
             if (string.IsNullOrWhiteSpace(currencyCode) || currencyCode.Length != 3) return BadRequest($"Currency Code has to be three letter long : https://stripe.com/docs/currencies");
-            var res = _stripeProductsService.CreateStripePrice(stripeProductId, currencyCode, unitAmount);
+            var res = await _stripeProductsService.CreateStripePrice(stripeProductId, currencyCode, unitAmount);
             return Ok(res);
+        }
+
+        [HttpGet("GetAll")]
+        public async Task<ActionResult<IList<SubscriptionPlanDto>>> GetAllSubscriptionPlans()
+        {
+            var result = new List<SubscriptionPlanDto>();
+            var savedInDb = await _subscriptionPlanService.FetchSubscriptionPlans();
+            for (int i = 0; i < savedInDb.Count; i++)
+            {
+                var entityFromStripe = _stripeProductsService.GetStripeProduct(savedInDb[i].Id);
+                await _subscriptionPlanService.UpsertSubscriptionPlan(entityFromStripe);
+                result.Add(entityFromStripe);
+            }
+            return result;
+        }
+
+        [HttpDelete("Delete")]
+        public async Task<IActionResult> DeleteSubscriptionPlan(string stripeProductId)
+        {
+            await _subscriptionPlanService.DeleteSubscriptionPlan(stripeProductId);
+            return NoContent();
         }
     }
 }
