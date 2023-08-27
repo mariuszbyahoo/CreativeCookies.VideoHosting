@@ -24,6 +24,12 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
         Task<SubscriptionPlanDto> GetSubscriptionPlan(string productId);
 
         /// <summary>
+        /// Retrieves all of the Subscription plans existing in the database
+        /// </summary>
+        /// <returns>IList of susbscriptionPlanDto</returns>
+        Task<IList<SubscriptionPlanDto>> GetAllSubscriptions();
+
+        /// <summary>
         /// Deletes existing Subscription Plan record from the database
         /// </summary>
         /// <param name="productId">Stripe Product's ID to delete</param>

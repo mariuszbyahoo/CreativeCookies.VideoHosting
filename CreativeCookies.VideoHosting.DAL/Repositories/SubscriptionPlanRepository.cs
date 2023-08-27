@@ -64,5 +64,10 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         {
             return await _ctx.SubscriptionPlans.Where(p => p.StripeProductId.Equals(productId)).FirstOrDefaultAsync();
         }
+
+        public async Task<IList<SubscriptionPlanDto>> GetAllSubscriptions()
+        {
+            return await _ctx.SubscriptionPlans.Select(p => new SubscriptionPlanDto(p.StripeProductId, p.Name, p.Description)).ToListAsync();
+        }
     }
 }
