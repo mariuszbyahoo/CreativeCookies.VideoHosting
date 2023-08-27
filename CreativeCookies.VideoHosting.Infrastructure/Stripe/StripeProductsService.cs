@@ -1,6 +1,8 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
+using CreativeCookies.VideoHosting.Contracts.Services.Stripe;
 using CreativeCookies.VideoHosting.DTOs.Stripe;
 using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
+using Microsoft.Extensions.DependencyInjection;
 using Stripe;
 using System;
 using System.Collections.Generic;
@@ -14,12 +16,13 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
     public class StripeProductsService : IStripeProductsService
     {
         private readonly string _stripeSecretAPIKey;
-        //HACK: Add StripeProductRepo store productId in the database
+        private readonly IServiceProvider _serviceProvider;
 
-        public StripeProductsService(StripeSecretKeyWrapper stripeKeyWrapper)
+        public StripeProductsService(StripeSecretKeyWrapper stripeKeyWrapper, IServiceProvider serviceProvider)
         {
             _stripeSecretAPIKey = stripeKeyWrapper.Value;
             StripeConfiguration.ApiKey = _stripeSecretAPIKey;
+            _serviceProvider = serviceProvider;
         }
 
         public PriceDto CreateStripePrice(string productId, string currencyCode, int unitAmount)
@@ -37,11 +40,13 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             };
 
             var price = priceService.Create(priceOptions);
-            return new PriceDto(price.Id, price.ProductId, price.Currency, price.UnitAmount, price.Recurring?.Interval ?? string.Empty);
+            var res = new PriceDto(price.Id, price.ProductId, price.Currency, price.UnitAmount, price.Recurring?.Interval ?? string.Empty);
+            return res;
         }
 
-        public SubscriptionPlanDto CreateStripeProduct(string productName, string productDescription)
+        public async Task<SubscriptionPlanDto> CreateStripeProduct(string productName, string productDescription)
         {
+            SubscriptionPlanDto res = null;
             var productService = new ProductService();
             var productOptions = new ProductCreateOptions
             {
@@ -51,7 +56,14 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             };
 
             var product = productService.Create(productOptions);
-            return new SubscriptionPlanDto(product.Id, product.Name, product.Description);
+            var dto = new SubscriptionPlanDto(product.Id, product.Name, product.Description);
+
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetService<ISubscriptionPlanService>();
+                res = await service.SaveSubscriptionPlan(dto);
+            }
+            return res;
         }
 
         public IList<PriceDto> GetStripePrices(string productId)
@@ -66,6 +78,12 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 
             var result = new SubscriptionPlanDto(product.Id, product.Name, product.Description);
             result.Prices = GetStripePricesPrivate(product.Id);
+            
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetService<ISubscriptionPlanService>();
+                service.UpsertSubscriptionPlan(result);
+            }
             return result;
         }
 

@@ -15,7 +15,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
         /// <param name="productName">Name of the product</param>
         /// <param name="productDescription">Description of this product</param>
         /// <returns>Product's Id</returns>
-        SubscriptionPlanDto CreateStripeProduct(string productName, string productDescription);
+        Task<SubscriptionPlanDto> CreateStripeProduct(string productName, string productDescription);
 
         /// <summary>
         /// Creates a Stripe Price object
