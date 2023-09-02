@@ -9,7 +9,7 @@ using Stripe;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class StripeAccountsController : ControllerBase
     {

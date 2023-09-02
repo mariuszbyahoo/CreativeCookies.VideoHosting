@@ -13,7 +13,7 @@ using CreativeCookies.VideoHosting.Contracts.Services;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class BlobsController : ControllerBase
     {

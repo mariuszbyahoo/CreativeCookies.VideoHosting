@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "ADMIN,admin")]
     [ApiController]
     public class StripeProductsController : ControllerBase

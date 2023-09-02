@@ -5,7 +5,7 @@ using CreativeCookies.VideoHosting.Contracts.Infrastructure.Azure;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class SASController : ControllerBase
     {
