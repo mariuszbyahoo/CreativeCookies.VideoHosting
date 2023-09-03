@@ -49,7 +49,6 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         {
             SubscriptionPlanDto dto = null;
             var productService = new ProductService();
-            // HACK: First check, is there any and if so, then retrieve it's ID, perform existing Stripe Product's edition instead of adding a new one to Stripe API
             using (var scope = _serviceProvider.CreateScope())
             {
                 var dalService = scope.ServiceProvider.GetService<ISubscriptionPlanService>();
