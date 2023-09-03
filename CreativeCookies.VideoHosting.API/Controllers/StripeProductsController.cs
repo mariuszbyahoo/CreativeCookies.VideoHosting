@@ -65,6 +65,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         [HttpDelete("Delete")]
         public async Task<IActionResult> DeleteSubscriptionPlan(string stripeProductId)
         {
+            await _stripeProductsService.DeleteStripeProduct(stripeProductId);
             await _subscriptionPlanService.DeleteSubscriptionPlan(stripeProductId);
             return NoContent();
         }
