@@ -10,6 +10,12 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
     public interface ISubscriptionPlanRepository
     {
         /// <summary>
+        /// Checks, is there any product registered in the DB
+        /// </summary>
+        /// <returns>true - if there is, false - if SubscriptionPlans table is empty</returns>
+        Task<bool> HasAnyProduct();
+
+        /// <summary>
         /// Saves new subscription plan to the database
         /// </summary>
         /// <param name="newSubscriptionPlan">Subscription plan to save</param>

@@ -60,6 +60,11 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             else return null;
         }
 
+        public async Task<bool> HasAnyProduct()
+        {
+            return await _ctx.SubscriptionPlans.AnyAsync();
+        }
+
         private async Task<SubscriptionPlan> FetchDAOById(string productId)
         {
             return await _ctx.SubscriptionPlans.Where(p => p.StripeProductId.Equals(productId)).FirstOrDefaultAsync();
@@ -69,5 +74,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         {
             return await _ctx.SubscriptionPlans.Select(p => new SubscriptionPlanDto(p.StripeProductId, p.Name, p.Description)).ToListAsync();
         }
+
+
     }
 }

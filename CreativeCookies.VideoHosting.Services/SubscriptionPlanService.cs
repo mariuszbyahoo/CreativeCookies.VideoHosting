@@ -36,6 +36,11 @@ namespace CreativeCookies.VideoHosting.Services
             return res;
         }
 
+        public async Task<bool> HasAnyProduct()
+        {
+            return await _repo.HasAnyProduct();
+        }
+
         public async Task<SubscriptionPlanDto> SaveSubscriptionPlan(SubscriptionPlanDto subscriptionPlan)
         {
             var res = await _repo.SaveSubscriptionPlan(subscriptionPlan);

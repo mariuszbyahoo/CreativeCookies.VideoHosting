@@ -23,7 +23,13 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _subscriptionPlanService = subscriptionPlanService;
         }
 
-        [HttpPost("CreateSubscriptionPlan")]
+        [HttpGet("HasAnyProduct")]
+        public async Task<ActionResult<bool>> HasAnyProduct()
+        {
+            return await _subscriptionPlanService.HasAnyProduct();
+        }
+
+        [HttpPost("UpsertSubscriptionPlan")]
         public async Task<ActionResult<SubscriptionPlanDto>> CreateSubscriptionPlan(string name, string description)
         {
             if (string.IsNullOrEmpty(name)) return BadRequest("Name cannot be empty string");
