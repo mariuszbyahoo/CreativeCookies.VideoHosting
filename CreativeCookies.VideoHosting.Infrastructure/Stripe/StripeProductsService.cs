@@ -45,7 +45,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             return res;
         }
 
-        public async Task<SubscriptionPlanDto> CreateStripeProduct(string productName, string productDescription)
+        public async Task<SubscriptionPlanDto> UpsertStripeProduct(string productName, string productDescription)
         {
             SubscriptionPlanDto res = null;
             var productService = new ProductService();

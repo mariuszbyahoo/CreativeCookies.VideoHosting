@@ -30,11 +30,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpPost("UpsertSubscriptionPlan")]
-        public async Task<ActionResult<SubscriptionPlanDto>> CreateSubscriptionPlan(string name, string description)
+        public async Task<ActionResult<SubscriptionPlanDto>> UpsertSubscriptionPlan(string name, string description)
         {
             if (string.IsNullOrEmpty(name)) return BadRequest("Name cannot be empty string");
             if (string.IsNullOrWhiteSpace(description)) return BadRequest("Description cannot be an empty string");
-            var res = await _stripeProductsService.CreateStripeProduct(name, description);
+            var res = await _stripeProductsService.UpsertStripeProduct(name, description);
             return Ok(res);
         }
 
