@@ -48,18 +48,18 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             return Ok(res);
         }
 
-        [HttpGet("GetAll")]
-        public async Task<ActionResult<IList<SubscriptionPlanDto>>> GetAllSubscriptionPlans()
+        [HttpGet("FetchSubscriptionPlan")]
+        public async Task<ActionResult<SubscriptionPlanDto>> GetAllSubscriptionPlans()
         {
             var result = new List<SubscriptionPlanDto>();
-            var savedInDb = await _subscriptionPlanService.FetchSubscriptionPlans();
-            for (int i = 0; i < savedInDb.Count; i++)
-            {
-                var entityFromStripe = _stripeProductsService.GetStripeProduct(savedInDb[i].Id);
-                await _subscriptionPlanService.UpsertSubscriptionPlan(entityFromStripe);
-                result.Add(entityFromStripe);
-            }
-            return result;
+            return await _subscriptionPlanService.FetchSubscriptionPlan();
+            //for (int i = 0; i < savedInDb.Count; i++)
+            //{
+            //    var entityFromStripe = _stripeProductsService.GetStripeProduct(savedInDb[i].Id);
+            //    await _subscriptionPlanService.UpsertSubscriptionPlan(entityFromStripe);
+            //    result.Add(entityFromStripe);
+            //}
+            //return result;
         }
 
         [HttpDelete("Delete")]
