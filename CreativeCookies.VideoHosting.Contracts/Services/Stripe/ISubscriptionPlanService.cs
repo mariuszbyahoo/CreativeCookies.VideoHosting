@@ -23,10 +23,10 @@ namespace CreativeCookies.VideoHosting.Contracts.Services.Stripe
         Task<SubscriptionPlanDto> FetchSubscriptionPlanById(string subscriptionPlanId);
 
         /// <summary>
-        /// Retrieves all of the Subscription plans existing in the database
+        /// Retrieves first of the Subscription plans existing in the database
         /// </summary>
-        /// <returns>IList of susbscriptionPlanDto</returns>
-        Task<IList<SubscriptionPlanDto>> FetchSubscriptionPlans();
+        /// <returns>SusbscriptionPlanDto or null if there's none</returns>
+        Task<SubscriptionPlanDto> FetchSubscriptionPlan();
 
         /// <summary>
         /// Updates existing subscription plan in the database and returns subscriptionPlanDto

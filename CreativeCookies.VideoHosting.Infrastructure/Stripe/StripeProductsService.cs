@@ -47,24 +47,38 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 
         public async Task<SubscriptionPlanDto> UpsertStripeProduct(string productName, string productDescription)
         {
-            SubscriptionPlanDto res = null;
+            SubscriptionPlanDto dto = null;
             var productService = new ProductService();
-            var productOptions = new ProductCreateOptions
-            {
-                Name = productName,
-                Type = "service",
-                Description = productDescription
-            };
-            var requestOptions = await GetRequestOptions();
-            var product = productService.Create(productOptions, requestOptions);
-            var dto = new SubscriptionPlanDto(product.Id, product.Name, product.Description);
-
+            // HACK: First check, is there any and if so, then retrieve it's ID, perform existing Stripe Product's edition instead of adding a new one to Stripe API
             using (var scope = _serviceProvider.CreateScope())
             {
-                var service = scope.ServiceProvider.GetService<ISubscriptionPlanService>();
-                res = await service.UpsertSubscriptionPlan(dto);
+                var dalService = scope.ServiceProvider.GetService<ISubscriptionPlanService>();
+                if (await dalService.HasAnyProduct())
+                {
+                    dto = await dalService.FetchSubscriptionPlan();
+                    var updateOptions = new ProductUpdateOptions
+                    {
+                        Active = true,
+                        Name = productName,
+                        Description = productDescription
+                    };
+                    var product = await productService.UpdateAsync(dto.Id, updateOptions);
+                    dto = new SubscriptionPlanDto(product.Id, product.Name, product.Description);
+                }
+                else
+                {
+                    var productOptions = new ProductCreateOptions
+                    {
+                        Name = productName,
+                        Type = "service",
+                        Description = productDescription
+                    };
+                    var requestOptions = await GetRequestOptions();
+                    var product = productService.Create(productOptions, requestOptions);
+                    dto = new SubscriptionPlanDto(product.Id, product.Name, product.Description);
+                }
+                return await dalService.UpsertSubscriptionPlan(dto);
             }
-            return res;
         }
 
         public async Task DeleteStripeProduct(string productId)

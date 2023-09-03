@@ -30,10 +30,10 @@ namespace CreativeCookies.VideoHosting.Services
             return res;
         }
 
-        public async Task<IList<SubscriptionPlanDto>> FetchSubscriptionPlans()
+        public async Task<SubscriptionPlanDto> FetchSubscriptionPlan()
         {
             var res = await _repo.GetAllSubscriptions();
-            return res;
+            return res[0];
         }
 
         public async Task<bool> HasAnyProduct()
