@@ -111,8 +111,8 @@ namespace CreativeCookies.VideoHosting.API
 
             builder.Services.AddSingleton<ISasTokenService, SasTokenService>();
             builder.Services.AddSingleton<IJWTGenerator, JwtGenerator>();
-            builder.Services.AddSingleton<IStripeProductsService, StripeProductsService>();
 
+            builder.Services.AddScoped<IStripeProductsService, StripeProductsService>();
             builder.Services.AddScoped<IFilmService, FilmService>();
             builder.Services.AddScoped<IErrorLogsService, ErrorLogsService>();
             builder.Services.AddScoped<IUsersService, UsersService>();

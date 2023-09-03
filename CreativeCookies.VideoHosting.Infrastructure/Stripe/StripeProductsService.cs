@@ -16,17 +16,20 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
     public class StripeProductsService : IStripeProductsService
     {
         private readonly string _stripeSecretAPIKey;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IConnectAccountsService _connectAccountsService;
+        private readonly ISubscriptionPlanService _subscriptionPlanService;
 
-        public StripeProductsService(StripeSecretKeyWrapper stripeKeyWrapper, IServiceProvider serviceProvider)
+        public StripeProductsService(StripeSecretKeyWrapper stripeKeyWrapper, IConnectAccountsService connectAccountsService, ISubscriptionPlanService subscriptionPlanService)
         {
             _stripeSecretAPIKey = stripeKeyWrapper.Value;
-            StripeConfiguration.ApiKey = _stripeSecretAPIKey;
-            _serviceProvider = serviceProvider;
+            _connectAccountsService = connectAccountsService;
+            _subscriptionPlanService = subscriptionPlanService;
         }
 
         public async Task<PriceDto> CreateStripePrice(string productId, string currencyCode, int unitAmount)
         {
+            StripeConfiguration.ApiKey = _stripeSecretAPIKey;
+
             var requestOptions = await GetRequestOptions();
             var priceService = new PriceService();
             var priceOptions = new PriceCreateOptions
@@ -47,63 +50,67 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 
         public async Task<SubscriptionPlanDto> UpsertStripeProduct(string productName, string productDescription)
         {
+            StripeConfiguration.ApiKey = _stripeSecretAPIKey;
+
             SubscriptionPlanDto dto = null;
             var productService = new ProductService();
-            using (var scope = _serviceProvider.CreateScope())
+
+            if (await _subscriptionPlanService.HasAnyProduct())
             {
-                var dalService = scope.ServiceProvider.GetService<ISubscriptionPlanService>();
-                if (await dalService.HasAnyProduct())
+                dto = await _subscriptionPlanService.FetchSubscriptionPlan();
+                var requestOptions = await GetRequestOptions();
+
+                var updateOptions = new ProductUpdateOptions
                 {
-                    dto = await dalService.FetchSubscriptionPlan();
-                    var updateOptions = new ProductUpdateOptions
-                    {
-                        Active = true,
-                        Name = productName,
-                        Description = productDescription
-                    };
-                    var product = await productService.UpdateAsync(dto.Id, updateOptions);
-                    dto = new SubscriptionPlanDto(product.Id, product.Name, product.Description);
-                }
-                else
-                {
-                    var productOptions = new ProductCreateOptions
-                    {
-                        Name = productName,
-                        Type = "service",
-                        Description = productDescription
-                    };
-                    var requestOptions = await GetRequestOptions();
-                    var product = productService.Create(productOptions, requestOptions);
-                    dto = new SubscriptionPlanDto(product.Id, product.Name, product.Description);
-                }
-                return await dalService.UpsertSubscriptionPlan(dto);
+                    Active = true,
+                    Name = productName,
+                    Description = productDescription
+                };
+                var product = await productService.UpdateAsync(dto.Id, updateOptions, requestOptions);
+                dto = new SubscriptionPlanDto(product.Id, product.Name, product.Description);
             }
+            else
+            {
+                var productOptions = new ProductCreateOptions
+                {
+                    Name = productName,
+                    Type = "service",
+                    Description = productDescription
+                };
+                var requestOptions = await GetRequestOptions();
+                var product = productService.Create(productOptions, requestOptions);
+                dto = new SubscriptionPlanDto(product.Id, product.Name, product.Description);
+            }
+            return await _subscriptionPlanService.UpsertSubscriptionPlan(dto);
         }
 
         public async Task DeleteStripeProduct(string productId)
         {
+            StripeConfiguration.ApiKey = _stripeSecretAPIKey;
+
             var productService = new ProductService();
             await productService.DeleteAsync(productId);
         }
 
         public IList<PriceDto> GetStripePrices(string productId)
         {
+            StripeConfiguration.ApiKey = _stripeSecretAPIKey;
+
             return GetStripePricesPrivate(productId);
         }
 
         public SubscriptionPlanDto GetStripeProduct(string productId)
         {
+            StripeConfiguration.ApiKey = _stripeSecretAPIKey;
+
             var productService = new ProductService();
             var product = productService.Get(productId);
 
             var result = new SubscriptionPlanDto(product.Id, product.Name, product.Description);
             result.Prices = GetStripePricesPrivate(product.Id);
-            
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                var service = scope.ServiceProvider.GetService<ISubscriptionPlanService>();
-                service.UpsertSubscriptionPlan(result);
-            }
+
+
+            _subscriptionPlanService.UpsertSubscriptionPlan(result);
             return result;
         }
 
@@ -113,7 +120,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             var priceListOptions = new PriceListOptions
             {
                 Product = productId,
-                Limit = 10  
+                Limit = 10
             };
 
             var prices = priceService.List(priceListOptions);
@@ -135,11 +142,8 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         private async Task<RequestOptions?> GetRequestOptions()
         {
             var accountId = string.Empty;
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                var connectAccountsService = _serviceProvider.GetRequiredService<IConnectAccountsService>();
-                accountId = await connectAccountsService.GetConnectedAccountId();
-            }
+
+            accountId = await _connectAccountsService.GetConnectedAccountId();
             var requestOptions = new RequestOptions();
             requestOptions.StripeAccount = accountId;
             if (string.IsNullOrWhiteSpace(accountId)) return null;

@@ -1,4 +1,5 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
+﻿using CreativeCookies.VideoHosting.API.DTOs;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Services.Stripe;
 using CreativeCookies.VideoHosting.DTOs.Stripe;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -30,11 +31,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpPost("UpsertSubscriptionPlan")]
-        public async Task<ActionResult<SubscriptionPlanDto>> UpsertSubscriptionPlan(string name, string description)
+        public async Task<ActionResult<SubscriptionPlanDto>> UpsertSubscriptionPlan([FromBody]StripeProductCreationDto model)
         {
-            if (string.IsNullOrEmpty(name)) return BadRequest("Name cannot be empty string");
-            if (string.IsNullOrWhiteSpace(description)) return BadRequest("Description cannot be an empty string");
-            var res = await _stripeProductsService.UpsertStripeProduct(name, description);
+            if (string.IsNullOrEmpty(model.Name)) return BadRequest("Name cannot be empty string");
+            if (string.IsNullOrWhiteSpace(model.Description)) return BadRequest("Description cannot be an empty string");
+            var res = await _stripeProductsService.UpsertStripeProduct(model.Name, model.Description);
             return Ok(res);
         }
 

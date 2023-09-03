@@ -56,10 +56,10 @@ namespace CreativeCookies.VideoHosting.Services
         public async Task<SubscriptionPlanDto> UpsertSubscriptionPlan(SubscriptionPlanDto subscriptionPlan)
         {
             var existingEntity = await _repo.GetSubscriptionPlan(subscriptionPlan.Id);
-            if (existingEntity != null) 
+            if (existingEntity == null)
+                return await _repo.SaveSubscriptionPlan(subscriptionPlan);
+            else
                 return await _repo.UpdateSubscriptionPlan(subscriptionPlan);
-            else 
-                return existingEntity;
         }
     }
 }
