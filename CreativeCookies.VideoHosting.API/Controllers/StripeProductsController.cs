@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Stripe;
 using System.Runtime.CompilerServices;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
@@ -17,11 +19,15 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     {
         private readonly IStripeProductsService _stripeProductsService;
         private readonly ISubscriptionPlanService _subscriptionPlanService;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<StripeProductsController> _logger;
 
-        public StripeProductsController(IStripeProductsService stripeProductsService, ISubscriptionPlanService subscriptionPlanService)
+        public StripeProductsController(IStripeProductsService stripeProductsService, ISubscriptionPlanService subscriptionPlanService, IConfiguration configuration, ILogger<StripeProductsController> logger)
         {
             _stripeProductsService = stripeProductsService;
             _subscriptionPlanService = subscriptionPlanService;
+            _configuration = configuration;
+            _logger = logger;
         }
 
         [HttpGet("HasAnyProduct")]
@@ -69,6 +75,50 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             await _stripeProductsService.DeleteStripeProduct(stripeProductId);
             await _subscriptionPlanService.DeleteSubscriptionPlan(stripeProductId);
             return NoContent();
+        }
+
+        [HttpPost("ProductWebhook")]
+        public async Task<IActionResult> ProductWebHook()
+        {
+            string endpointSecret = _configuration.GetValue<string>("WebhookEndpointSecret");
+
+            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+
+            try
+            {
+                var stripeEvent = EventUtility.ConstructEvent(json,
+                    Request.Headers["Stripe-Signature"],
+                    endpointSecret);
+
+                if (stripeEvent.Type == Events.ProductCreated)
+                {
+                    // HACK TODO IMPLEMENT LOGIC
+                }
+                else if (stripeEvent.Type == Events.ProductUpdated)
+                {
+                    // HACK TODO IMPLEMENT LOGIC
+                }
+                else if (stripeEvent.Type == Events.ProductDeleted)
+                {
+                    // HACK TODO IMPLEMENT LOGIC
+                }
+                else
+                {
+                    _logger.LogWarning($"Unexpected Stripe event's type: {stripeEvent.ToJson()}");
+                    return BadRequest();
+                }
+            }
+            catch (StripeException e)
+            {
+                _logger.LogError(e, e.Message);
+                return BadRequest("Stripe exception occured");
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message, e.StackTrace);
+            }
+
+            return Ok();
         }
     }
 }
