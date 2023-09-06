@@ -21,6 +21,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreativeCookies.VideoHostin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreativeCookies.StripeEvents.RedistributionService", "CreativeCookies.StripeEvents.RedistributionService\CreativeCookies.StripeEvents.RedistributionService.csproj", "{B3FC9159-2E13-45E2-8729-BEE885918EEF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreativeCookies.StripeEvents.Contracts", "CreativeCookies.StripeEvents.Contracts\CreativeCookies.StripeEvents.Contracts.csproj", "{3B240AA5-D1F4-44E6-BC48-A1B74BC51E32}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreativeCookies.StripeEvents.Services", "CreativeCookies.StripeEvents.Services\CreativeCookies.StripeEvents.Services.csproj", "{BD2AEF94-8859-43CC-B09B-16F69D57963C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +67,14 @@ Global
 		{B3FC9159-2E13-45E2-8729-BEE885918EEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3FC9159-2E13-45E2-8729-BEE885918EEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3FC9159-2E13-45E2-8729-BEE885918EEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B240AA5-D1F4-44E6-BC48-A1B74BC51E32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B240AA5-D1F4-44E6-BC48-A1B74BC51E32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B240AA5-D1F4-44E6-BC48-A1B74BC51E32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B240AA5-D1F4-44E6-BC48-A1B74BC51E32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD2AEF94-8859-43CC-B09B-16F69D57963C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD2AEF94-8859-43CC-B09B-16F69D57963C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD2AEF94-8859-43CC-B09B-16F69D57963C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD2AEF94-8859-43CC-B09B-16F69D57963C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
