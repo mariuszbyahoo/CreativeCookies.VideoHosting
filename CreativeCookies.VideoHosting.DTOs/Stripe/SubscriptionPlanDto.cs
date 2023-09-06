@@ -11,13 +11,15 @@ namespace CreativeCookies.VideoHosting.DTOs.Stripe
         public string Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        public bool IsLinked { get; set; }
         public IList<PriceDto> Prices { get; set; } = new List<PriceDto>();
 
-        public SubscriptionPlanDto(string id, string name, string description)
+        public SubscriptionPlanDto(string id, string name, string description, bool isLinked = false)
         {
             Id = id;
             Name = name;
             Description = description;
+            IsLinked = isLinked;
         }
     }
 

@@ -13,5 +13,14 @@ namespace CreativeCookies.VideoHosting.DAL.DAOs
         public string StripeProductId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        public bool IsLinked { get; set; }
+
+        public SubscriptionPlan(string stripeProductId, string name, string description, bool isLinked = false) 
+        {
+            StripeProductId = stripeProductId;
+            Name = name;
+            Description = description;
+            IsLinked = isLinked;
+        }
     }
 }

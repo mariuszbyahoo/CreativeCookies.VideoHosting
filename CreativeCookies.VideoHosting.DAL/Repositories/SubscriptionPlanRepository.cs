@@ -20,13 +20,9 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             _ctx = ctx;
         }
 
-        public async Task<SubscriptionPlanDto> SaveSubscriptionPlan(SubscriptionPlanDto newSubscriptionPlan)
+        public async Task<SubscriptionPlanDto> CreateNewSubscriptionPlan(SubscriptionPlanDto newSubscriptionPlan)
         {
-            var plan = new SubscriptionPlan() { 
-                Description = newSubscriptionPlan.Description, 
-                StripeProductId = newSubscriptionPlan.Id, 
-                Name = newSubscriptionPlan.Name
-            };
+            var plan = new SubscriptionPlan(newSubscriptionPlan.Id, newSubscriptionPlan.Name, newSubscriptionPlan.Description);
             await _ctx.SubscriptionPlans.AddAsync(plan);
             var res = await _ctx.SaveChangesAsync();
             if (res > 0)
@@ -72,7 +68,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
 
         public async Task<IList<SubscriptionPlanDto>> GetAllSubscriptions()
         {
-            return await _ctx.SubscriptionPlans.Select(p => new SubscriptionPlanDto(p.StripeProductId, p.Name, p.Description)).ToListAsync();
+            return await _ctx.SubscriptionPlans.Select(p => new SubscriptionPlanDto(p.StripeProductId, p.Name, p.Description, p.IsLinked)).ToListAsync();
         }
 
 

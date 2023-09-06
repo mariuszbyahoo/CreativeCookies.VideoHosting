@@ -20,7 +20,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
         /// </summary>
         /// <param name="newSubscriptionPlan">Subscription plan to save</param>
         /// <returns>If operation succeeds - returns SubscriptionPlanDto, if failure occured - returns null</returns>
-        Task<SubscriptionPlanDto> SaveSubscriptionPlan(SubscriptionPlanDto newSubscriptionPlan);
+        Task<SubscriptionPlanDto> CreateNewSubscriptionPlan(SubscriptionPlanDto newSubscriptionPlan);
 
         /// <summary>
         /// Gets subscription plan DTO by it's Stripe Product Id

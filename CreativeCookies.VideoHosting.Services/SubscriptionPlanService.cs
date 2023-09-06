@@ -43,7 +43,7 @@ namespace CreativeCookies.VideoHosting.Services
 
         public async Task<SubscriptionPlanDto> SaveSubscriptionPlan(SubscriptionPlanDto subscriptionPlan)
         {
-            var res = await _repo.SaveSubscriptionPlan(subscriptionPlan);
+            var res = await _repo.CreateNewSubscriptionPlan(subscriptionPlan);
             return res;
         }
 
@@ -57,7 +57,7 @@ namespace CreativeCookies.VideoHosting.Services
         {
             var existingEntity = await _repo.GetSubscriptionPlan(subscriptionPlan.Id);
             if (existingEntity == null)
-                return await _repo.SaveSubscriptionPlan(subscriptionPlan);
+                return await _repo.CreateNewSubscriptionPlan(subscriptionPlan);
             else
                 return await _repo.UpdateSubscriptionPlan(subscriptionPlan);
         }
