@@ -54,42 +54,5 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             var accountLinkResponse = _stripeService.GenerateConnectAccountLink();
             return Redirect(accountLinkResponse.Data.AccountOnboardingUrl);
         }
-
-        [HttpPost("AccountUpdatedWebhook")]
-        public async Task<IActionResult> AccountUpdatedWebHook()
-        {
-            string endpointSecret = _configuration.GetValue<string>("WebhookEndpointSecret");
-
-            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
-
-            try
-            {
-                var stripeEvent = EventUtility.ConstructEvent(json,
-                    Request.Headers["Stripe-Signature"],
-                    endpointSecret);
-
-                if (stripeEvent.Type == Events.AccountUpdated)
-                {
-                    var account = stripeEvent.Data.Object as Account;
-                    await _connectAccountsSrv.EnsureSaved(account.Id);
-                }
-                else
-                {
-                    _logger.LogWarning($"Unexpected Stripe event's type: {stripeEvent.ToJson()}");
-                    return BadRequest();
-                }
-            }
-            catch (StripeException e)
-            {
-                _logger.LogError(e, e.Message);
-                return BadRequest("Stripe exception occured");
-            }
-            catch(Exception e)
-            {
-                _logger.LogError(e, e.Message, e.StackTrace);
-            }
-
-            return Ok();
-        }
     }
 }
