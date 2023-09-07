@@ -29,10 +29,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _logger = logger;
         }
 
-        [HttpPost("Endpoint")]
+        [HttpPost("")]
         public async Task<IActionResult> Endpoint()
         {
-            _logger.LogInformation("StripeWebhook/Endpoint called");
+            _logger.LogInformation("StripeWebhook called");
             string endpointSecret = _configuration.GetValue<string>("WebhookEndpointSecret");
 
             var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
@@ -45,31 +45,31 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
                 if (stripeEvent.Type == Events.ProductCreated || stripeEvent.Type == Events.ProductUpdated)
                 {
-                    _logger.LogInformation($"StripeWebhook/Endpoint with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
+                    _logger.LogInformation($"StripeWebhook with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
                     var product = stripeEvent.Data.Object as Product;
                     if (product != null)
                     {
                         await _stripeProductsService.UpsertStripeProduct(product.Name, product.Description);
-                        _logger.LogInformation($"StripeWebhook/Endpoint product upserted: {product.ToJson()}");
+                        _logger.LogInformation($"StripeWebhook product upserted: {product.ToJson()}");
                     }
                 }
                 else if (stripeEvent.Type == Events.ProductDeleted)
                 {
-                    _logger.LogInformation($"StripeWebhook/Endpoint with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
+                    _logger.LogInformation($"StripeWebhook with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
                     var product = stripeEvent.Data.Object as Product;
                     if (product != null)
                     {
                         await _stripeProductsService.DeleteStripeProduct(product.Id);
                         await _subscriptionPlanService.DeleteSubscriptionPlan(product.Id);
-                        _logger.LogInformation($"StripeWebhook/Endpoint product deleted: {product.ToJson()}");
+                        _logger.LogInformation($"StripeWebhook product deleted: {product.ToJson()}");
                     }
                 }
                 else if (stripeEvent.Type == Events.AccountUpdated)
                 {
-                    _logger.LogInformation($"StripeWebhook/Endpoint with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
+                    _logger.LogInformation($"StripeWebhook with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
                     var account = stripeEvent.Data.Object as Account;
                     await _connectAccountsSrv.EnsureSaved(account.Id);
-                    _logger.LogInformation($"StripeWebhook/Endpoint account updated: {account.ToJson()}");
+                    _logger.LogInformation($"StripeWebhook account updated: {account.ToJson()}");
                 }
                 else
                 {
@@ -86,7 +86,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             {
                 _logger.LogError(e, e.Message, e.StackTrace);
             }
-            _logger.LogInformation("StripeWebhook/Endpoint returns 200");
+            _logger.LogInformation("StripeWebhook returns 200");
             return Ok();
         }
     }
