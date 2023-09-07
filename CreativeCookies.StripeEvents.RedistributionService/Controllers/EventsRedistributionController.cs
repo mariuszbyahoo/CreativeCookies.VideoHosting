@@ -60,11 +60,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                 else if (stripeEvent.Type == Events.AccountUpdated)
                 {
                     _logger.LogInformation($"EventsRedistributionController with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
-                    var accountId = stripeEvent.Account;
                     var account = (Account)stripeEvent.Data.Object;
-
-                    if (!account.Id.Equals(accountId)) throw new InvalidDataException("stripeEvent.Account is different than event.Data.Object.Id!");
-
                     var tableResponse = await _service.InsertAccountId(account.Email, account.Id, _tableStorageAccountKey);
                     _logger.LogInformation($"Azure Table Storage response: {System.Text.Json.JsonSerializer.Serialize(tableResponse)}");
                     string targetUrl = $"https://{await _service.GetDestinationUrlByEmail(account.Email, _tableStorageAccountKey)}/StripeWebhook"; 
