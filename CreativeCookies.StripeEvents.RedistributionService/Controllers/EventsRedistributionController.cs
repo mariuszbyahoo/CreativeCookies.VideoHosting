@@ -86,7 +86,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                 _logger.LogError(e, e.Message, e.StackTrace);
             }
             _logger.LogInformation("EventsRedistributionController returns 200");
-            return Ok();
+            return Ok("Check logs for an exception - event has not been forwarded");
         }
 
         private async Task<IActionResult> RedirectEvent(string targetUrl, string jsonRequestBody, string eventId)
@@ -103,7 +103,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation($"Successfully forwarded event {eventId} to {targetUrl}");
-                    return Ok();
+                    return Ok($"Event succesfully forwarded to: {targetUrl}");
                 }
                 else
                 {
