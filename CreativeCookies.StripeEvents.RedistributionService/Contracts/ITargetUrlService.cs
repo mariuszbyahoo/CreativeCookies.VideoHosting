@@ -2,6 +2,6 @@
 {
     public interface ITargetUrlService
     {
-        public Task<string> GetDestinationUrl(string adminEmail);
+        public Task<string> GetDestinationUrlByEmail(string adminEmail, string tableStorageAccountKey);
     }
 }

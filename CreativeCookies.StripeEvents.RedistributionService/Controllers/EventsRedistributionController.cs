@@ -15,18 +15,20 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
         private readonly ITargetUrlService _service;
         private readonly ILogger<EventsRedistributionController> _logger;
         private readonly IConfiguration _configuration;
+        private readonly string _tableStorageAccountKey;
 
         public EventsRedistributionController(ITargetUrlService service, ILogger<EventsRedistributionController> logger, IConfiguration configuration)
         {
             _service = service;
             _logger = logger;
             _configuration = configuration;
+            _tableStorageAccountKey = _configuration.GetValue<string>("TableStorageAccountKey");
         }
 
         [HttpGet("")]
         public async Task<IActionResult> GetDestinationUrl(string adminEmail)
         {
-            var res = await _service.GetDestinationUrl(adminEmail);
+            var res = await _service.GetDestinationUrlByEmail(adminEmail, _tableStorageAccountKey);
             return Ok(res);
         }
 
@@ -58,6 +60,8 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                 {
                     _logger.LogInformation($"EventsRedistributionController with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
                     // HACK: TODO
+                    // 1. Update table record with account_id
+                    // 2. Redirect this request unchanged towards returned ApiUrl/StripeWebhook
                 }
                 else
                 {
