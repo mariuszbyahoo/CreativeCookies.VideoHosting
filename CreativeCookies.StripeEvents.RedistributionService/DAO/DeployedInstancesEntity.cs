@@ -8,7 +8,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.DAO
         /// <summary>
         /// Stripe Connect account's ID
         /// </summary>
-        public string? StripeConnectId { get; set; }
+        public string? StripeConnectAccountId { get; set; }
         /// <summary>
         /// API address without protocol at the beginning and a slash at the end, like: api.myhub.com.pl
         /// </summary>

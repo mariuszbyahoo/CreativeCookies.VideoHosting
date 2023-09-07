@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Stripe;
+using Stripe.FinancialConnections;
 using System.Security.Principal;
 using System.Text;
 
@@ -26,18 +27,11 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
             _tableStorageAccountKey = _configuration.GetValue<string>("TableStorageAccountKey");
         }
 
-        [HttpGet("")]
-        public async Task<IActionResult> GetDestinationUrl(string adminEmail)
-        {
-            var res = await _service.GetDestinationUrlByEmail(adminEmail, _tableStorageAccountKey);
-            return Ok(res);
-        }
-
         [HttpPost("")]
         public async Task<IActionResult> ProcessEvent()
         {
             _logger.LogInformation("EventsRedistributionController called");
-            string endpointSecret = _configuration.GetValue<string>("WebhookEndpointSecret");
+            string endpointSecret = "whsec_5a47597a9ce53e2107dba3f79794a4853847ed41c8281625895196654c06271a";//_configuration.GetValue<string>("WebhookEndpointSecret");
 
             var jsonRequestBody = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
 
@@ -50,41 +44,31 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                 if (stripeEvent.Type == Events.ProductCreated || stripeEvent.Type == Events.ProductUpdated)
                 {
                     _logger.LogInformation($"EventsRedistributionController with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
-                    // HACK: TODO
+                    var accountId = stripeEvent.Account;
+                    var apiDomain = _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+                    string targetUrl = $"https://{apiDomain}/StripeWebhook";
+
+                    return await RedirectEvent(targetUrl, jsonRequestBody, stripeEvent.Id);
                 }
                 else if (stripeEvent.Type == Events.ProductDeleted)
                 {
                     _logger.LogInformation($"EventsRedistributionController with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
-                    // HACK: TODO
+                    var accountId = stripeEvent.Account;
+                    var apiDomain = _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+                    string targetUrl = $"https://{apiDomain}/StripeWebhook";
+
+                    return await RedirectEvent(targetUrl, jsonRequestBody, stripeEvent.Id);
                 }
                 else if (stripeEvent.Type == Events.AccountUpdated)
                 {
                     _logger.LogInformation($"EventsRedistributionController with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
-                    var account = (Account)stripeEvent.Data.Object;
+                    var account = (Stripe.Account)stripeEvent.Data.Object;
                     var tableResponse = await _service.InsertAccountId(account.Email, account.Id, _tableStorageAccountKey);
                     _logger.LogInformation($"Azure Table Storage response: {System.Text.Json.JsonSerializer.Serialize(tableResponse)}");
-                    string targetUrl = $"https://{await _service.GetDestinationUrlByEmail(account.Email, _tableStorageAccountKey)}/StripeWebhook"; 
+                    var apiDomain = await _service.GetDestinationUrlByEmail(account.Email, _tableStorageAccountKey);
+                    string targetUrl = $"https://{apiDomain}/StripeWebhook";
 
-                    using (HttpClient httpClient = new HttpClient())
-                    {
-                        var request = new HttpRequestMessage(HttpMethod.Post, targetUrl)
-                        {
-                            Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json")
-                        };
-
-                        var response = await httpClient.SendAsync(request);
-
-                        if (response.IsSuccessStatusCode)
-                        {
-                            _logger.LogInformation($"Successfully forwarded event {stripeEvent.Id} to {targetUrl}");
-                            return Ok();
-                        }
-                        else
-                        {
-                            _logger.LogWarning($"Failed to forward event {stripeEvent.Id} to {targetUrl}");
-                            return BadRequest();
-                        }
-                    }
+                    return await RedirectEvent(targetUrl, jsonRequestBody, stripeEvent.Id);
                 }
                 else
                 {
@@ -103,6 +87,30 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
             }
             _logger.LogInformation("EventsRedistributionController returns 200");
             return Ok();
+        }
+
+        private async Task<IActionResult> RedirectEvent(string targetUrl, string jsonRequestBody, string eventId)
+        {
+            using (HttpClient httpClient = new HttpClient())
+            {
+                var request = new HttpRequestMessage(HttpMethod.Post, targetUrl)
+                {
+                    Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json")
+                };
+
+                var response = await httpClient.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation($"Successfully forwarded event {eventId} to {targetUrl}");
+                    return Ok();
+                }
+                else
+                {
+                    _logger.LogWarning($"Failed to forward event {eventId} to {targetUrl}");
+                    return BadRequest();
+                }
+            }
         }
     }
 }

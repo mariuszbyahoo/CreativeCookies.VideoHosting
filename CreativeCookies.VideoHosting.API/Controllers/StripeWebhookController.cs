@@ -29,11 +29,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _logger = logger;
         }
 
-        [HttpPost("Endpoint")]
+        [HttpPost("")]
         public async Task<IActionResult> Endpoint()
         {
             _logger.LogInformation("StripeWebhook/Endpoint called");
-            string endpointSecret = _configuration.GetValue<string>("WebhookEndpointSecret");
+            string endpointSecret = "whsec_5a47597a9ce53e2107dba3f79794a4853847ed41c8281625895196654c06271a";//_configuration.GetValue<string>("WebhookEndpointSecret");
 
             var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
 
