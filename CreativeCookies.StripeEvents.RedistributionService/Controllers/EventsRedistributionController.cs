@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Stripe;
 using System.Security.Principal;
+using System.Text;
 
 namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
 {
@@ -12,12 +13,12 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
     [ApiController]
     public class EventsRedistributionController : ControllerBase
     {
-        private readonly ITargetUrlService _service;
+        private readonly IDeployedInstancesService _service;
         private readonly ILogger<EventsRedistributionController> _logger;
         private readonly IConfiguration _configuration;
         private readonly string _tableStorageAccountKey;
 
-        public EventsRedistributionController(ITargetUrlService service, ILogger<EventsRedistributionController> logger, IConfiguration configuration)
+        public EventsRedistributionController(IDeployedInstancesService service, ILogger<EventsRedistributionController> logger, IConfiguration configuration)
         {
             _service = service;
             _logger = logger;
@@ -38,11 +39,11 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
             _logger.LogInformation("EventsRedistributionController called");
             string endpointSecret = _configuration.GetValue<string>("WebhookEndpointSecret");
 
-            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+            var jsonRequestBody = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
 
             try
             {
-                var stripeEvent = EventUtility.ConstructEvent(json,
+                var stripeEvent = EventUtility.ConstructEvent(jsonRequestBody,
                 Request.Headers["Stripe-Signature"],
                 endpointSecret);
 
@@ -59,9 +60,35 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                 else if (stripeEvent.Type == Events.AccountUpdated)
                 {
                     _logger.LogInformation($"EventsRedistributionController with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
-                    // HACK: TODO
-                    // 1. Update table record with account_id
-                    // 2. Redirect this request unchanged towards returned ApiUrl/StripeWebhook
+                    var accountId = stripeEvent.Account;
+                    var account = (Account)stripeEvent.Data.Object;
+
+                    if (!account.Id.Equals(accountId)) throw new InvalidDataException("stripeEvent.Account is different than event.Data.Object.Id!");
+
+                    var tableResponse = await _service.InsertAccountId(account.Email, account.Id, _tableStorageAccountKey);
+                    _logger.LogInformation($"Azure Table Storage response: {System.Text.Json.JsonSerializer.Serialize(tableResponse)}");
+                    string targetUrl = $"https://{await _service.GetDestinationUrlByEmail(account.Email, _tableStorageAccountKey)}/StripeWebhook"; 
+
+                    using (HttpClient httpClient = new HttpClient())
+                    {
+                        var request = new HttpRequestMessage(HttpMethod.Post, targetUrl)
+                        {
+                            Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json")
+                        };
+
+                        var response = await httpClient.SendAsync(request);
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            _logger.LogInformation($"Successfully forwarded event {stripeEvent.Id} to {targetUrl}");
+                            return Ok();
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Failed to forward event {stripeEvent.Id} to {targetUrl}");
+                            return BadRequest();
+                        }
+                    }
                 }
                 else
                 {
