@@ -8,6 +8,6 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Contracts
 
         public Task<string> GetDestinationUrlByAccountId(string accountId, string tableStorageAccountKey);
 
-        public Task<Response> InsertAccountId(string adminEmail, string accountId, string tableStorageAccountKey);
+        public Task<Response> UpdateAccountId(string adminEmail, string accountId, string tableStorageAccountKey);
     }
 }

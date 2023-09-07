@@ -15,14 +15,12 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
     public class EventsRedistributionController : ControllerBase
     {
         private readonly IDeployedInstancesService _service;
-        private readonly ILogger<EventsRedistributionController> _logger;
         private readonly IConfiguration _configuration;
         private readonly string _tableStorageAccountKey;
 
-        public EventsRedistributionController(IDeployedInstancesService service, ILogger<EventsRedistributionController> logger, IConfiguration configuration)
+        public EventsRedistributionController(IDeployedInstancesService service, IConfiguration configuration)
         {
             _service = service;
-            _logger = logger;
             _configuration = configuration;
             _tableStorageAccountKey = _configuration.GetValue<string>("TableStorageAccountKey");
         }
@@ -30,9 +28,8 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
         [HttpPost("")]
         public async Task<IActionResult> ProcessEvent()
         {
-            _logger.LogInformation("EventsRedistributionController called");
             string endpointSecret = _configuration.GetValue<string>("WebhookEndpointSecret");
-
+            var msg = "Check logs for an exception - event has not been forwarded ";
             var jsonRequestBody = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
 
             try
@@ -43,7 +40,6 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
 
                 if (stripeEvent.Type == Events.ProductCreated || stripeEvent.Type == Events.ProductUpdated)
                 {
-                    _logger.LogInformation($"EventsRedistributionController with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
                     var accountId = stripeEvent.Account;
                     var apiDomain = _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
                     string targetUrl = $"https://{apiDomain}/StripeWebhook";
@@ -52,7 +48,6 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                 }
                 else if (stripeEvent.Type == Events.ProductDeleted)
                 {
-                    _logger.LogInformation($"EventsRedistributionController with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
                     var accountId = stripeEvent.Account;
                     var apiDomain = _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
                     string targetUrl = $"https://{apiDomain}/StripeWebhook";
@@ -61,10 +56,9 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                 }
                 else if (stripeEvent.Type == Events.AccountUpdated)
                 {
-                    _logger.LogInformation($"EventsRedistributionController with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
-                    var account = (Stripe.Account)stripeEvent.Data.Object;
-                    var tableResponse = await _service.InsertAccountId(account.Email, account.Id, _tableStorageAccountKey);
-                    _logger.LogInformation($"Azure Table Storage response: {System.Text.Json.JsonSerializer.Serialize(tableResponse)}");
+                    var account = stripeEvent.Data.Object as Stripe.Account;
+                    if (account == null) return BadRequest("event.Data.Object is not a Stripe.Account");
+                    var tableResponse = await _service.UpdateAccountId(account.Email, account.Id, _tableStorageAccountKey);
                     var apiDomain = await _service.GetDestinationUrlByEmail(account.Email, _tableStorageAccountKey);
                     string targetUrl = $"https://{apiDomain}/StripeWebhook";
 
@@ -72,21 +66,19 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                 }
                 else
                 {
-                    _logger.LogWarning($"Unexpected Stripe event's type: {stripeEvent.ToJson()}");
                     return BadRequest();
                 }
             }
             catch (StripeException e)
             {
-                _logger.LogError(e, e.Message);
+                msg = $"{msg} Exception message: {e.Message}, InnerException: {e.InnerException}, StackTrace: {e.StackTrace}, Source: {e.Source}";
                 return BadRequest("Stripe exception occured");
             }
             catch (Exception e)
             {
-                _logger.LogError(e, e.Message, e.StackTrace);
+                msg = $"{msg} Exception message: {e.Message}, InnerException: {e.InnerException}, StackTrace: {e.StackTrace}, Source: {e.Source}";
             }
-            _logger.LogInformation("EventsRedistributionController returns 200");
-            return Ok("Check logs for an exception - event has not been forwarded");
+            return Ok(msg);
         }
 
         private async Task<IActionResult> RedirectEvent(string targetUrl, string jsonRequestBody, string eventId)
@@ -99,17 +91,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                 };
 
                 var response = await httpClient.SendAsync(request);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    _logger.LogInformation($"Successfully forwarded event {eventId} to {targetUrl}");
-                    return Ok($"Event succesfully forwarded to: {targetUrl}");
-                }
-                else
-                {
-                    _logger.LogWarning($"Failed to forward event {eventId} to {targetUrl}");
-                    return BadRequest();
-                }
+                return Ok($"Redirection result status code: {response.StatusCode}");
             }
         }
     }

@@ -33,7 +33,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Services
             return string.Empty;
         }
 
-        public async Task<Response> InsertAccountId(string adminEmail, string accountId, string tableStorageAccountKey)
+        public async Task<Response> UpdateAccountId(string adminEmail, string accountId, string tableStorageAccountKey)
         {
             DeployedInstancesEntity deployedInstance = null;
             var tableClient = new TableClient(new Uri($"https://cccentralstorageaccount.table.core.windows.net/"), "DeployedInstances", new TableSharedKeyCredential("cccentralstorageaccount", tableStorageAccountKey));
@@ -47,5 +47,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Services
             var updateResponse = await tableClient.UpdateEntityAsync(deployedInstance, deployedInstance.ETag);
             return updateResponse;
         }
+
+
     }
 }
