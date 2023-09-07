@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using CreativeCookies.StripeEvents.RedistributionService.Contracts;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -11,13 +12,22 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
     [ApiController]
     public class EventsRedistributionController : ControllerBase
     {
+        private readonly ITargetUrlService _service;
         private readonly ILogger<EventsRedistributionController> _logger;
         private readonly IConfiguration _configuration;
 
-        public EventsRedistributionController(ILogger<EventsRedistributionController> logger, IConfiguration configuration)
+        public EventsRedistributionController(ITargetUrlService service, ILogger<EventsRedistributionController> logger, IConfiguration configuration)
         {
+            _service = service;
             _logger = logger;
             _configuration = configuration;
+        }
+
+        [HttpGet("")]
+        public async Task<IActionResult> GetDestinationUrl(string adminEmail)
+        {
+            var res = await _service.GetDestinationUrl(adminEmail);
+            return Ok(res);
         }
 
         [HttpPost("")]

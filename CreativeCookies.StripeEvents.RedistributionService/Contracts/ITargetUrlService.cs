@@ -2,6 +2,6 @@
 {
     public interface ITargetUrlService
     {
-        public string GetDestinationUrl(string adminUrl);
+        public Task<string> GetDestinationUrl(string adminEmail);
     }
 }

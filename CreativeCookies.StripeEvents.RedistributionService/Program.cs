@@ -1,4 +1,7 @@
 
+using CreativeCookies.StripeEvents.RedistributionService.Contracts;
+using CreativeCookies.StripeEvents.RedistributionService.Services;
+
 namespace CreativeCookies.StripeEvents.RedistributionService
 {
     public class Program
@@ -8,6 +11,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            builder.Services.AddSingleton<ITargetUrlService, TargetUrlService>();
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
