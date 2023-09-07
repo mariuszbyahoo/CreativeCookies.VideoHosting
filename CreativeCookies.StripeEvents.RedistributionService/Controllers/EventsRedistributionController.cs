@@ -31,7 +31,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
         public async Task<IActionResult> ProcessEvent()
         {
             _logger.LogInformation("EventsRedistributionController called");
-            string endpointSecret = "whsec_5a47597a9ce53e2107dba3f79794a4853847ed41c8281625895196654c06271a";//_configuration.GetValue<string>("WebhookEndpointSecret");
+            string endpointSecret = _configuration.GetValue<string>("WebhookEndpointSecret");
 
             var jsonRequestBody = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
 
