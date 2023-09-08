@@ -25,19 +25,19 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
             _tableStorageAccountKey = _configuration.GetValue<string>("TableStorageAccountKey");
         }
 
-        [HttpGet("")]
-        public async Task<IActionResult> GetApiUrl(string accountId)
-        {
-            try
-            {
-                var res = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
-                return Ok(res);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //[HttpGet("")]
+        //public async Task<IActionResult> GetApiUrl(string accountId)
+        //{
+        //    try
+        //    {
+        //        var res = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+        //        return Ok(res);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
 
         [HttpPost("")]
         public async Task<IActionResult> ProcessEvent()
