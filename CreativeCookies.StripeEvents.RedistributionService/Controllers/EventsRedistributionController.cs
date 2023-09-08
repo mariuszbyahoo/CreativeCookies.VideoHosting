@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using RestSharp;
 using Stripe;
 using Stripe.FinancialConnections;
 using System.Security.Principal;
@@ -55,18 +56,18 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                 if (stripeEvent.Type == Events.ProductCreated || stripeEvent.Type == Events.ProductUpdated)
                 {
                     var accountId = stripeEvent.Account;
-                    var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
-                    string targetUrl = $"https://{apiDomain}/StripeWebhook";
+                    var apiDomain = "localhost:7034";//await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+                    string targetUrl = $"https://{apiDomain}";
 
-                    return await RedirectEvent(targetUrl, jsonRequestBody, stripeEvent.Id);
+                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
                 }
                 else if (stripeEvent.Type == Events.ProductDeleted)
                 {
                     var accountId = stripeEvent.Account;
                     var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
-                    string targetUrl = $"https://{apiDomain}/StripeWebhook";
+                    string targetUrl = $"https://{apiDomain}";
 
-                    return await RedirectEvent(targetUrl, jsonRequestBody, stripeEvent.Id);
+                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
                 }
                 else if (stripeEvent.Type == Events.AccountUpdated)
                 {
@@ -74,9 +75,9 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                     if (account == null) return BadRequest("event.Data.Object is not a Stripe.Account");
                     var tableResponse = await _service.UpdateAccountId(account.Email, account.Id, _tableStorageAccountKey);
                     var apiDomain = await _service.GetDestinationUrlByEmail(account.Email, _tableStorageAccountKey);
-                    string targetUrl = $"https://{apiDomain}/StripeWebhook";
+                    string targetUrl = $"https://{apiDomain}";
 
-                    return await RedirectEvent(targetUrl, jsonRequestBody, stripeEvent.Id);
+                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
                 }
                 else
                 {
@@ -94,19 +95,18 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
             }
             return Ok(msg);
         }
-
-        private async Task<IActionResult> RedirectEvent(string targetUrl, string jsonRequestBody, string eventId)
+        private async Task<IActionResult> RedirectEvent(string targetUrl, string jsonRequestBody, string stripeSignature)
         {
-            using (HttpClient httpClient = new HttpClient())
-            {
-                var request = new HttpRequestMessage(HttpMethod.Post, targetUrl)
-                {
-                    Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json")
-                };
+            var client = new RestClient(targetUrl);
+            var request = new RestRequest("StripeWebhook", Method.Post);
 
-                var response = await httpClient.SendAsync(request);
-                return Ok($"Redirection result status code: {response.StatusCode}");
-            }
+            request.AddHeader("Content-Type", "application/json");
+            request.AddHeader("Stripe-Signature", stripeSignature);
+            request.AddBody(jsonRequestBody, ContentType.Plain);
+
+            var response = await client.ExecuteAsync(request);
+
+            return Ok($"Redirection result status code: {response.StatusCode}");
         }
     }
 }

@@ -45,7 +45,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
                 if (stripeEvent.Type == Events.ProductCreated || stripeEvent.Type == Events.ProductUpdated)
                 {
-                    _logger.LogInformation($"StripeWebhook with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
+                    _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
                     var product = stripeEvent.Data.Object as Product;
                     if (product != null)
                     {
@@ -55,7 +55,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 }
                 else if (stripeEvent.Type == Events.ProductDeleted)
                 {
-                    _logger.LogInformation($"StripeWebhook with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
+                    _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
                     var product = stripeEvent.Data.Object as Product;
                     if (product != null)
                     {
@@ -66,7 +66,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 }
                 else if (stripeEvent.Type == Events.AccountUpdated)
                 {
-                    _logger.LogInformation($"StripeWebhook with event type of {Enum.GetName(typeof(Events), stripeEvent)}");
+                    _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
                     var account = stripeEvent.Data.Object as Account;
                     await _connectAccountsSrv.EnsureSaved(account.Id);
                     _logger.LogInformation($"StripeWebhook account updated: {account.ToJson()}");
