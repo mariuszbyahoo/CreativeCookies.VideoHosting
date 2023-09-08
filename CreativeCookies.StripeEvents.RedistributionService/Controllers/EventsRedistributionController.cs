@@ -25,6 +25,20 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
             _tableStorageAccountKey = _configuration.GetValue<string>("TableStorageAccountKey");
         }
 
+        [HttpGet("")]
+        public async Task<IActionResult> GetApiUrl(string accountId)
+        {
+            try
+            {
+                var res = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("")]
         public async Task<IActionResult> ProcessEvent()
         {
@@ -41,7 +55,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                 if (stripeEvent.Type == Events.ProductCreated || stripeEvent.Type == Events.ProductUpdated)
                 {
                     var accountId = stripeEvent.Account;
-                    var apiDomain = _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+                    var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
                     string targetUrl = $"https://{apiDomain}/StripeWebhook";
 
                     return await RedirectEvent(targetUrl, jsonRequestBody, stripeEvent.Id);
@@ -49,7 +63,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                 else if (stripeEvent.Type == Events.ProductDeleted)
                 {
                     var accountId = stripeEvent.Account;
-                    var apiDomain = _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+                    var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
                     string targetUrl = $"https://{apiDomain}/StripeWebhook";
 
                     return await RedirectEvent(targetUrl, jsonRequestBody, stripeEvent.Id);
