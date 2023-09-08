@@ -68,7 +68,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
 
         public async Task<IList<SubscriptionPlanDto>> GetAllSubscriptions()
         {
-            return await _ctx.SubscriptionPlans.Select(p => new SubscriptionPlanDto(p.StripeProductId, p.Name, p.Description, p.IsLinked)).ToListAsync();
+            return await _ctx.SubscriptionPlans.Select(p => new SubscriptionPlanDto(p.StripeProductId, p.Name, p.Description)).ToListAsync();
         }
 
 
