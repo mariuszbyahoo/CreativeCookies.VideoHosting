@@ -148,6 +148,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                 result.Add(
                     new PriceDto(
                         prices.Data[i].Id,
+                        prices.Data[i].Active,
                         prices.Data[i].ProductId,
                         prices.Data[i].Currency,
                         prices.Data[i].UnitAmount,
