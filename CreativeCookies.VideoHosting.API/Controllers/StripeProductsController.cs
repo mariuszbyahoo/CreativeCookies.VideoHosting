@@ -55,6 +55,13 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             return NoContent();
         }
 
+        [HttpGet("FetchSubscriptionPlan")]
+        public async Task<ActionResult<SubscriptionPlanDto>> GetAllSubscriptionPlan()
+        {
+            var result = await _subscriptionPlanService.FetchSubscriptionPlan();
+            return Ok(result);
+        }
+
         #endregion
 
         #region prices
@@ -70,10 +77,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpGet("GetAllPrices")]
-        public ActionResult<IEnumerable<PriceDto>> GetAll([FromQuery] string productId)
+        public async Task<ActionResult<IEnumerable<PriceDto>>> GetAll([FromQuery] string productId)
         {
             if (string.IsNullOrWhiteSpace(productId)) return BadRequest("productId is required");
-            var res = _stripeProductsService.GetStripePrices(productId);
+            var res = await _stripeProductsService.GetStripePrices(productId);
             return Ok(res);
         }
 
@@ -86,19 +93,12 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
 
-        [HttpPost("DeactivateStripePrice")]
-        public async Task<ActionResult<PriceDto>> DeactivateStripePrice(string priceId)
+        [HttpPut("TogglePriceState")]
+        public async Task<ActionResult<PriceDto>> DeactivateStripePrice([FromQuery] string priceId)
         {
             if (string.IsNullOrWhiteSpace(priceId)) return BadRequest("PriceId cannot be empty");
-            var res = await _stripeProductsService.DeactivateStripePrice(priceId);
+            var res = await _stripeProductsService.TogglePriceState(priceId);
             return Ok(res);
-        }
-
-        [HttpGet("FetchSubscriptionPlan")]
-        public async Task<ActionResult<SubscriptionPlanDto>> GetAllSubscriptionPlan()
-        {
-            var result = await _subscriptionPlanService.FetchSubscriptionPlan();
-            return Ok(result);
         }
 
         #endregion

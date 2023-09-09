@@ -22,7 +22,14 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
         /// </summary>
         /// <param name="priceId">Id of a price to deactivate</param>
         /// <returns>Updated PriceDto object</returns>
-        Task<PriceDto> DeactivateStripePrice(string priceId);
+        Task<PriceDto> TogglePriceState(string priceId);
+
+        /// <summary>
+        /// Activates Stripe price object with supplied Id
+        /// </summary>
+        /// <param name="priceId">Id of a price to deactivate</param>
+        /// <returns>Updated PriceDto object</returns>
+        Task<PriceDto> ActivateStripePrice(string priceId);
 
         /// <summary>
         /// Creates a Stripe Price object

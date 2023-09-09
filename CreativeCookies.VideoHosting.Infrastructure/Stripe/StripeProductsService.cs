@@ -26,8 +26,6 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             _subscriptionPlanService = subscriptionPlanService;
         }
 
-
-
         public async Task<SubscriptionPlanDto> UpsertStripeProduct(string productName, string productDescription)
         {
             StripeConfiguration.ApiKey = _stripeSecretAPIKey;
@@ -115,7 +113,24 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             return res;
         }
 
-        public async Task<PriceDto> DeactivateStripePrice(string priceId)
+        public async Task<PriceDto> TogglePriceState(string priceId)
+        {
+            StripeConfiguration.ApiKey = _stripeSecretAPIKey;
+
+            var requestOptions = await GetRequestOptions();
+            var priceService = new PriceService();
+
+            var currentPrice = await priceService.GetAsync(priceId, requestOptions: requestOptions);
+            var priceOptions = new PriceUpdateOptions()
+            {
+                Active = currentPrice.Active ? false : true
+            };
+            var price = await priceService.UpdateAsync(priceId, priceOptions, requestOptions);
+            var res = new PriceDto(price.Id, price.Active,price.ProductId, price.Currency, price.UnitAmount, price.Recurring?.Interval ?? string.Empty);
+            return res;
+        }
+
+        public async Task<PriceDto> ActivateStripePrice(string priceId)
         {
             StripeConfiguration.ApiKey = _stripeSecretAPIKey;
 
@@ -123,10 +138,10 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             var priceService = new PriceService();
             var priceOptions = new PriceUpdateOptions()
             {
-                Active = false
+                Active = true
             };
             var price = priceService.Update(priceId, priceOptions, requestOptions);
-            var res = new PriceDto(price.Id, price.Active,price.ProductId, price.Currency, price.UnitAmount, price.Recurring?.Interval ?? string.Empty);
+            var res = new PriceDto(price.Id, price.Active, price.ProductId, price.Currency, price.UnitAmount, price.Recurring?.Interval ?? string.Empty);
             return res;
         }
 
@@ -145,13 +160,13 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         private async Task<IList<PriceDto>> GetStripePricesPrivate(string productId)
         {
             var priceService = new PriceService();
+            var requestOptions = await GetRequestOptions();
             var priceListOptions = new PriceListOptions
             {
-                Product = productId,
-                Limit = 10
+                Product = productId
             };
 
-            var prices = await priceService.ListAsync(priceListOptions);
+            var prices = await priceService.ListAsync(priceListOptions, requestOptions);
 
             var result = new List<PriceDto>();
             for (int i = 0; i < prices.Data.Count(); i++)
