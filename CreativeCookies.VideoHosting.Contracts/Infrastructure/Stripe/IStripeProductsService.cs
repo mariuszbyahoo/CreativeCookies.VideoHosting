@@ -18,6 +18,13 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
         Task<SubscriptionPlanDto> UpsertStripeProduct(string productName, string productDescription);
 
         /// <summary>
+        /// Deactivates Stripe price object with supplied Id
+        /// </summary>
+        /// <param name="priceId">Id of a price to deactivate</param>
+        /// <returns>Updated PriceDto object</returns>
+        Task<PriceDto> DeactivateStripePrice(string priceId);
+
+        /// <summary>
         /// Creates a Stripe Price object
         /// </summary>
         /// <param name="productId">Id of a product to which this price is assigned</param>

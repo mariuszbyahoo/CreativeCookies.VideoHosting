@@ -55,11 +55,20 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             return Ok(res);
         }
 
+        [HttpPost("DeactivateStripePrice")]
+        public async Task<ActionResult<PriceDto>> DeactivateStripePrice(string priceId)
+        {
+            if (string.IsNullOrWhiteSpace(priceId)) return BadRequest("PriceId cannot be empty");
+            var res = await _stripeProductsService.DeactivateStripePrice(priceId);
+            return Ok(res);
+        }
+
         [HttpGet("FetchSubscriptionPlan")]
         public async Task<ActionResult<SubscriptionPlanDto>> GetAllSubscriptionPlans()
         {
-            var result = new List<SubscriptionPlanDto>();
-            return await _subscriptionPlanService.FetchSubscriptionPlan();
+            //var result = new List<SubscriptionPlanDto>();
+            var result = await _subscriptionPlanService.FetchSubscriptionPlan();
+            return Ok(result);
             //for (int i = 0; i < savedInDb.Count; i++)
             //{
             //    var entityFromStripe = _stripeProductsService.GetStripeProduct(savedInDb[i].Id);

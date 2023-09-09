@@ -33,7 +33,8 @@ namespace CreativeCookies.VideoHosting.Services
         public async Task<SubscriptionPlanDto> FetchSubscriptionPlan()
         {
             var res = await _repo.GetAllSubscriptions();
-            return res[0];
+            if (res.Count > 0) return res[0];
+            else return null;
         }
 
         public async Task<bool> HasAnyProduct()

@@ -26,27 +26,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             _subscriptionPlanService = subscriptionPlanService;
         }
 
-        public async Task<PriceDto> CreateStripePrice(string productId, string currencyCode, int unitAmount)
-        {
-            StripeConfiguration.ApiKey = _stripeSecretAPIKey;
 
-            var requestOptions = await GetRequestOptions();
-            var priceService = new PriceService();
-            var priceOptions = new PriceCreateOptions
-            {
-                UnitAmount = unitAmount,
-                Currency = currencyCode,
-                Product = productId,
-                Recurring = new PriceRecurringOptions
-                {
-                    Interval = "month"
-                }
-            };
-
-            var price = priceService.Create(priceOptions, requestOptions);
-            var res = new PriceDto(price.Id, price.ProductId, price.Currency, price.UnitAmount, price.Recurring?.Interval ?? string.Empty);
-            return res;
-        }
 
         public async Task<SubscriptionPlanDto> UpsertStripeProduct(string productName, string productDescription)
         {
@@ -91,14 +71,6 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             var productService = new ProductService();
             await productService.DeleteAsync(productId);
         }
-
-        public IList<PriceDto> GetStripePrices(string productId)
-        {
-            StripeConfiguration.ApiKey = _stripeSecretAPIKey;
-
-            return GetStripePricesPrivate(productId);
-        }
-
         public SubscriptionPlanDto GetStripeProduct(string productId)
         {
             StripeConfiguration.ApiKey = _stripeSecretAPIKey;
@@ -112,6 +84,51 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 
             _subscriptionPlanService.UpsertSubscriptionPlan(result);
             return result;
+        }
+
+        public IList<PriceDto> GetStripePrices(string productId)
+        {
+            StripeConfiguration.ApiKey = _stripeSecretAPIKey;
+
+            return GetStripePricesPrivate(productId);
+        }
+        public async Task<PriceDto> CreateStripePrice(string productId, string currencyCode, int unitAmount)
+        {
+            StripeConfiguration.ApiKey = _stripeSecretAPIKey;
+
+            var requestOptions = await GetRequestOptions();
+            var priceService = new PriceService();
+            var priceOptions = new PriceCreateOptions
+            {
+                Active = true,
+                UnitAmount = unitAmount,
+                Currency = currencyCode,
+                Product = productId,
+                Recurring = new PriceRecurringOptions
+                {
+                    Interval = "month"
+                },
+                Nickname = $"Price created at UTC: {DateTime.UtcNow}"
+            };
+
+            var price = priceService.Create(priceOptions, requestOptions);
+            var res = new PriceDto(price.Id, price.Active, price.ProductId, price.Currency, price.UnitAmount, price.Recurring?.Interval ?? string.Empty);
+            return res;
+        }
+
+        public async Task<PriceDto> DeactivateStripePrice(string priceId)
+        {
+            StripeConfiguration.ApiKey = _stripeSecretAPIKey;
+
+            var requestOptions = await GetRequestOptions();
+            var priceService = new PriceService();
+            var priceOptions = new PriceUpdateOptions()
+            {
+                Active = false
+            };
+            var price = priceService.Update(priceId, priceOptions, requestOptions);
+            var res = new PriceDto(price.Id, price.Active,price.ProductId, price.Currency, price.UnitAmount, price.Recurring?.Interval ?? string.Empty);
+            return res;
         }
 
         private IList<PriceDto> GetStripePricesPrivate(string productId)
@@ -150,6 +167,5 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             return requestOptions;
         }
 
-        // HACK: Add editProduct method
     }
 }
