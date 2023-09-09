@@ -29,6 +29,7 @@ using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using CreativeCookies.VideoHosting.Services.IdP;
 using CreativeCookies.VideoHosting.Infrastructure;
 using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
+using CreativeCookies.VideoHosting.Contracts.Services.Stripe;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -111,6 +112,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddSingleton<ISasTokenService, SasTokenService>();
             builder.Services.AddSingleton<IJWTGenerator, JwtGenerator>();
 
+            builder.Services.AddScoped<IStripeProductsService, StripeProductsService>();
             builder.Services.AddScoped<IFilmService, FilmService>();
             builder.Services.AddScoped<IErrorLogsService, ErrorLogsService>();
             builder.Services.AddScoped<IUsersService, UsersService>();
@@ -121,6 +123,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
             builder.Services.AddScoped<IMyHubSignInManager, MyHubSignInManager>();
             builder.Services.AddScoped<IMyHubUserManager, MyHubUserManager>();
+            builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
 
             builder.Services.AddScoped<IMyHubBlobService, MyHubBlobService>();
             builder.Services.AddScoped<IStripeCustomerService, StripeCustomerService>();

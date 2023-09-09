@@ -9,18 +9,18 @@ using Stripe;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
-    public class StripeController : ControllerBase
+    public class StripeAccountsController : ControllerBase
     {
         private readonly IConnectAccountsService _connectAccountsSrv;
         private readonly IStripeOnboardingService _stripeService;
-        private readonly ILogger<StripeController> _logger;
+        private readonly ILogger<StripeAccountsController> _logger;
         private readonly IConfiguration _configuration;
 
-        public StripeController(
+        public StripeAccountsController(
             IConnectAccountsService connectAccountsSrv, IStripeOnboardingService stripeService, 
-            ILogger<StripeController> logger, IConfiguration configuration)
+            ILogger<StripeAccountsController> logger, IConfiguration configuration)
         {
             _connectAccountsSrv = connectAccountsSrv;
             _stripeService = stripeService;
@@ -53,43 +53,6 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         {
             var accountLinkResponse = _stripeService.GenerateConnectAccountLink();
             return Redirect(accountLinkResponse.Data.AccountOnboardingUrl);
-        }
-
-        [HttpPost("AccountUpdatedWebhook")]
-        public async Task<IActionResult> AccountUpdatedWebHook()
-        {
-            string endpointSecret = _configuration.GetValue<string>("WebhookEndpointSecret");
-
-            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
-
-            try
-            {
-                var stripeEvent = EventUtility.ConstructEvent(json,
-                    Request.Headers["Stripe-Signature"],
-                    endpointSecret);
-
-                if (stripeEvent.Type == Events.AccountUpdated)
-                {
-                    var account = stripeEvent.Data.Object as Account;
-                    await _connectAccountsSrv.EnsureSaved(account.Id);
-                }
-                else
-                {
-                    _logger.LogWarning($"Unexpected Stripe event's type: {stripeEvent.ToJson()}");
-                    return BadRequest();
-                }
-            }
-            catch (StripeException e)
-            {
-                _logger.LogError(e, e.Message);
-                return BadRequest("Stripe exception occured");
-            }
-            catch(Exception e)
-            {
-                _logger.LogError(e, e.Message, e.StackTrace);
-            }
-
-            return Ok();
         }
     }
 }

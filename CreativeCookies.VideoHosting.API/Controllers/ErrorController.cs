@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class ErrorController : ControllerBase
     {

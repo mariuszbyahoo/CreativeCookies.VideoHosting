@@ -35,6 +35,7 @@ namespace CreativeCookies.VideoHosting.DAL.Config
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>();
 
+            services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
             services.AddScoped<IFilmsRepository, FilmsRepository>();
             services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
             services.AddScoped<IUsersRepository, UsersRepository>();

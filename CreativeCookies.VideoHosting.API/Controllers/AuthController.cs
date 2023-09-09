@@ -14,7 +14,7 @@ using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -146,7 +146,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
                 if (!User.Identity.IsAuthenticated)
                 {
-                    var returnUrl = $"/api/auth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type={response_type}&state={state}&code_challenge={code_challenge}&code_challenge_method={code_challenge_method}";
+                    var returnUrl = $"/auth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type={response_type}&state={state}&code_challenge={code_challenge}&code_challenge_method={code_challenge_method}";
                     var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
                     var loginUrl = $"{baseUrl}/Identity/Account/Login?returnUrl={WebUtility.UrlEncode(returnUrl)}";
 
