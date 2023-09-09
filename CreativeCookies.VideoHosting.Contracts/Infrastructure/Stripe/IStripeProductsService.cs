@@ -37,14 +37,21 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
         /// </summary>
         /// <param name="productId">id of product to retrieve</param>
         /// <returns>ProductDto</returns>
-        SubscriptionPlanDto GetStripeProduct(string productId);
+        Task<SubscriptionPlanDto> GetStripeProduct(string productId);
 
         /// <summary>
         /// Retrieves list of available Prices assigned to the product with supplied Id
         /// </summary>
         /// <param name="productId">Id of product to which prices are assigned</param>
         /// <returns>IList of PriceDto</returns>
-        IList<PriceDto> GetStripePrices(string productId);
+        Task<IList<PriceDto>> GetStripePrices(string productId);
+
+        /// <summary>
+        /// Retrieves specific price by its id
+        /// </summary>
+        /// <param name="priceId">Price Id to look up for</param>
+        /// <returns>PriceDto or null if none found</returns>
+        Task<PriceDto> GetPriceById(string priceId);
 
         /// <summary>
         /// Deletes a Stripe Product from Stripe's infrastructure.

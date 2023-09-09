@@ -30,6 +30,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _logger = logger;
         }
 
+        #region Products
+
         [HttpGet("HasAnyProduct")]
         public async Task<ActionResult<bool>> HasAnyProduct()
         {
@@ -45,15 +47,44 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             return Ok(res);
         }
 
-        [HttpPost("CreateStripePrice")]
-        public async Task<ActionResult<PriceDto>> CreateStripePrice(string stripeProductId, string currencyCode, int unitAmount)
+        [HttpDelete("DeleteSubscriptionPlan")]
+        public async Task<IActionResult> DeleteSubscriptionPlan(string stripeProductId)
         {
-            if (string.IsNullOrWhiteSpace(stripeProductId)) return BadRequest($"StripeProductId cannot be empty");
-            if (unitAmount <= 0) return BadRequest($"Amount has to be greater than 0");
-            if (string.IsNullOrWhiteSpace(currencyCode) || currencyCode.Length != 3) return BadRequest($"Currency Code has to be three letter long : https://stripe.com/docs/currencies");
-            var res = await _stripeProductsService.CreateStripePrice(stripeProductId, currencyCode, unitAmount);
+            await _stripeProductsService.DeleteStripeProduct(stripeProductId);
+            await _subscriptionPlanService.DeleteSubscriptionPlan(stripeProductId);
+            return NoContent();
+        }
+
+        #endregion
+
+        #region prices
+
+        [HttpPost("CreateStripePrice")]
+        public async Task<ActionResult<PriceDto>> CreateStripePrice([FromBody] StripePriceCreationDto model)
+        {
+            if (string.IsNullOrWhiteSpace(model.StripeProductId)) return BadRequest($"StripeProductId cannot be empty");
+            if (model.UnitAmount <= 0) return BadRequest($"Amount has to be greater than 0");
+            if (string.IsNullOrWhiteSpace(model.CurrencyCode) || model.CurrencyCode.Length != 3) return BadRequest($"Currency Code has to be three letter long : https://stripe.com/docs/currencies");
+            var res = await _stripeProductsService.CreateStripePrice(model.StripeProductId, model.CurrencyCode, model.UnitAmount);
             return Ok(res);
         }
+
+        [HttpGet("GetAllPrices")]
+        public ActionResult<IEnumerable<PriceDto>> GetAll([FromQuery] string productId)
+        {
+            if (string.IsNullOrWhiteSpace(productId)) return BadRequest("productId is required");
+            var res = _stripeProductsService.GetStripePrices(productId);
+            return Ok(res);
+        }
+
+        [HttpGet("GetPriceById")]
+        public ActionResult<IEnumerable<PriceDto>> GetPriceById([FromQuery] string priceId)
+        {
+            if (string.IsNullOrWhiteSpace(priceId)) return BadRequest("priceId is required");
+            var res = _stripeProductsService.GetStripePrices(priceId);
+            return Ok(res);
+        }
+
 
         [HttpPost("DeactivateStripePrice")]
         public async Task<ActionResult<PriceDto>> DeactivateStripePrice(string priceId)
@@ -64,26 +95,12 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpGet("FetchSubscriptionPlan")]
-        public async Task<ActionResult<SubscriptionPlanDto>> GetAllSubscriptionPlans()
+        public async Task<ActionResult<SubscriptionPlanDto>> GetAllSubscriptionPlan()
         {
-            //var result = new List<SubscriptionPlanDto>();
             var result = await _subscriptionPlanService.FetchSubscriptionPlan();
             return Ok(result);
-            //for (int i = 0; i < savedInDb.Count; i++)
-            //{
-            //    var entityFromStripe = _stripeProductsService.GetStripeProduct(savedInDb[i].Id);
-            //    await _subscriptionPlanService.UpsertSubscriptionPlan(entityFromStripe);
-            //    result.Add(entityFromStripe);
-            //}
-            //return result;
         }
 
-        [HttpDelete("Delete")]
-        public async Task<IActionResult> DeleteSubscriptionPlan(string stripeProductId)
-        {
-            await _stripeProductsService.DeleteStripeProduct(stripeProductId);
-            await _subscriptionPlanService.DeleteSubscriptionPlan(stripeProductId);
-            return NoContent();
-        }
+        #endregion
     }
 }
