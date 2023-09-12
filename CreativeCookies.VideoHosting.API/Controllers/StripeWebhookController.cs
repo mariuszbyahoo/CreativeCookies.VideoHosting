@@ -1,5 +1,6 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Services.Stripe;
+using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
@@ -13,27 +14,25 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly IStripeProductsService _stripeProductsService;
         private readonly ISubscriptionPlanService _subscriptionPlanService;
         private readonly IConnectAccountsService _connectAccountsSrv;
-        private readonly IStripeOnboardingService _stripeService;
         private readonly ILogger<StripeWebhookController> _logger;
-        private readonly IConfiguration _configuration;
+        private readonly StripeWebhookSigningKeyWrapper _wrapper;
 
-        public StripeWebhookController(IConnectAccountsService connectAccountsSrv, IStripeOnboardingService stripeService, 
+        public StripeWebhookController(IConnectAccountsService connectAccountsSrv, 
             IStripeProductsService stripeProductsService, ISubscriptionPlanService subscriptionPlanService, 
-            IConfiguration configuration, ILogger<StripeWebhookController> logger)
+            ILogger<StripeWebhookController> logger, StripeWebhookSigningKeyWrapper wrapper)
         {
             _stripeProductsService = stripeProductsService;
             _subscriptionPlanService = subscriptionPlanService;
-            _stripeService = stripeService;
             _connectAccountsSrv = connectAccountsSrv;
-            _configuration = configuration;
             _logger = logger;
+            _wrapper = wrapper; 
         }
 
         [HttpPost("")]
         public async Task<IActionResult> Endpoint()
         {
             _logger.LogInformation("StripeWebhook called");
-            string endpointSecret = _configuration.GetValue<string>("WebhookEndpointSecret");
+            string endpointSecret = _wrapper.Value;
 
             var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
 

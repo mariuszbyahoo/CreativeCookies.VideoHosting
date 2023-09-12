@@ -18,9 +18,21 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             string storageAccountName, string storageAccountKey, string blobServiceUrl)
         {
             var client = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
-            var stripeSecretKey = client.GetSecret("StripeSecretAPIKey");
+            KeyVaultSecret stripeSecretKey;
+            KeyVaultSecret stripeWebhookSigningKey;
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+            {
+                stripeSecretKey = client.GetSecret("StripeSecretAPIKey"); 
+                stripeWebhookSigningKey = client.GetSecret("StripeSecretWebhookSigningKey");
+            }
+            else
+            {
+                stripeSecretKey = client.GetSecret("StripeTestAPIKey");
+                stripeWebhookSigningKey = client.GetSecret("StripeTestWebhookSigningKey");
+            }
 
-            services.AddSingleton(w => new StripeSecretKeyWrapper(stripeSecretKey.Value.Value));
+            services.AddSingleton(w => new StripeSecretKeyWrapper(stripeSecretKey.Value));
+            services.AddSingleton(w => new StripeWebhookSigningKeyWrapper(stripeWebhookSigningKey.Value));
             services.AddSingleton(x => new StorageSharedKeyCredential(storageAccountName, storageAccountKey));
             services.AddSingleton(x => new BlobServiceClient(new Uri(blobServiceUrl), x.GetRequiredService<StorageSharedKeyCredential>()));
             return services;

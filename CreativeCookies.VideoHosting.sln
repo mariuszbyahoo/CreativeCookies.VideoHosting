@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreativeCookies.VideoHostin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreativeCookies.VideoHosting.DAL.Config", "CreativeCookies.VideoHosting.DAL.Config\CreativeCookies.VideoHosting.DAL.Config.csproj", "{AE78D7D5-1978-4BCF-84DD-C09C9B9BEF68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreativeCookies.StripeEvents.RedistributionService", "CreativeCookies.StripeEvents.RedistributionService\CreativeCookies.StripeEvents.RedistributionService.csproj", "{B3FC9159-2E13-45E2-8729-BEE885918EEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreativeCookies.StripeEvents.RedistributionService", "CreativeCookies.StripeEvents.RedistributionService\CreativeCookies.StripeEvents.RedistributionService.csproj", "{B3FC9159-2E13-45E2-8729-BEE885918EEF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

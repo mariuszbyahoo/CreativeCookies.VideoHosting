@@ -30,6 +30,7 @@ using CreativeCookies.VideoHosting.Services.IdP;
 using CreativeCookies.VideoHosting.Infrastructure;
 using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
 using CreativeCookies.VideoHosting.Contracts.Services.Stripe;
+using CreativeCookies.VideoHosting.Services.Subscriptions;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -38,6 +39,7 @@ namespace CreativeCookies.VideoHosting.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var appInsightsInstrumentationKey = hostingContext.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
 
             builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
             {
@@ -63,13 +65,13 @@ namespace CreativeCookies.VideoHosting.API
                 }
                 else
                 {
-                    var instrumentationKey = hostingContext.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
 
                     loggerConfiguration
                                 .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Warning)
-                                .WriteTo.ApplicationInsights(new TelemetryClient(new Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration(instrumentationKey)), TelemetryConverter.Traces);
+                                .WriteTo.ApplicationInsights(new TelemetryClient(new Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration(appInsightsInstrumentationKey)), TelemetryConverter.Traces);
                 }
             });
+            builder.Services.AddApplicationInsightsTelemetry(appInsightsInstrumentationKey);
 
             builder.Services.AddCors(options =>
             {
@@ -124,6 +126,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddScoped<IMyHubSignInManager, MyHubSignInManager>();
             builder.Services.AddScoped<IMyHubUserManager, MyHubUserManager>();
             builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
+            builder.Services.AddScoped<ICheckoutService, CheckoutService>();
 
             builder.Services.AddScoped<IMyHubBlobService, MyHubBlobService>();
             builder.Services.AddScoped<IStripeCustomerService, StripeCustomerService>();
