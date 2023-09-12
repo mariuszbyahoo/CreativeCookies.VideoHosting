@@ -28,8 +28,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             if (string.IsNullOrWhiteSpace(dto.PriceId)) return BadRequest("PriceId is required");
             var sessionUrl = await _checkoutService.CreateNewSession(dto.PriceId);
 
-            this.Response.Headers.Add("Location", sessionUrl);
-            return new StatusCodeResult(303);
+            return Ok(new StripeCreateSessionResponseDto(sessionUrl));
         }
     }
 }
