@@ -56,7 +56,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                 if (stripeEvent.Type == Events.ProductCreated || stripeEvent.Type == Events.ProductUpdated)
                 {
                     var accountId = stripeEvent.Account;
-                    var apiDomain = "localhost:7034";//await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+                    var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
                     string targetUrl = $"https://{apiDomain}";
 
                     return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
