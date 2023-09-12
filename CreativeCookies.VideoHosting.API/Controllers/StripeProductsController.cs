@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Stripe;
 using System.Runtime.CompilerServices;
@@ -13,7 +14,6 @@ using System.Runtime.CompilerServices;
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
     [Route("[controller]")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "ADMIN,admin")]
     [ApiController]
     public class StripeProductsController : ControllerBase
     {
@@ -39,6 +39,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpPost("UpsertSubscriptionPlan")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "ADMIN,admin")]
         public async Task<ActionResult<SubscriptionPlanDto>> UpsertSubscriptionPlan([FromBody]StripeProductCreationDto model)
         {
                 if (string.IsNullOrEmpty(model.Name)) return BadRequest("Name cannot be empty string");
@@ -48,6 +49,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpDelete("DeleteSubscriptionPlan")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "ADMIN,admin")]
         public async Task<IActionResult> DeleteSubscriptionPlan(string stripeProductId)
         {
             await _stripeProductsService.DeleteStripeProduct(stripeProductId);
@@ -59,6 +61,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         public async Task<ActionResult<SubscriptionPlanDto>> GetAllSubscriptionPlan()
         {
             var result = await _subscriptionPlanService.FetchSubscriptionPlan();
+            if (result != null)
+            {
+                result.Prices = await _stripeProductsService.GetStripePrices(result.Id);
+            }
             return Ok(result);
         }
 
@@ -67,6 +73,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         #region prices
 
         [HttpPost("CreateStripePrice")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "ADMIN,admin")]
         public async Task<ActionResult<PriceDto>> CreateStripePrice([FromBody] StripePriceCreationDto model)
         {
             if (string.IsNullOrWhiteSpace(model.StripeProductId)) return BadRequest($"StripeProductId cannot be empty");
@@ -94,6 +101,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
 
         [HttpPut("TogglePriceState")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "ADMIN,admin")]
         public async Task<ActionResult<PriceDto>> DeactivateStripePrice([FromQuery] string priceId)
         {
             if (string.IsNullOrWhiteSpace(priceId)) return BadRequest("PriceId cannot be empty");

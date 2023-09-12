@@ -6,7 +6,7 @@ using Stripe.Checkout;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class StripeCheckoutController : ControllerBase
     {
