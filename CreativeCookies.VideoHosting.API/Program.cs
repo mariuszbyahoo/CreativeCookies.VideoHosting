@@ -39,7 +39,6 @@ namespace CreativeCookies.VideoHosting.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            var appInsightsInstrumentationKey = hostingContext.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
 
             builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
             {
@@ -65,13 +64,15 @@ namespace CreativeCookies.VideoHosting.API
                 }
                 else
                 {
+                    var appInsightsInstrumentationKey = hostingContext.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
 
                     loggerConfiguration
                                 .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Warning)
                                 .WriteTo.ApplicationInsights(new TelemetryClient(new Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration(appInsightsInstrumentationKey)), TelemetryConverter.Traces);
+                    builder.Services.AddApplicationInsightsTelemetry(appInsightsInstrumentationKey);
                 }
             });
-            builder.Services.AddApplicationInsightsTelemetry(appInsightsInstrumentationKey);
+
 
             builder.Services.AddCors(options =>
             {
