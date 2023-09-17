@@ -81,7 +81,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                 }
                 else
                 {
-                    return BadRequest();
+                    return NoContent();
                 }
             }
             catch (StripeException e)
