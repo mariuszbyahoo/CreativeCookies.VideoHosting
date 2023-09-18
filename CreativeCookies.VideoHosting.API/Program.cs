@@ -64,12 +64,9 @@ namespace CreativeCookies.VideoHosting.API
                 }
                 else
                 {
-                    var appInsightsInstrumentationKey = hostingContext.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
 
                     loggerConfiguration
-                                .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Warning)
-                                .WriteTo.ApplicationInsights(new TelemetryClient(new Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration(appInsightsInstrumentationKey)), TelemetryConverter.Traces);
-                    builder.Services.AddApplicationInsightsTelemetry(appInsightsInstrumentationKey);
+                                .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Warning);
                 }
             });
 
@@ -109,8 +106,10 @@ namespace CreativeCookies.VideoHosting.API
             var clientId = builder.Configuration.GetValue<string>("ClientId");
             var jwtSecretKey = builder.Configuration.GetValue<string>("JWTSecretKey");
             var adminEmail = builder.Configuration.GetValue<string>("AdminEmail");
+            var appInsightsInstrumentationKey = builder.Configuration.GetValue<string>("APPINSIGHTS_INSTRUMENTATIONKEY");
 
             builder.Services.AddDataAccessLayer(connectionString);
+            builder.Services.AddApplicationInsightsTelemetry(appInsightsInstrumentationKey);
 
             builder.Services.AddSingleton<ISasTokenService, SasTokenService>();
             builder.Services.AddSingleton<IJWTGenerator, JwtGenerator>();
