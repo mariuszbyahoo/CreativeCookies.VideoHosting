@@ -11,6 +11,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Web;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
+using CreativeCookies.VideoHosting.DTOs.OAuth;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
@@ -282,16 +283,17 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
 
             var extractedUser = await _codesService.GetUserByAuthCodeAsync(code);
+
+            await CheckSubscriptionStatus(extractedUser);
+
             if (extractedUser == null)
             {
                 _logger.LogError($"Codes repo returned null for GetUserByAuthCodeAsync when invoked inside Token action with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(grant_type)}: {grant_type}, {nameof(code)}: {code}, {nameof(code_verifier)}: {code_verifier}");
                 return GenerateBadRequest("server_error");
             }
-            // HACK: Get user's role and pass it into GenerateAccessToken
 
             var accessToken = _accessTokenService.GetNewAccessToken(extractedUser.Id, extractedUser.UserEmail, Guid.Parse(client_id), _configuration, baseUrl, extractedUser.Role);
             var refreshToken = await _refreshTokenSrv.GetNewRefreshToken(extractedUser.Id);
-            // HACK: TODO implement RBAC as describen in RFC6749 3.3
             var accessTokenCookieOptions = ReturnAuthCookieOptions(1);
             _httpContextAccessor.HttpContext.Response.Cookies.Append("stac", accessToken, accessTokenCookieOptions);
 
@@ -326,6 +328,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     return BadRequest("invalid refresh_token");
                 }
 
+                // HACK: Toggle role - here
+
                 var request = _httpContextAccessor.HttpContext.Request;
                 var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
 
@@ -347,6 +351,20 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 return response;
             }
             return BadRequest("invalid refresh_token");
+        }
+
+        private async Task CheckSubscriptionStatus(MyHubUserDto extractedUser)
+        {
+            if (DateTime.UtcNow > extractedUser.SubscriptionEndDateUTC)
+            {
+                await _userManager.RemoveFromRoleAsync(extractedUser, "Subscriber");
+                await _userManager.AddToRoleAsync(extractedUser, "NonSubscriber");
+            }
+            else
+            {
+                await _userManager.AddToRoleAsync(extractedUser, "Subscriber");
+                await _userManager.RemoveFromRoleAsync(extractedUser, "NonSubscriber");
+            }
         }
 
         private async Task<IActionResult?> ValidateCodeAndCodeVerifier(string code, string code_verifier, string client_id)
