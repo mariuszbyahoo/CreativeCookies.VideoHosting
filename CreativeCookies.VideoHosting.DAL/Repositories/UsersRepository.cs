@@ -1,4 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
+using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
@@ -10,12 +11,20 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
     public class UsersRepository : IUsersRepository
     {
         private readonly AppDbContext _context;
-        private readonly UserManager<MyHubUser> _userManager;
+        private readonly IMyHubUserManager _userManager;
 
-        public UsersRepository(AppDbContext context, UserManager<MyHubUser> userManager)
+        public UsersRepository(AppDbContext context, IMyHubUserManager userManager)
         {
             _context = context;
             _userManager = userManager;
+        }
+
+        public async Task<bool> ChangeSubscriptionEndDateUTC(string customerId, DateTime endDateUtc)
+        {
+            var dao = await _context.Users.Where(u => u.StripeCustomerId.Equals(customerId)).FirstOrDefaultAsync();
+            dao.SubscriptionEndDateUTC = endDateUtc;
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
         }
 
         public async Task<bool> AssignStripeCustomerId(string userId, string stripeCustomerId)
@@ -43,7 +52,8 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             foreach (var user in users)
             {
                 var toAdd = false;
-                var userRoles = await _userManager.GetRolesAsync(user);
+                var dto = await _userManager.FindByIdAsync(user.Id);
+                var userRoles = await _userManager.GetRolesAsync(dto);
                 var matchingRole = userRoles.FirstOrDefault(r => r.ToLowerInvariant() == role.ToLowerInvariant());
                 if (role.Equals("any", StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -52,7 +62,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
                 }
                 else if (!string.IsNullOrWhiteSpace(matchingRole)) toAdd = true;
 
-                if (toAdd) result.Add(new MyHubUserDto(Guid.Parse(user.Id.ToUpperInvariant()), user.Email ?? user.UserName, matchingRole, user.EmailConfirmed, user.StripeCustomerId, user.SubscriptionEndDateUTC));
+                if (toAdd) result.Add(dto);
 
             }
             return new UsersPaginatedResultDto(result, usersCount > result.Count(), pageNumber, totalPages);

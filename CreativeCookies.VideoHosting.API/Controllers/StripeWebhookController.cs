@@ -1,7 +1,11 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
+using CreativeCookies.VideoHosting.Contracts.Repositories;
+using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using CreativeCookies.VideoHosting.Contracts.Services.Stripe;
+using CreativeCookies.VideoHosting.DTOs.OAuth;
 using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
 
@@ -16,14 +20,18 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly IConnectAccountsService _connectAccountsSrv;
         private readonly ILogger<StripeWebhookController> _logger;
         private readonly StripeWebhookSigningKeyWrapper _wrapper;
+        private readonly IMyHubUserManager _userManager;
+        private readonly IUsersRepository _userRepo;
 
         public StripeWebhookController(IConnectAccountsService connectAccountsSrv, 
             IStripeProductsService stripeProductsService, ISubscriptionPlanService subscriptionPlanService, 
-            ILogger<StripeWebhookController> logger, StripeWebhookSigningKeyWrapper wrapper)
+            ILogger<StripeWebhookController> logger, StripeWebhookSigningKeyWrapper wrapper, IMyHubUserManager userManager, IUsersRepository userRepo)
         {
             _stripeProductsService = stripeProductsService;
             _subscriptionPlanService = subscriptionPlanService;
             _connectAccountsSrv = connectAccountsSrv;
+            _userManager= userManager;
+            _userRepo = userRepo;
             _logger = logger;
             _wrapper = wrapper; 
         }
@@ -69,6 +77,14 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     var account = stripeEvent.Data.Object as Account;
                     await _connectAccountsSrv.EnsureSaved(account.Id);
                     _logger.LogInformation($"StripeWebhook account updated: {account.ToJson()}");
+                }
+                else if (stripeEvent.Type == Events.InvoicePaymentSucceeded)
+                {
+                    _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
+                    var invoice = stripeEvent.Data.Object as Invoice;
+                    var res = await _userRepo.ChangeSubscriptionEndDateUTC(invoice.CustomerId, invoice.Lines.Data[0].Period.End);
+                    if (res) _logger.LogInformation($"StripeWebhook user with Stripe Customer id: {invoice.CustomerId} updated");
+                    else return BadRequest($"Database result of SubscriptionEndDateUTC update was false for customer with id: {invoice.CustomerId}");
                 }
                 else
                 {
