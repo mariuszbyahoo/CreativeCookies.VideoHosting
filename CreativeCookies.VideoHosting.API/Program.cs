@@ -31,6 +31,7 @@ using CreativeCookies.VideoHosting.Infrastructure;
 using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
 using CreativeCookies.VideoHosting.Contracts.Services.Stripe;
 using CreativeCookies.VideoHosting.Services.Subscriptions;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -92,7 +93,7 @@ namespace CreativeCookies.VideoHosting.API
             {
                 connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
             }
-            else if (builder.Environment.IsProduction()) 
+            else
             {
                 connectionString = builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
             }
@@ -213,7 +214,22 @@ namespace CreativeCookies.VideoHosting.API
             }
             else
             {
-                app.UseExceptionHandler("/StatusCode");
+                //app.UseExceptionHandler("/StatusCode");
+                app.UseExceptionHandler(errorApp =>
+                {
+                    errorApp.Run(async context =>
+                    {
+                        context.Response.StatusCode = 500;
+                        context.Response.ContentType = "application/json";
+
+                        var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
+                        if (contextFeature != null)
+                        {
+                            string json = Newtonsoft.Json.JsonConvert.SerializeObject(contextFeature.Error);
+                            await context.Response.WriteAsync(json);
+                        }
+                    });
+                });
                 app.UseHsts();
             }
 
