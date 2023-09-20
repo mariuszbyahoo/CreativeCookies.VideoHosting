@@ -32,6 +32,7 @@ using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
 using CreativeCookies.VideoHosting.Contracts.Services.Stripe;
 using CreativeCookies.VideoHosting.Services.Subscriptions;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.ApplicationInsights.Extensibility;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -65,9 +66,15 @@ namespace CreativeCookies.VideoHosting.API
                 }
                 else
                 {
-
+                    var appInsightsInstrumentationKey = hostingContext.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
+                    if (string.IsNullOrWhiteSpace(appInsightsInstrumentationKey)) throw new InvalidOperationException("AppInsights Instrumentation key has not been found!");
                     loggerConfiguration
                                 .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Warning);
+                    loggerConfiguration
+                                .WriteTo.ApplicationInsights(new TelemetryClient(new TelemetryConfiguration
+                                {
+                                    InstrumentationKey = appInsightsInstrumentationKey
+                                }), TelemetryConverter.Traces);
                 }
             });
 
