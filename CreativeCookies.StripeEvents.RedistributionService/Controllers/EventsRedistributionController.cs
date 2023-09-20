@@ -57,7 +57,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                 {
                     var accountId = stripeEvent.Account;
                     var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
-                    string targetUrl = $"https://{apiDomain}";
+                    var targetUrl = $"https://{apiDomain}";
 
                     return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
                 }
@@ -75,7 +75,15 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                     if (account == null) return BadRequest("event.Data.Object is not a Stripe.Account");
                     var tableResponse = await _service.UpdateAccountId(account.Email, account.Id, _tableStorageAccountKey);
                     var apiDomain = await _service.GetDestinationUrlByEmail(account.Email, _tableStorageAccountKey);
-                    string targetUrl = $"https://{apiDomain}";
+                    var targetUrl = $"https://{apiDomain}";
+
+                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
+                }
+                else if (stripeEvent.Type == Events.InvoicePaymentSucceeded)
+                {
+                    var accountId = stripeEvent.Account;
+                    var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+                    var targetUrl = $"https://{apiDomain}";
 
                     return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
                 }
