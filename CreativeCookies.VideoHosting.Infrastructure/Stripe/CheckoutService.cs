@@ -10,6 +10,7 @@ using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
 using Microsoft.Extensions.Logging;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Http;
 
 namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 {
@@ -30,17 +31,18 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             _clientUrl = _configuration.GetValue<string>("ClientUrl");
         }
 
-        public async Task<string> CreateNewSession(string priceId)
+        public async Task<string> CreateNewSession(string priceId, string stripeCustomerId)
         {
             StripeConfiguration.ApiKey = _stripeApiSecretKey;
             var connectAccountId = await _connectAccountsRepo.GetConnectedAccountId();
-            if(string.IsNullOrWhiteSpace(connectAccountId))
+            if (string.IsNullOrWhiteSpace(connectAccountId))
             {
                 _logger.LogError("No connect account found in database, aborting creation of new session");
                 return string.Empty;
             }
             var options = new SessionCreateOptions
             {
+                Customer = stripeCustomerId,
                 LineItems = new List<SessionLineItemOptions>
                 {
                     new SessionLineItemOptions

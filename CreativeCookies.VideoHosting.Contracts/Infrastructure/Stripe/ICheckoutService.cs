@@ -8,6 +8,6 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
 {
     public interface ICheckoutService
     {
-        public Task<string> CreateNewSession(string priceId);
+        public Task<string> CreateNewSession(string priceId, string stripeCustomerId);
     }
 }
