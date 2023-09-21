@@ -284,7 +284,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
             var extractedUser = await _codesService.GetUserByAuthCodeAsync(code);
 
-            await CheckSubscriptionStatus(extractedUser);
+            extractedUser = await CheckSubscriptionStatus(extractedUser);
 
             if (extractedUser == null)
             {
@@ -328,7 +328,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     return BadRequest("invalid refresh_token");
                 }
 
-                // HACK: Toggle role - here
+                user = await CheckSubscriptionStatus(user);
 
                 var request = _httpContextAccessor.HttpContext.Request;
                 var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
@@ -353,18 +353,21 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             return BadRequest("invalid refresh_token");
         }
 
-        private async Task CheckSubscriptionStatus(MyHubUserDto extractedUser)
+        private async Task<MyHubUserDto> CheckSubscriptionStatus(MyHubUserDto user)
         {
-            if (DateTime.UtcNow > extractedUser.SubscriptionEndDateUTC)
+            if (DateTime.UtcNow > user.SubscriptionEndDateUTC)
             {
-                await _userManager.RemoveFromRoleAsync(extractedUser, "Subscriber");
-                await _userManager.AddToRoleAsync(extractedUser, "NonSubscriber");
+                await _userManager.RemoveFromRoleAsync(user, "subscriber");
+                await _userManager.AddToRoleAsync(user, "nonsubscriber");
+                user.Role = "nonsubscriber";
             }
             else
             {
-                await _userManager.AddToRoleAsync(extractedUser, "Subscriber");
-                await _userManager.RemoveFromRoleAsync(extractedUser, "NonSubscriber");
+                await _userManager.AddToRoleAsync(user, "subscriber");
+                await _userManager.RemoveFromRoleAsync(user, "nonsubscriber");
+                user.Role = "subscriber";
             }
+            return user;
         }
 
         private async Task<IActionResult?> ValidateCodeAndCodeVerifier(string code, string code_verifier, string client_id)
