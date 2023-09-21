@@ -56,7 +56,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     var product = stripeEvent.Data.Object as Product;
                     if (product != null)
                     {
-                        await _stripeProductsService.UpsertStripeProduct(product.Name, product.Description);
+                        await _subscriptionPlanService.UpsertSubscriptionPlan(new VideoHosting.DTOs.Stripe.SubscriptionPlanDto(product.Id, product.Name, product.Description));
                         _logger.LogInformation($"StripeWebhook product upserted: {product.ToJson()}");
                     }
                 }
@@ -66,7 +66,6 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     var product = stripeEvent.Data.Object as Product;
                     if (product != null)
                     {
-                        await _stripeProductsService.DeleteStripeProduct(product.Id);
                         await _subscriptionPlanService.DeleteSubscriptionPlan(product.Id);
                         _logger.LogInformation($"StripeWebhook product deleted: {product.ToJson()}");
                     }
