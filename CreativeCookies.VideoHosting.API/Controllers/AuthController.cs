@@ -355,7 +355,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         private async Task<MyHubUserDto> CheckSubscriptionStatus(MyHubUserDto user)
         {
-            if (DateTime.UtcNow > user.SubscriptionEndDateUTC)
+            var endDate = user.SubscriptionEndDateUTC + TimeSpan.FromHours(4);
+            if (DateTime.UtcNow > endDate)
             {
                 await _userManager.RemoveFromRoleAsync(user, "subscriber");
                 await _userManager.AddToRoleAsync(user, "nonsubscriber");
