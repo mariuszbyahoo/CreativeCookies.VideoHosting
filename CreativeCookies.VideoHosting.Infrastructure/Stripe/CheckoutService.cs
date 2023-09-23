@@ -40,6 +40,8 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                 _logger.LogError("No connect account found in database, aborting creation of new session");
                 return string.Empty;
             }
+            var successUrl = $"{_clientUrl}/success?sessionId=";
+            successUrl += "{CHECKOUT_SESSION_ID}";
             var options = new SessionCreateOptions
             {
                 Customer = stripeCustomerId,
@@ -56,7 +58,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                 {
                     ApplicationFeePercent = 10,
                 },
-                SuccessUrl = $"{_clientUrl}/success",
+                SuccessUrl = successUrl, 
                 CancelUrl = $"{_clientUrl}/cancel",
             };
 
@@ -66,6 +68,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             };
             var service = new SessionService();
             Session session = service.Create(options, requestOptions);
+            
             return session.Url;
         }
     }
