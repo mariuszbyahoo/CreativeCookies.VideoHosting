@@ -21,6 +21,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         private readonly IConfiguration _configuration;
         IConnectAccountsRepository _connectAccountsRepo;
         private readonly string _clientUrl;
+        private readonly string _connectAccountId;
 
         public CheckoutService(StripeSecretKeyWrapper wrapper, ILogger<CheckoutService> logger, IConnectAccountsRepository connectAccountRepo, IConfiguration configuration)
         {
@@ -29,13 +30,13 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             _logger = logger;
             _configuration = configuration;
             _clientUrl = _configuration.GetValue<string>("ClientUrl");
+            _connectAccountId = _connectAccountsRepo.GetConnectedAccountId();
         }
 
         public async Task<string> CreateNewSession(string priceId, string stripeCustomerId)
         {
             StripeConfiguration.ApiKey = _stripeApiSecretKey;
-            var connectAccountId = await _connectAccountsRepo.GetConnectedAccountId();
-            if (string.IsNullOrWhiteSpace(connectAccountId))
+            if (string.IsNullOrWhiteSpace(_connectAccountId))
             {
                 _logger.LogError("No connect account found in database, aborting creation of new session");
                 return string.Empty;
@@ -64,12 +65,23 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 
             var requestOptions = new RequestOptions
             {
-                StripeAccount = connectAccountId,
+                StripeAccount = _connectAccountId,
             };
             var service = new SessionService();
             Session session = service.Create(options, requestOptions);
             
             return session.Url;
+        }
+
+        public async Task<bool> IsSessionPaymentPaid(string sessionId)
+        {
+            StripeConfiguration.ApiKey = _stripeApiSecretKey;
+
+            var service = new SessionService();
+            var requestOptions = new RequestOptions() { StripeAccount = _connectAccountId };
+            Session session = await service.GetAsync(sessionId, requestOptions: requestOptions);
+
+            return session.PaymentStatus.Equals("paid");
         }
     }
 }

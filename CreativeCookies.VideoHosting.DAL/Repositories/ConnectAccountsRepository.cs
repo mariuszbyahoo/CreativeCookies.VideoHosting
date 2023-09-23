@@ -19,9 +19,9 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             _configuration = configuration;
             _logger = logger;
         }
-        public async Task<string> GetConnectedAccountId()
+        public string GetConnectedAccountId()
         {
-            var record = await _ctx.StripeConfig.FirstOrDefaultAsync();
+            var record = _ctx.StripeConfig.FirstOrDefault();
             if (record == null) return string.Empty;
             return record.StripeConnectedAccountId;
         }

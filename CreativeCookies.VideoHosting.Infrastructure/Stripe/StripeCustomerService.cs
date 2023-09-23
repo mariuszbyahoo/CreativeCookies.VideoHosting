@@ -28,7 +28,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         public async Task<bool> CreateStripeCustomer(string userId, string userEmail)
         {
             StripeConfiguration.ApiKey = _stripeSecretAPIKey;
-            var connectAccountId = await _connectAccountsService.GetConnectedAccountId();
+            var connectAccountId = _connectAccountsService.GetConnectedAccountId();
             var customerService = new CustomerService();
             var customerOptions = new CustomerCreateOptions
             {

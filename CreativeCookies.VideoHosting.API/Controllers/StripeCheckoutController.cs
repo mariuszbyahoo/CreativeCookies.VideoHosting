@@ -1,6 +1,7 @@
 ﻿using CreativeCookies.VideoHosting.API.DTOs;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
 using Stripe.Checkout;
@@ -11,6 +12,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [Authorize]
     public class StripeCheckoutController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -52,6 +54,26 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 return new ObjectResult(ex.Message) { StatusCode = StatusCodes.Status400BadRequest };
             }
             catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected error: {ex}");
+                return new ObjectResult(ex.Message) { StatusCode = StatusCodes.Status500InternalServerError };
+            }
+        }
+
+        [HttpGet("Status")]
+        public async Task<ActionResult<bool>> CheckSessionStatus([FromQuery] string sessionId)
+        {
+            try
+            {
+                var res = await _checkoutService.IsSessionPaymentPaid(sessionId);
+                return Ok(res);
+            }
+            catch(StripeException ex)
+            {
+                _logger.LogError($"Stripe error: {ex.Message}");
+                return new ObjectResult(ex.Message) { StatusCode = StatusCodes.Status400BadRequest };
+            }
+            catch(Exception ex)
             {
                 _logger.LogError($"Unexpected error: {ex}");
                 return new ObjectResult(ex.Message) { StatusCode = StatusCodes.Status500InternalServerError };
