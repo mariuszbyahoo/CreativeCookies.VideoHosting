@@ -12,5 +12,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Services
         Task<UsersPaginatedResultDto> GetUsersPaginatedResult(string search, int pageNumber, int pageSize, string role);
 
         Task<bool> AssignStripeCustomerId(string userId, string stripeCustomerId);
+
+        Task<bool> IsUserSubscriber(string userId);
     }
 }

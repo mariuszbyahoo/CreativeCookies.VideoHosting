@@ -67,5 +67,20 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             }
             return new UsersPaginatedResultDto(result, usersCount > result.Count(), pageNumber, totalPages);
         }
+
+        public async Task<bool> IsUserSubscriber(string userId)
+        {
+            var result = await (from u in _context.Users
+                                join ur in _context.UserRoles on u.Id equals ur.UserId
+                                join r in _context.Roles on ur.RoleId equals r.Id
+                                where u.Id.Equals(userId, StringComparison.InvariantCultureIgnoreCase)
+                                select new
+                                {
+                                    u.SubscriptionEndDateUTC,
+                                    RoleName = r.Name
+                                }).FirstOrDefaultAsync();
+
+            return result != null && result.SubscriptionEndDateUTC > DateTime.UtcNow && result.RoleName.Equals("subscriber", StringComparison.InvariantCultureIgnoreCase);
+        }
     }
 }

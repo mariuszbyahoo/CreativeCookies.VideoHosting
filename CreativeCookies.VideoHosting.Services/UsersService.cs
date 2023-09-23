@@ -24,5 +24,11 @@ namespace CreativeCookies.VideoHosting.Services
             var res = await _repo.AssignStripeCustomerId(userId, stripeCustomerId);
             return res;
         }
+
+        public async Task<bool> IsUserSubscriber(string userId)
+        {
+            var res = await _repo.IsUserSubscriber(userId);
+            return res;
+        }
     }
 }
