@@ -32,7 +32,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("IsUserSubscriber")]
+        [HttpGet("IsASubscriber")]
         [Authorize]
         public async Task<ActionResult<bool>> IsUserASubscriber()
         {

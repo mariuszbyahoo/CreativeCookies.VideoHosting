@@ -70,17 +70,9 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
 
         public async Task<bool> IsUserSubscriber(string userId)
         {
-            var result = await (from u in _context.Users
-                                join ur in _context.UserRoles on u.Id equals ur.UserId
-                                join r in _context.Roles on ur.RoleId equals r.Id
-                                where u.Id.Equals(userId, StringComparison.InvariantCultureIgnoreCase)
-                                select new
-                                {
-                                    u.SubscriptionEndDateUTC,
-                                    RoleName = r.Name
-                                }).FirstOrDefaultAsync();
+            var result = await _context.Users.Where(u => u.Id.ToLower() == userId.ToLower()).FirstOrDefaultAsync();
 
-            return result != null && result.SubscriptionEndDateUTC > DateTime.UtcNow && result.RoleName.Equals("subscriber", StringComparison.InvariantCultureIgnoreCase);
+            return result != null && result.SubscriptionEndDateUTC > DateTime.UtcNow;
         }
     }
 }

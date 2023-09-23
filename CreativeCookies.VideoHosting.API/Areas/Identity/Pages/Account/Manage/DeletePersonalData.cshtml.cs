@@ -76,6 +76,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
 
         public async Task<IActionResult> OnPostAsync()
         {
+            // HACK: Add deletion of underlying Stripe entities: Subscription, consumer and so on.
             var user = await _userManager.GetUserAsync(User);
             var cookieOptions = new CookieOptions
             {
@@ -87,7 +88,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
-
+            // HACK: Should I also send a refund?
             RequirePassword = await _userManager.HasPasswordAsync(user);
             if (RequirePassword)
             {
@@ -102,6 +103,8 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
 
             Response.Cookies.Delete("stac", cookieOptions);
             Response.Cookies.Delete("ltrt", cookieOptions);
+
+
 
             var result = await _userManager.DeleteAsync(user);
             if (!result.Succeeded)
