@@ -281,10 +281,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
             var request = _httpContextAccessor.HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
-
             var extractedUser = await _codesService.GetUserByAuthCodeAsync(code);
-
-            extractedUser = await CheckSubscriptionStatus(extractedUser);
+            var isAdmin = extractedUser.Role.Equals("admin", StringComparison.InvariantCultureIgnoreCase);
+            if (!isAdmin)
+                extractedUser = await CheckSubscriptionStatus(extractedUser);
 
             if (extractedUser == null)
             {
@@ -327,8 +327,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 {
                     return BadRequest("invalid refresh_token");
                 }
-
-                user = await CheckSubscriptionStatus(user);
+                var isAdmin = user.Role.Equals("admin", StringComparison.InvariantCultureIgnoreCase);
+                if (!isAdmin)
+                    user = await CheckSubscriptionStatus(user);
 
                 var request = _httpContextAccessor.HttpContext.Request;
                 var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
