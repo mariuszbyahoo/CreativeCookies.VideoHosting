@@ -5,6 +5,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
 {
     public interface IUsersRepository
     {
+        Task<MyHubUserDto> GetUserByStripeCustomerId(string stripeCustomerId);
         /// <summary>
         /// Changes the AspNetUser.SubscriptionEndDateUtc value
         /// </summary>

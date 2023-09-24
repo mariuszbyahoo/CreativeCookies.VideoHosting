@@ -19,7 +19,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         private readonly string _stripeApiSecretKey;
         private readonly ILogger<CheckoutService> _logger;
         private readonly IConfiguration _configuration;
-        IConnectAccountsRepository _connectAccountsRepo;
+        private readonly IConnectAccountsRepository _connectAccountsRepo;
         private readonly string _clientUrl;
         private readonly string _connectAccountId;
 
@@ -59,6 +59,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                 {
                     ApplicationFeePercent = 10,
                 },
+                BillingAddressCollection = "required",
                 SuccessUrl = successUrl, 
                 CancelUrl = $"{_clientUrl}/cancel",
             };

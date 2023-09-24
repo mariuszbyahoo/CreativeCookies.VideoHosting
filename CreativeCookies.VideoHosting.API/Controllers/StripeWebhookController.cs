@@ -94,11 +94,12 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             catch (StripeException e)
             {
                 _logger.LogError(e, e.Message);
-                return BadRequest("Stripe exception occured");
+                return BadRequest($"Stripe exception occured: {e.Message}, {e.InnerException}, {e.StackTrace}");
             }
             catch (Exception e)
             {
                 _logger.LogError(e, e.Message, e.StackTrace);
+                return BadRequest($"Unexpected exception occured: {e.Message}, {e.InnerException}, {e.StackTrace}");
             }
             _logger.LogInformation("StripeWebhook returns 200");
             return Ok();

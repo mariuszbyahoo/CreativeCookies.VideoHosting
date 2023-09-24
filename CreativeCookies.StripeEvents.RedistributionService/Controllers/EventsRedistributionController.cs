@@ -95,7 +95,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
             catch (StripeException e)
             {
                 msg = $"{msg} Exception message: {e.Message}, InnerException: {e.InnerException}, StackTrace: {e.StackTrace}, Source: {e.Source}";
-                return BadRequest("Stripe exception occured");
+                return BadRequest(msg);
             }
             catch (Exception e)
             {

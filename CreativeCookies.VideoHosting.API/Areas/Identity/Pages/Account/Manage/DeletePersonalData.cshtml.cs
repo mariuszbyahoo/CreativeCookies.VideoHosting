@@ -4,6 +4,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
@@ -170,9 +171,15 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                 {
                     Prorate = true
                 };
-
-                subscriptionService.Cancel(subscriptionId, subscriptionCancelOptions, requestOptions);
-
+                try
+                {
+                    subscriptionService.Cancel(subscriptionId, subscriptionCancelOptions, requestOptions);
+                }
+                catch (StripeException ex)
+                {
+                    if (!ex.StripeError.Code.Equals("charge_already_refunded"))
+                        _logger.LogError(ex, ex.Message);
+                }
                 // Delete customer
                 var customerService = new CustomerService();
                 customerService.Delete(stripeCustomerId, requestOptions: requestOptions);
