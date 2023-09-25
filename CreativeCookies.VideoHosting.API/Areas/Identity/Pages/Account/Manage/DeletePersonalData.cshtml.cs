@@ -180,10 +180,9 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                     if (!ex.StripeError.Code.Equals("charge_already_refunded"))
                         _logger.LogError(ex, ex.Message);
                 }
-                // Delete customer
-                var customerService = new CustomerService();
-                customerService.Delete(stripeCustomerId, requestOptions: requestOptions);
             }
+            var customerService = new CustomerService();
+            customerService.Delete(stripeCustomerId, requestOptions: requestOptions);
         }
 
         private async Task<RequestOptions?> GetRequestOptions()

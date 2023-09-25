@@ -87,6 +87,30 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
 
                     return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
                 }
+                else if (stripeEvent.Type == Events.ChargeRefunded)
+                {
+                    var accountId = stripeEvent.Account;
+                    var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+                    var targetUrl = $"https://{apiDomain}";
+
+                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
+                }
+                else if (stripeEvent.Type == Events.CustomerSubscriptionDeleted)
+                {
+                    var accountId = stripeEvent.Account;
+                    var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+                    var targetUrl = $"https://{apiDomain}";
+
+                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
+                }
+                else if (stripeEvent.Type == Events.SubscriptionScheduleCanceled)
+                {
+                    var accountId = stripeEvent.Account;
+                    var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+                    var targetUrl = $"https://{apiDomain}";
+
+                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
+                }
                 else
                 {
                     return NoContent();

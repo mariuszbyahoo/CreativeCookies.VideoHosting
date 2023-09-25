@@ -82,8 +82,31 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
                     var invoice = stripeEvent.Data.Object as Invoice;
                     var res = await _userRepo.ChangeSubscriptionEndDateUTC(invoice.CustomerId, invoice.Lines.Data[0].Period.End);
-                    if (res) _logger.LogInformation($"StripeWebhook user with Stripe Customer id: {invoice.CustomerId} updated");
+                    if (res) _logger.LogInformation($"SubscriptionEndDateUTC of Stripe Customer id: {invoice.CustomerId} updated to {invoice.Lines.Data[0].Period.End}");
                     else return BadRequest($"Database result of SubscriptionEndDateUTC update was false for customer with id: {invoice.CustomerId}");
+                }
+                else if (stripeEvent.Type == Events.ChargeRefunded)
+                {
+                    _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
+                    var accountId = stripeEvent.Account;
+                    var charge = stripeEvent.Data.Object as Charge;
+                    var res = await _userRepo.ChangeSubscriptionEndDateUTC(charge.CustomerId, DateTime.UtcNow);
+                    if (res) _logger.LogInformation($"SubscriptionEndDateUTC of Stripe Customer id: {charge.CustomerId} updated to {DateTime.UtcNow}");
+                    else return BadRequest($"Database result of SubscriptionEndDateUTC update was false for customer with id: {charge.CustomerId}");
+                }
+                else if (stripeEvent.Type == Events.CustomerSubscriptionDeleted)
+                {
+                    _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
+                    var accountId = stripeEvent.Account;
+                    var subscription = stripeEvent.Data.Object as Subscription;
+                    var res = await _userRepo.ChangeSubscriptionEndDateUTC(subscription.CustomerId, DateTime.UtcNow);
+                    if (res) _logger.LogInformation($"SubscriptionEndDateUTC of Stripe Customer id: {subscription.CustomerId} updated to {DateTime.UtcNow}");
+                    else return BadRequest($"Database result of SubscriptionEndDateUTC update was false for customer with id: {subscription.CustomerId}");
+                }
+                else if (stripeEvent.Type == Events.SubscriptionScheduleCanceled)
+                {
+                    return Ok("TODO: IMPLEMENT SUBSCRIPITON SCHEDULE CANCELED HANDLER!");
+                    // HACK: TODO
                 }
                 else
                 {
