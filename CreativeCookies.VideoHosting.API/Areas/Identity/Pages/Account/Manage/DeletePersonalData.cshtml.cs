@@ -181,8 +181,11 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                         _logger.LogError(ex, ex.Message);
                 }
             }
-            var customerService = new CustomerService();
-            customerService.Delete(stripeCustomerId, requestOptions: requestOptions);
+            if (!string.IsNullOrWhiteSpace(stripeCustomerId))
+            {
+                var customerService = new CustomerService();
+                customerService.Delete(stripeCustomerId, requestOptions: requestOptions);
+            }
         }
 
         private async Task<RequestOptions?> GetRequestOptions()
