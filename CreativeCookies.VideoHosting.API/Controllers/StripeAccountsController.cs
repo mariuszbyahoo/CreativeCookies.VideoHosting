@@ -33,7 +33,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         public async Task<ActionResult<StripeResultDto<StripeConnectAccountStatus>>> IsStripeAccountSetUp()
         {
             StripeResultDto<StripeConnectAccountStatus> result = new StripeResultDto<StripeConnectAccountStatus>(true, StripeConnectAccountStatus.Disconnected, "account_missing");
-            var idStoredInDatabase = await _connectAccountsSrv.GetConnectedAccountId();
+            var idStoredInDatabase = _connectAccountsSrv.GetConnectedAccountId();
             if (!string.IsNullOrWhiteSpace(idStoredInDatabase))
             {
                 var olderThanMinute = await _connectAccountsSrv.CanBeQueriedOnStripe(idStoredInDatabase);

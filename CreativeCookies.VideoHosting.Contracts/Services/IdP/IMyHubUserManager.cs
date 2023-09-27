@@ -107,6 +107,8 @@ namespace CreativeCookies.VideoHosting.Contracts.Services.IdP
 
         Task<string> GetPasswordHashAsync(MyHubUserDto user);
 
+        Task<IdentityResult> RemoveFromRoleAsync(MyHubUserDto user, string roleName);
+
         /// <summary>
         /// Extracts code found in ASPNETCORE Identity's DownloadPersonalData.OnPost()  razor page.
         /// </summary>

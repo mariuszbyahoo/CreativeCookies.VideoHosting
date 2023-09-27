@@ -30,6 +30,9 @@ using CreativeCookies.VideoHosting.Services.IdP;
 using CreativeCookies.VideoHosting.Infrastructure;
 using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
 using CreativeCookies.VideoHosting.Contracts.Services.Stripe;
+using CreativeCookies.VideoHosting.Services.Subscriptions;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.ApplicationInsights.Extensibility;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -63,13 +66,18 @@ namespace CreativeCookies.VideoHosting.API
                 }
                 else
                 {
-                    var instrumentationKey = hostingContext.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
-
+                    var appInsightsInstrumentationKey = hostingContext.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
+                    if (string.IsNullOrWhiteSpace(appInsightsInstrumentationKey)) throw new InvalidOperationException("AppInsights Instrumentation key has not been found!");
                     loggerConfiguration
-                                .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Warning)
-                                .WriteTo.ApplicationInsights(new TelemetryClient(new Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration(instrumentationKey)), TelemetryConverter.Traces);
+                                .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Warning);
+                    loggerConfiguration
+                                .WriteTo.ApplicationInsights(new TelemetryClient(new TelemetryConfiguration
+                                {
+                                    InstrumentationKey = appInsightsInstrumentationKey
+                                }), TelemetryConverter.Traces);
                 }
             });
+
 
             builder.Services.AddCors(options =>
             {
@@ -92,7 +100,7 @@ namespace CreativeCookies.VideoHosting.API
             {
                 connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
             }
-            else if (builder.Environment.IsProduction()) 
+            else
             {
                 connectionString = builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
             }
@@ -106,8 +114,10 @@ namespace CreativeCookies.VideoHosting.API
             var clientId = builder.Configuration.GetValue<string>("ClientId");
             var jwtSecretKey = builder.Configuration.GetValue<string>("JWTSecretKey");
             var adminEmail = builder.Configuration.GetValue<string>("AdminEmail");
+            var appInsightsInstrumentationKey = builder.Configuration.GetValue<string>("APPINSIGHTS_INSTRUMENTATIONKEY");
 
             builder.Services.AddDataAccessLayer(connectionString);
+            builder.Services.AddApplicationInsightsTelemetry(appInsightsInstrumentationKey);
 
             builder.Services.AddSingleton<ISasTokenService, SasTokenService>();
             builder.Services.AddSingleton<IJWTGenerator, JwtGenerator>();
@@ -124,6 +134,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddScoped<IMyHubSignInManager, MyHubSignInManager>();
             builder.Services.AddScoped<IMyHubUserManager, MyHubUserManager>();
             builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
+            builder.Services.AddScoped<ICheckoutService, CheckoutService>();
 
             builder.Services.AddScoped<IMyHubBlobService, MyHubBlobService>();
             builder.Services.AddScoped<IStripeCustomerService, StripeCustomerService>();
@@ -210,7 +221,22 @@ namespace CreativeCookies.VideoHosting.API
             }
             else
             {
-                app.UseExceptionHandler("/StatusCode");
+                //app.UseExceptionHandler("/StatusCode");
+                app.UseExceptionHandler(errorApp =>
+                {
+                    errorApp.Run(async context =>
+                    {
+                        context.Response.StatusCode = 500;
+                        context.Response.ContentType = "application/json";
+
+                        var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
+                        if (contextFeature != null)
+                        {
+                            string json = Newtonsoft.Json.JsonConvert.SerializeObject(contextFeature.Error);
+                            await context.Response.WriteAsync(json);
+                        }
+                    });
+                });
                 app.UseHsts();
             }
 

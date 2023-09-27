@@ -23,9 +23,9 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             await _repo.EnsureSaved(accountId);
         }
 
-        public async Task<string> GetConnectedAccountId()
+        public string GetConnectedAccountId()
         {
-            var result = await _repo.GetConnectedAccountId();
+            var result = _repo.GetConnectedAccountId();
             return result;
         }
     }

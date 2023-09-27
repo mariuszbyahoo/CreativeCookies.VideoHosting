@@ -48,7 +48,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
             var jsonRequestBody = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
 
             try
-            {
+            { // This service is vulnerable for timeouts. User story #168
                 var stripeEvent = EventUtility.ConstructEvent(jsonRequestBody,
                 Request.Headers["Stripe-Signature"],
                 endpointSecret);
@@ -56,8 +56,8 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                 if (stripeEvent.Type == Events.ProductCreated || stripeEvent.Type == Events.ProductUpdated)
                 {
                     var accountId = stripeEvent.Account;
-                    var apiDomain = "localhost:7034";//await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
-                    string targetUrl = $"https://{apiDomain}";
+                    var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+                    var targetUrl = $"https://{apiDomain}";
 
                     return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
                 }
@@ -75,19 +75,51 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                     if (account == null) return BadRequest("event.Data.Object is not a Stripe.Account");
                     var tableResponse = await _service.UpdateAccountId(account.Email, account.Id, _tableStorageAccountKey);
                     var apiDomain = await _service.GetDestinationUrlByEmail(account.Email, _tableStorageAccountKey);
-                    string targetUrl = $"https://{apiDomain}";
+                    var targetUrl = $"https://{apiDomain}";
+
+                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
+                }
+                else if (stripeEvent.Type == Events.InvoicePaymentSucceeded)
+                {
+                    var accountId = stripeEvent.Account;
+                    var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+                    var targetUrl = $"https://{apiDomain}";
+
+                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
+                }
+                else if (stripeEvent.Type == Events.ChargeRefunded)
+                {
+                    var accountId = stripeEvent.Account;
+                    var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+                    var targetUrl = $"https://{apiDomain}";
+
+                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
+                }
+                else if (stripeEvent.Type == Events.CustomerSubscriptionDeleted)
+                {
+                    var accountId = stripeEvent.Account;
+                    var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+                    var targetUrl = $"https://{apiDomain}";
+
+                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
+                }
+                else if (stripeEvent.Type == Events.SubscriptionScheduleCanceled)
+                {
+                    var accountId = stripeEvent.Account;
+                    var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+                    var targetUrl = $"https://{apiDomain}";
 
                     return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
                 }
                 else
                 {
-                    return BadRequest();
+                    return NoContent();
                 }
             }
             catch (StripeException e)
             {
                 msg = $"{msg} Exception message: {e.Message}, InnerException: {e.InnerException}, StackTrace: {e.StackTrace}, Source: {e.Source}";
-                return BadRequest("Stripe exception occured");
+                return BadRequest(msg);
             }
             catch (Exception e)
             {

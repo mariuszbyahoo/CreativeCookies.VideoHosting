@@ -26,7 +26,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
         public async Task OnGet()
         {
             AccountStatus = StripeConnectAccountStatus.Disconnected;
-            var connectedAccountId = await _connectAccountsSrv.GetConnectedAccountId();
+            var connectedAccountId = _connectAccountsSrv.GetConnectedAccountId();
             TempData["ConnectedAccountId"] = connectedAccountId;
             var isEligibleToQueryAPI = await _connectAccountsSrv.CanBeQueriedOnStripe(connectedAccountId);
             if (!string.IsNullOrEmpty(connectedAccountId) && isEligibleToQueryAPI)

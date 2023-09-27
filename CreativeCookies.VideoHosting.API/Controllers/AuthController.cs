@@ -11,6 +11,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Web;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
+using CreativeCookies.VideoHosting.DTOs.OAuth;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
@@ -280,18 +281,19 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
             var request = _httpContextAccessor.HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
-
             var extractedUser = await _codesService.GetUserByAuthCodeAsync(code);
+            var isAdmin = extractedUser.Role.Equals("admin", StringComparison.InvariantCultureIgnoreCase);
+            if (!isAdmin)
+                extractedUser = await CheckSubscriptionStatus(extractedUser);
+
             if (extractedUser == null)
             {
                 _logger.LogError($"Codes repo returned null for GetUserByAuthCodeAsync when invoked inside Token action with params: {nameof(client_id)}: {client_id}, {nameof(redirect_uri)}: {redirect_uri}, {nameof(grant_type)}: {grant_type}, {nameof(code)}: {code}, {nameof(code_verifier)}: {code_verifier}");
                 return GenerateBadRequest("server_error");
             }
-            // HACK: Get user's role and pass it into GenerateAccessToken
 
             var accessToken = _accessTokenService.GetNewAccessToken(extractedUser.Id, extractedUser.UserEmail, Guid.Parse(client_id), _configuration, baseUrl, extractedUser.Role);
             var refreshToken = await _refreshTokenSrv.GetNewRefreshToken(extractedUser.Id);
-            // HACK: TODO implement RBAC as describen in RFC6749 3.3
             var accessTokenCookieOptions = ReturnAuthCookieOptions(1);
             _httpContextAccessor.HttpContext.Response.Cookies.Append("stac", accessToken, accessTokenCookieOptions);
 
@@ -325,6 +327,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 {
                     return BadRequest("invalid refresh_token");
                 }
+                var isAdmin = user.Role.Equals("admin", StringComparison.InvariantCultureIgnoreCase);
+                if (!isAdmin)
+                    user = await CheckSubscriptionStatus(user);
 
                 var request = _httpContextAccessor.HttpContext.Request;
                 var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
@@ -347,6 +352,24 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 return response;
             }
             return BadRequest("invalid refresh_token");
+        }
+
+        private async Task<MyHubUserDto> CheckSubscriptionStatus(MyHubUserDto user)
+        {
+            // HACK: check subscription end date with the one on the Stripe's API
+            if (DateTime.UtcNow > user.SubscriptionEndDateUTC)
+            {
+                await _userManager.RemoveFromRoleAsync(user, "subscriber");
+                await _userManager.AddToRoleAsync(user, "nonsubscriber");
+                user.Role = "nonsubscriber";
+            }
+            else
+            {
+                await _userManager.AddToRoleAsync(user, "subscriber");
+                await _userManager.RemoveFromRoleAsync(user, "nonsubscriber");
+                user.Role = "subscriber";
+            }
+            return user;
         }
 
         private async Task<IActionResult?> ValidateCodeAndCodeVerifier(string code, string code_verifier, string client_id)

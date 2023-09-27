@@ -3,6 +3,7 @@ using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
@@ -12,9 +13,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     {
         private readonly IUsersService _srv;
 
-        public UsersController(IUsersService usersRepo)
+        public UsersController(IUsersService usersService)
         {
-            _srv = usersRepo;
+            _srv = usersService;
         }
 
         [HttpGet]
@@ -29,6 +30,34 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             var result = await _srv.GetUsersPaginatedResult(search, pageNumber, pageSize, role);
 
             return Ok(result);
+        }
+
+        [HttpGet("IsASubscriber")]
+        [Authorize]
+        public async Task<ActionResult<bool>> IsUserASubscriber()
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var stac = Request.Cookies["stac"];
+            if (tokenHandler.CanReadToken(stac))
+            {
+                var token = tokenHandler.ReadJwtToken(stac);
+                string userId = null;
+
+                foreach (var claim in token.Claims)
+                {
+                    if (claim.Type.Equals("nameid"))
+                    {
+                        userId = claim.Value;
+                        break;
+                    }
+                }
+
+                if (userId != null)
+                {
+                    return await _srv.IsUserSubscriber(userId);
+                }
+            }
+            return false;
         }
     }
 }

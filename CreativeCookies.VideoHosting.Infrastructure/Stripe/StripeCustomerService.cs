@@ -28,6 +28,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         public async Task<bool> CreateStripeCustomer(string userId, string userEmail)
         {
             StripeConfiguration.ApiKey = _stripeSecretAPIKey;
+            var connectAccountId = _connectAccountsService.GetConnectedAccountId();
             var customerService = new CustomerService();
             var customerOptions = new CustomerCreateOptions
             {
@@ -36,13 +37,15 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                 Metadata = new Dictionary<string, string>
                 {
                     { "UserId", userId },
-                    { "StripeConnectedAccountId", await _connectAccountsService.GetConnectedAccountId() }
                 }
             };
 
+            var requestOptions = new RequestOptions();
+            requestOptions.StripeAccount = connectAccountId;
+
             try
             {
-                var stripeCustomer = customerService.Create(customerOptions);
+                var stripeCustomer = customerService.Create(customerOptions, requestOptions);
 
                 var hasAssigned = await _usersSrv.AssignStripeCustomerId(userId, stripeCustomer.Id);
                 if (!hasAssigned)

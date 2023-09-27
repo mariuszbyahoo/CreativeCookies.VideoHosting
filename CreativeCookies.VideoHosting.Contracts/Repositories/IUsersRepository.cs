@@ -5,6 +5,15 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
 {
     public interface IUsersRepository
     {
+        Task<MyHubUserDto> GetUserByStripeCustomerId(string stripeCustomerId);
+        /// <summary>
+        /// Changes the AspNetUser.SubscriptionEndDateUtc value
+        /// </summary>
+        /// <param name="customerId">Stripe customer Id of a user</param>
+        /// <param name="endDateUtc">UTC subscription's end date</param>
+        /// <returns>true - if operation succeeded, otherwise false</returns>
+        Task<bool> ChangeSubscriptionEndDateUTC(string customerId, DateTime endDateUtc);
+
         Task<UsersPaginatedResultDto> GetUsersPaginatedResult(string search, int pageNumber, int pageSize, string role);
 
         /// <summary>
@@ -14,5 +23,12 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
         /// <param name="stripeCustomerId">Stripe Customer Id to assign</param>
         /// <returns>True - success, False - error occured or no user has been found in the database</returns>
         Task<bool> AssignStripeCustomerId(string userId, string stripeCustomerId);
+
+        /// <summary>
+        /// Checks underlying DAL inf. and returns true if all is set as Subscriber
+        /// </summary>
+        /// <param name="userId">Id of a user to look up for</param>
+        /// <returns>true - user successfuly granted with access, false - no or some error occured</returns>
+        Task<bool> IsUserSubscriber(string userId);
     }
 }

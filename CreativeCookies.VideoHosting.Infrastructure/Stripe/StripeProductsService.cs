@@ -187,7 +187,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         {
             var accountId = string.Empty;
 
-            accountId = await _connectAccountsService.GetConnectedAccountId();
+            accountId = _connectAccountsService.GetConnectedAccountId();
             var requestOptions = new RequestOptions();
             requestOptions.StripeAccount = accountId;
             if (string.IsNullOrWhiteSpace(accountId)) return null;

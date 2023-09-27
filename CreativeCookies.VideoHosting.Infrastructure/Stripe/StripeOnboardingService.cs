@@ -72,6 +72,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             {
                 StripeConfiguration.ApiKey = _stripeSecretAPIKey;
 
+                // Prefill all of the legal info here:
                 var accountOptions = new AccountCreateOptions { Type = "standard" };
                 var accountSrv = new AccountService();
                 var accountResponse = CreateStripeAccount(accountOptions);

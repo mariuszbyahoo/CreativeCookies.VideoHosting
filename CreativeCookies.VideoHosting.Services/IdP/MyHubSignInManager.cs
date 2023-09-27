@@ -45,7 +45,7 @@ namespace CreativeCookies.VideoHosting.Services.IdP
         {
             var res = await _signInManager.GetTwoFactorAuthenticationUserAsync();
             if (res == null) return null;
-            var dto = new MyHubUserDto(Guid.Parse(res.Id), res.Email, "", res.EmailConfirmed, res.StripeCustomerId);
+            var dto = new MyHubUserDto(Guid.Parse(res.Id), res.Email, "", res.EmailConfirmed, res.StripeCustomerId, res.SubscriptionEndDateUTC);
             return dto;
         }
 
