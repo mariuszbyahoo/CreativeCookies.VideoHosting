@@ -48,7 +48,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
             var jsonRequestBody = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
 
             try
-            {
+            { // This service is vulnerable for timeouts. User story #168
                 var stripeEvent = EventUtility.ConstructEvent(jsonRequestBody,
                 Request.Headers["Stripe-Signature"],
                 endpointSecret);
