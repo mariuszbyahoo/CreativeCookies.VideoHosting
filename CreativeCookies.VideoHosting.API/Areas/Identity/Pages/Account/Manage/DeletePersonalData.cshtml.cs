@@ -133,58 +133,56 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
         private async Task DeleteStripeEntities(string stripeCustomerId)
         {
             StripeConfiguration.ApiKey = _stripeApiSecretKey;
-
-            var subscriptionService = new SubscriptionService();
-            var subscriptionListOptions = new SubscriptionListOptions
+            try
             {
-                Customer = stripeCustomerId
-            };
-            var requestOptions = await GetRequestOptions();
-            StripeList<Subscription> subscriptions = subscriptionService.List(subscriptionListOptions, requestOptions);
-
-            foreach (var subscription in subscriptions)
-            {
-                string subscriptionId = subscription.Id;
-
-                var paymentService = new PaymentIntentService();
-                var paymentIntents = paymentService.List(
-                    new PaymentIntentListOptions
-                    {
-                        Customer = stripeCustomerId,
-                    }, requestOptions
-                ).ToList();
-
-                if (paymentIntents.Count > 0)
+                var subscriptionService = new SubscriptionService();
+                var subscriptionListOptions = new SubscriptionListOptions
                 {
-                    foreach (var paymentIntent in paymentIntents)
-                    {
-                        var refundService = new RefundService();
-                        var refundOptions = new RefundCreateOptions
-                        {
-                            PaymentIntent = paymentIntent.Id
-                        };
-                        refundService.Create(refundOptions, requestOptions);
-                    }
-                }
-
-                var subscriptionCancelOptions = new SubscriptionCancelOptions()
-                {
-                    Prorate = true
+                    Customer = stripeCustomerId
                 };
-                try
+                var requestOptions = await GetRequestOptions();
+                StripeList<Subscription> subscriptions = subscriptionService.List(subscriptionListOptions, requestOptions);
+
+                foreach (var subscription in subscriptions)
                 {
+                    string subscriptionId = subscription.Id;
+
+                    var paymentService = new PaymentIntentService();
+                    var paymentIntents = paymentService.List(
+                        new PaymentIntentListOptions
+                        {
+                            Customer = stripeCustomerId,
+                        }, requestOptions
+                    ).ToList();
+
+                    if (paymentIntents.Count > 0)
+                    {
+                        foreach (var paymentIntent in paymentIntents)
+                        {
+                            var refundService = new RefundService();
+                            var refundOptions = new RefundCreateOptions
+                            {
+                                PaymentIntent = paymentIntent.Id
+                            };
+                            refundService.Create(refundOptions, requestOptions);
+                        }
+                    }
+
+                    var subscriptionCancelOptions = new SubscriptionCancelOptions()
+                    {
+                        Prorate = true
+                    };
                     subscriptionService.Cancel(subscriptionId, subscriptionCancelOptions, requestOptions);
                 }
-                catch (StripeException ex)
+                if (!string.IsNullOrWhiteSpace(stripeCustomerId))
                 {
-                    if (!ex.StripeError.Code.Equals("charge_already_refunded"))
-                        _logger.LogError(ex, ex.Message);
+                    var customerService = new CustomerService();
+                    customerService.Delete(stripeCustomerId, requestOptions: requestOptions);
                 }
             }
-            if (!string.IsNullOrWhiteSpace(stripeCustomerId))
+            catch(StripeException ex)
             {
-                var customerService = new CustomerService();
-                customerService.Delete(stripeCustomerId, requestOptions: requestOptions);
+                _logger.LogError(ex, $"When ran method ran with stripeCustomerId: {stripeCustomerId}: {ex.Message}, {ex.StripeError.Error}, {ex.StackTrace}");
             }
         }
 
