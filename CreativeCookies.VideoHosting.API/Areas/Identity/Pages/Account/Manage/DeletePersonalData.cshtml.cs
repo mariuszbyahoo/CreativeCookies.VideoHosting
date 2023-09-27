@@ -99,7 +99,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
-            // HACK: Should I also send a refund?
+
             RequirePassword = await _userManager.HasPasswordAsync(user);
             if (RequirePassword)
             {
