@@ -182,7 +182,11 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
             }
             catch(StripeException ex)
             {
-                _logger.LogError(ex, $"When ran method ran with stripeCustomerId: {stripeCustomerId}: {ex.Message}, {ex.StripeError.Error}, {ex.StackTrace}");
+                _logger.LogError(ex, $"When ran DeleteStripeEntities() with stripeCustomerId: {stripeCustomerId}: {ex.Message}, {ex.StripeError.Error}, {ex.StackTrace}");
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, $"When ran DeleteStripeEntities() with stripeCustomerId: {stripeCustomerId}: {ex.Message}, {ex.StackTrace}");
             }
         }
 
