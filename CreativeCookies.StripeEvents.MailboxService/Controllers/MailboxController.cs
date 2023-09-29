@@ -26,7 +26,7 @@ namespace CreativeCookies.StripeEvents.MailboxService.Controllers
 
             var eventRequestDTO = new StripeEventRequestDTO() { JsonRequestBody = jsonRequestBody, StripeSignature = stripeSignature };
 
-            var serializedRequestData = JsonSerializer.Serialize(requestData);
+            var serializedRequestData = JsonSerializer.Serialize(eventRequestDTO);
 
             await SendMessageToQueue(serializedRequestData);
 
