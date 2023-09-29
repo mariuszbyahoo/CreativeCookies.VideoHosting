@@ -31,22 +31,6 @@ namespace CreativeCookies.StripeEvents.MailboxService.Controllers
             await SendMessageToQueue(serializedRequestData);
 
             return Ok("Event received.");
-            /*
-             Data structure desired by the receiver:
-                {
-                    StripeEventRequest: {
-                        StripeSignature: ${stripeSignature},
-                        JsonRequestBody: ${jsonRequestBody}
-                    }
-                }
-                var jsonRequestBody = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
-
-                try
-                { 
-                    var stripeEvent = EventUtility.ConstructEvent(jsonRequestBody,
-                    Request.Headers["Stripe-Signature"],
-                    endpointSecret);
-             */
         }
 
         private async Task SendMessageToQueue(string messageBody)
