@@ -33,7 +33,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _userManager= userManager;
             _userRepo = userRepo;
             _logger = logger;
-            _wrapper = wrapper; 
+            _wrapper = wrapper;
         }
 
         [HttpPost("")]

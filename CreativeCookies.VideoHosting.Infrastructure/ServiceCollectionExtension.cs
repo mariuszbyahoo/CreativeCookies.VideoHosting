@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Azure.Security.KeyVault.Secrets;
 using Azure.Identity;
 using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
+using CreativeCookies.VideoHosting.Infrastructure.Azure;
 
 namespace CreativeCookies.VideoHosting.Infrastructure
 {
@@ -30,11 +31,11 @@ namespace CreativeCookies.VideoHosting.Infrastructure
                 stripeSecretKey = client.GetSecret("StripeTestAPIKey");
                 stripeWebhookSigningKey = client.GetSecret("StripeTestWebhookSigningKey");
             }
-
             services.AddSingleton(w => new StripeSecretKeyWrapper(stripeSecretKey.Value));
             services.AddSingleton(w => new StripeWebhookSigningKeyWrapper(stripeWebhookSigningKey.Value));
             services.AddSingleton(x => new StorageSharedKeyCredential(storageAccountName, storageAccountKey));
             services.AddSingleton(x => new BlobServiceClient(new Uri(blobServiceUrl), x.GetRequiredService<StorageSharedKeyCredential>()));
+            services.AddHostedService<StripeMessageReceiver>();
             return services;
         }
     }
