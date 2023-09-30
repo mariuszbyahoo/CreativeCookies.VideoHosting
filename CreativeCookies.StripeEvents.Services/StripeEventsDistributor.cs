@@ -1,57 +1,37 @@
-﻿using CreativeCookies.StripeEvents.RedistributionService.Contracts;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Azure.Core;
+using CreativeCookies.StripeEvents.Contracts;
+using CreativeCookies.StripeEvents.DTOs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using RestSharp;
 using Stripe;
-using Stripe.FinancialConnections;
-using System.Security.Principal;
-using System.Text;
 
-namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
+namespace CreativeCookies.StripeEvents.Services
 {
-    [Route("")]
-    [ApiController]
-    public class EventsRedistributionController : ControllerBase
+    public class StripeEventsDistributor : IStripeEventsDistributor
     {
         private readonly IDeployedInstancesService _service;
         private readonly IConfiguration _configuration;
+        private readonly ILogger _logger;
         private readonly string _tableStorageAccountKey;
 
-        public EventsRedistributionController(IDeployedInstancesService service, IConfiguration configuration)
+        public StripeEventsDistributor(IConfiguration configuration, ILogger<StripeEventsDistributor> logger, IDeployedInstancesService service)
         {
+            _logger = logger;
             _service = service;
             _configuration = configuration;
             _tableStorageAccountKey = _configuration.GetValue<string>("TableStorageAccountKey");
         }
 
-        //[HttpGet("")]
-        //public async Task<IActionResult> GetApiUrl(string accountId)
-        //{
-        //    try
-        //    {
-        //        var res = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
-        //        return Ok(res);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //}
-
-        [HttpPost("")]
-        public async Task<IActionResult> ProcessEvent()
+        public async Task RedirectEvent(StripeEventDTO stripeEventDto)
         {
             string endpointSecret = _configuration.GetValue<string>("WebhookEndpointSecret");
             var msg = "Check logs for an exception - event has not been forwarded ";
-            var jsonRequestBody = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
 
             try
             { // This service is vulnerable for timeouts. User story #168
-                var stripeEvent = EventUtility.ConstructEvent(jsonRequestBody,
-                Request.Headers["Stripe-Signature"],
-                endpointSecret);
+                var stripeEvent = EventUtility.ConstructEvent(stripeEventDto.JsonRequestBody,
+                stripeEventDto.StripeSignature, endpointSecret);
 
                 if (stripeEvent.Type == Events.ProductCreated || stripeEvent.Type == Events.ProductUpdated)
                 {
@@ -59,7 +39,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                     var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
                     var targetUrl = $"https://{apiDomain}";
 
-                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
+                    await RedirectEvent(targetUrl, stripeEventDto.JsonRequestBody, stripeEventDto.StripeSignature);
                 }
                 else if (stripeEvent.Type == Events.ProductDeleted)
                 {
@@ -67,17 +47,20 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                     var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
                     string targetUrl = $"https://{apiDomain}";
 
-                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
+                    await RedirectEvent(targetUrl, stripeEventDto.JsonRequestBody, stripeEventDto.StripeSignature);
                 }
                 else if (stripeEvent.Type == Events.AccountUpdated)
                 {
                     var account = stripeEvent.Data.Object as Stripe.Account;
-                    if (account == null) return BadRequest("event.Data.Object is not a Stripe.Account");
-                    var tableResponse = await _service.UpdateAccountId(account.Email, account.Id, _tableStorageAccountKey);
-                    var apiDomain = await _service.GetDestinationUrlByEmail(account.Email, _tableStorageAccountKey);
-                    var targetUrl = $"https://{apiDomain}";
+                    if (account == null) _logger.LogError("event.Data.Object is not a Stripe.Account");
+                    else
+                    {
+                        var tableResponse = await _service.UpdateAccountId(account.Email, account.Id, _tableStorageAccountKey);
+                        var apiDomain = await _service.GetDestinationUrlByEmail(account.Email, _tableStorageAccountKey);
+                        var targetUrl = $"https://{apiDomain}";
 
-                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
+                        await RedirectEvent(targetUrl, stripeEventDto.JsonRequestBody, stripeEventDto.StripeSignature);
+                    }
                 }
                 else if (stripeEvent.Type == Events.InvoicePaymentSucceeded)
                 {
@@ -85,7 +68,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                     var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
                     var targetUrl = $"https://{apiDomain}";
 
-                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
+                    await RedirectEvent(targetUrl, stripeEventDto.JsonRequestBody, stripeEventDto.StripeSignature);
                 }
                 else if (stripeEvent.Type == Events.ChargeRefunded)
                 {
@@ -93,7 +76,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                     var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
                     var targetUrl = $"https://{apiDomain}";
 
-                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
+                    await RedirectEvent(targetUrl, stripeEventDto.JsonRequestBody, stripeEventDto.StripeSignature);
                 }
                 else if (stripeEvent.Type == Events.CustomerSubscriptionDeleted)
                 {
@@ -101,7 +84,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                     var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
                     var targetUrl = $"https://{apiDomain}";
 
-                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
+                    await RedirectEvent(targetUrl, stripeEventDto.JsonRequestBody, stripeEventDto.StripeSignature);
                 }
                 else if (stripeEvent.Type == Events.SubscriptionScheduleCanceled)
                 {
@@ -109,36 +92,37 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
                     var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
                     var targetUrl = $"https://{apiDomain}";
 
-                    return await RedirectEvent(targetUrl, jsonRequestBody, Request.Headers["Stripe-Signature"]);
+                    await RedirectEvent(targetUrl, stripeEventDto.JsonRequestBody, stripeEventDto.StripeSignature);
                 }
                 else
                 {
-                    return NoContent();
+                    _logger.LogWarning("Unexpected event type has been received, not redirected");
                 }
             }
             catch (StripeException e)
             {
                 msg = $"{msg} Exception message: {e.Message}, InnerException: {e.InnerException}, StackTrace: {e.StackTrace}, Source: {e.Source}";
-                return BadRequest(msg);
+                _logger.LogError(msg, e );
             }
             catch (Exception e)
             {
                 msg = $"{msg} Exception message: {e.Message}, InnerException: {e.InnerException}, StackTrace: {e.StackTrace}, Source: {e.Source}";
+                _logger.LogError(msg, e );
             }
-            return Ok(msg);
+            _logger.LogInformation(msg);
         }
-        private async Task<IActionResult> RedirectEvent(string targetUrl, string jsonRequestBody, string stripeSignature)
+        private async Task RedirectEvent(string targetUrl, string jsonRequestBody, string stripeSignature)
         {
             var client = new RestClient(targetUrl);
             var request = new RestRequest("StripeWebhook", Method.Post);
 
             request.AddHeader("Content-Type", "application/json");
             request.AddHeader("Stripe-Signature", stripeSignature);
-            request.AddBody(jsonRequestBody, ContentType.Plain);
+            request.AddBody(jsonRequestBody, RestSharp.ContentType.Plain);
 
             var response = await client.ExecuteAsync(request);
 
-            return Ok($"Redirection result status code: {response.StatusCode}");
+            _logger.LogInformation($"Redirection result status code: {response.StatusCode}");
         }
     }
 }
