@@ -35,7 +35,6 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             services.AddSingleton(w => new StripeWebhookSigningKeyWrapper(stripeWebhookSigningKey.Value));
             services.AddSingleton(x => new StorageSharedKeyCredential(storageAccountName, storageAccountKey));
             services.AddSingleton(x => new BlobServiceClient(new Uri(blobServiceUrl), x.GetRequiredService<StorageSharedKeyCredential>()));
-            services.AddHostedService<StripeMessageReceiver>();
             return services;
         }
     }

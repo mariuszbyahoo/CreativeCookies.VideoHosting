@@ -1,5 +1,4 @@
 ﻿using Azure.Messaging.ServiceBus;
-using CreativeCookies.VideoHosting.Contracts.Infrastructure.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -9,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Infrastructure.Azure
+namespace CreativeCookies.StripeEvents.Services.HostedServices
 {
     public class StripeMessageReceiver : IHostedService
     {

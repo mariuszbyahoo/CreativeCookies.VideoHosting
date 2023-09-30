@@ -2,6 +2,7 @@
 
 using CreativeCookies.StripeEvents.Contracts;
 using CreativeCookies.StripeEvents.Services;
+using CreativeCookies.StripeEvents.Services.HostedServices;
 
 namespace CreativeCookies.StripeEvents.RedistributionService
 {
@@ -18,7 +19,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
+            builder.Services.AddHostedService<StripeMessageReceiver>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
