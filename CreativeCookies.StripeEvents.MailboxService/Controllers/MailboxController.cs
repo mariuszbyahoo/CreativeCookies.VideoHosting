@@ -18,6 +18,12 @@ namespace CreativeCookies.StripeEvents.MailboxService.Controllers
             _serviceBusClient = new ServiceBusClient(configuration.GetValue<string>("ServiceBusConnectionString"));
         }
 
+        //[HttpGet("")]
+        //public IActionResult GetStatus()
+        //{
+        //    return Ok("Mailbox running!");
+        //}
+
         [HttpPost("")]
         public async Task<IActionResult> ReceiveStripeEvent()
         {

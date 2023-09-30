@@ -19,12 +19,6 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Controllers
         private readonly IConfiguration _configuration;
         private readonly string _tableStorageAccountKey;
 
-        /*
-         
-            HACK: GET RID OF THIS FOR THE SAKE OF FULLY HOSTED SERVICE MANAGEMENT.
-         
-         */
-
         public EventsRedistributionController(IDeployedInstancesService service, IConfiguration configuration)
         {
             _service = service;
