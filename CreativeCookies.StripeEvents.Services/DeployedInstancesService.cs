@@ -1,11 +1,14 @@
 ﻿using Azure;
 using Azure.Data.Tables;
-using CreativeCookies.StripeEvents.RedistributionService.Contracts;
-using CreativeCookies.StripeEvents.RedistributionService.DAO;
-using System.Collections.Concurrent;
-using System.Xml;
+using CreativeCookies.StripeEvents.Contracts;
+using CreativeCookies.StripeEvents.DAL;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace CreativeCookies.StripeEvents.RedistributionService.Services
+namespace CreativeCookies.StripeEvents.Services
 {
     public class DeployedInstancesService : IDeployedInstancesService
     {
@@ -28,7 +31,7 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Services
             string filter = TableClient.CreateQueryFilter<DeployedInstancesEntity>(e => e.RowKey.Equals(adminEmail));
             await foreach (var entity in tableClient.QueryAsync<DeployedInstancesEntity>(filter))
             {
-                return entity.PartitionKey;                
+                return entity.PartitionKey;
             }
             return string.Empty;
         }
@@ -50,4 +53,5 @@ namespace CreativeCookies.StripeEvents.RedistributionService.Services
 
 
     }
+
 }

@@ -1,9 +1,14 @@
 ﻿using Azure;
 using Azure.Data.Tables;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace CreativeCookies.StripeEvents.RedistributionService.DAO
+namespace CreativeCookies.StripeEvents.DAL
 {
-    public class DeployedInstancesEntity :ITableEntity
+    public class DeployedInstancesEntity : ITableEntity
     {
         /// <summary>
         /// Stripe Connect account's ID

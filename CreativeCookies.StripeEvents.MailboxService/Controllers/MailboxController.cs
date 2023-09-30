@@ -1,5 +1,5 @@
 ﻿using Azure.Messaging.ServiceBus;
-using CreativeCookies.StripeEvents.MailboxService.DTOs;
+using CreativeCookies.StripeEvents.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;

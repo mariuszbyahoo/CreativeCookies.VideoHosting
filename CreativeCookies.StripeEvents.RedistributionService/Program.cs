@@ -1,6 +1,7 @@
 
-using CreativeCookies.StripeEvents.RedistributionService.Contracts;
-using CreativeCookies.StripeEvents.RedistributionService.Services;
+
+using CreativeCookies.StripeEvents.Contracts;
+using CreativeCookies.StripeEvents.Services;
 
 namespace CreativeCookies.StripeEvents.RedistributionService
 {

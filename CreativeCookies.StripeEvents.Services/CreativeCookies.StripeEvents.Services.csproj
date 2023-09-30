@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Data.Tables" Version="12.8.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CreativeCookies.StripeEvents.Contracts\CreativeCookies.StripeEvents.Contracts.csproj" />
+    <ProjectReference Include="..\CreativeCookies.StripeEvents.DAL\CreativeCookies.StripeEvents.DAL.csproj" />
+  </ItemGroup>
+
+</Project>

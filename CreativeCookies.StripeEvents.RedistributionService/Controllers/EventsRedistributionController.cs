@@ -1,4 +1,4 @@
-﻿using CreativeCookies.StripeEvents.RedistributionService.Contracts;
+﻿using CreativeCookies.StripeEvents.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;

@@ -15,4 +15,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CreativeCookies.StripeEvents.Contracts\CreativeCookies.StripeEvents.Contracts.csproj" />
+    <ProjectReference Include="..\CreativeCookies.StripeEvents.Services\CreativeCookies.StripeEvents.Services.csproj" />
+  </ItemGroup>
+
 </Project>
