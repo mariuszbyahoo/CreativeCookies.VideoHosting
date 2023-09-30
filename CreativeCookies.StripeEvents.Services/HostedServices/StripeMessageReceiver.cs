@@ -1,4 +1,6 @@
 ﻿using Azure.Messaging.ServiceBus;
+using CreativeCookies.StripeEvents.Contracts;
+using CreativeCookies.StripeEvents.DTOs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -14,12 +16,14 @@ namespace CreativeCookies.StripeEvents.Services.HostedServices
     {
         private readonly ServiceBusClient _serviceBusClient;
         private readonly ServiceBusProcessor _processor;
+        private readonly IStripeEventsDistributor _eventsDistributor;
         private readonly ILogger _logger;
 
 
-        public StripeMessageReceiver(IConfiguration configuration, ILogger<StripeMessageReceiver> logger)
+        public StripeMessageReceiver(IStripeEventsDistributor eventsDistributor, IConfiguration configuration, ILogger<StripeMessageReceiver> logger)
         {
             _logger = logger;
+            _eventsDistributor = eventsDistributor;
             _serviceBusClient = new ServiceBusClient(configuration.GetValue<string>("ServiceBusConnectionString"));
             _processor = _serviceBusClient.CreateProcessor("stripe_events_queue", new ServiceBusProcessorOptions());
             _processor.ProcessMessageAsync += MessageHandler;
@@ -44,9 +48,8 @@ namespace CreativeCookies.StripeEvents.Services.HostedServices
 
         public async Task MessageHandler(ProcessMessageEventArgs args)
         {
-            string messageBody = args.Message.Body.ToString();
-            // there has to be some service which would then process the coming Stripe Events
-            // HACK: Do something with the message.
+            var stripeEventDto = System.Text.Json.JsonSerializer.Deserialize<StripeEventRequestDTO>(args.Message.Body.ToString());
+            await _eventsDistributor.RedirectEvent(stripeEventDto);
             await args.CompleteMessageAsync(args.Message);
         }
     }
