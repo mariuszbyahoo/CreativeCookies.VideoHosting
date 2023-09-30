@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CreativeCookies.StripeEvents.DTOs
 {
-    public class StripeEventRequestDTO
+    public class StripeEventDTO
     {
         public string StripeSignature { get; set; }
         public string JsonRequestBody { get; set; }

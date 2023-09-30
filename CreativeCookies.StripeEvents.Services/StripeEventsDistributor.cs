@@ -23,7 +23,7 @@ namespace CreativeCookies.StripeEvents.Services
             _tableStorageAccountKey = _configuration.GetValue<string>("TableStorageAccountKey");
         }
 
-        public async Task RedirectEvent(StripeEventRequestDTO stripeEventDto)
+        public async Task RedirectEvent(StripeEventDTO stripeEventDto)
         {
             string endpointSecret = _configuration.GetValue<string>("WebhookEndpointSecret");
             var msg = "Check logs for an exception - event has not been forwarded ";

@@ -48,7 +48,7 @@ namespace CreativeCookies.StripeEvents.Services.HostedServices
 
         public async Task MessageHandler(ProcessMessageEventArgs args)
         {
-            var stripeEventDto = System.Text.Json.JsonSerializer.Deserialize<StripeEventRequestDTO>(args.Message.Body.ToString());
+            var stripeEventDto = System.Text.Json.JsonSerializer.Deserialize<StripeEventDTO>(args.Message.Body.ToString());
             await _eventsDistributor.RedirectEvent(stripeEventDto);
             await args.CompleteMessageAsync(args.Message);
         }

@@ -9,6 +9,6 @@ namespace CreativeCookies.StripeEvents.Contracts
 {
     public interface IStripeEventsDistributor
     {
-        Task RedirectEvent(StripeEventRequestDTO stripeEvent);
+        Task RedirectEvent(StripeEventDTO stripeEvent);
     }
 }

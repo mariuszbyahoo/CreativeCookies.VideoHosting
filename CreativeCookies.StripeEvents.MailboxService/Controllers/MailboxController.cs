@@ -24,7 +24,7 @@ namespace CreativeCookies.StripeEvents.MailboxService.Controllers
             string jsonRequestBody = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
             string stripeSignature = Request.Headers["Stripe-Signature"];
 
-            var eventRequestDTO = new StripeEventRequestDTO() { JsonRequestBody = jsonRequestBody, StripeSignature = stripeSignature };
+            var eventRequestDTO = new StripeEventDTO() { JsonRequestBody = jsonRequestBody, StripeSignature = stripeSignature };
 
             var serializedRequestData = JsonSerializer.Serialize(eventRequestDTO);
 

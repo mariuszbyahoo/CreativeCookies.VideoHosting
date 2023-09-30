@@ -1,6 +1,7 @@
 
 
 using CreativeCookies.StripeEvents.Contracts;
+using CreativeCookies.StripeEvents.DTOs;
 using CreativeCookies.StripeEvents.Services;
 using CreativeCookies.StripeEvents.Services.HostedServices;
 
