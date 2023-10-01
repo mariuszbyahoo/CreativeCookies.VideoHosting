@@ -89,7 +89,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         {
             var result = await _context.Users.Where(u => u.Id.ToLower() == userId.ToLower()).FirstOrDefaultAsync();
 
-            return result != null && result.SubscriptionEndDateUTC > DateTime.UtcNow;
+            return result != null && result.SubscriptionStartDateUTC < DateTime.UtcNow && result.SubscriptionEndDateUTC > DateTime.UtcNow;
         }
     }
 }
