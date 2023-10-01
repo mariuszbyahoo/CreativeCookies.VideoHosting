@@ -356,18 +356,17 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         private async Task<MyHubUserDto> CheckSubscriptionStatus(MyHubUserDto user)
         {
-            // HACK: check subscription end date with the one on the Stripe's API
-            if (DateTime.UtcNow > user.SubscriptionEndDateUTC)
-            {
-                await _userManager.RemoveFromRoleAsync(user, "subscriber");
-                await _userManager.AddToRoleAsync(user, "nonsubscriber");
-                user.Role = "nonsubscriber";
-            }
-            else
+            if (user.SubscriptionStartDateUTC < DateTime.UtcNow && user.SubscriptionEndDateUTC > DateTime.UtcNow)
             {
                 await _userManager.AddToRoleAsync(user, "subscriber");
                 await _userManager.RemoveFromRoleAsync(user, "nonsubscriber");
                 user.Role = "subscriber";
+            }
+            else
+            {
+                await _userManager.RemoveFromRoleAsync(user, "subscriber");
+                await _userManager.AddToRoleAsync(user, "nonsubscriber");
+                user.Role = "nonsubscriber";
             }
             return user;
         }
