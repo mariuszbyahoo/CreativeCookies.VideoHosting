@@ -79,10 +79,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 }
                 else if (stripeEvent.Type == Events.InvoicePaymentSucceeded)
                 {
+                    // HACK: Distinguish between one time invoices and a subscription invoices
                     _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
                     var invoice = stripeEvent.Data.Object as Invoice;
-                    var res = await _userRepo.ChangeSubscriptionEndDateUTC(invoice.CustomerId, invoice.Lines.Data[0].Period.End);
-                    if (res) _logger.LogInformation($"SubscriptionEndDateUTC of Stripe Customer id: {invoice.CustomerId} updated to {invoice.Lines.Data[0].Period.End}");
+                    var res = await _userRepo.ChangeSubscriptionDatesUTC(invoice.CustomerId, invoice.Lines.Data[0].Period.Start, invoice.Lines.Data[0].Period.End);
+                    if (res) _logger.LogInformation($"Subscription dates range for a Stripe Customer id: {invoice.CustomerId} updated to {invoice.Lines.Data[0].Period.Start} - {invoice.Lines.Data[0].Period.End}");
                     else return BadRequest($"Database result of SubscriptionEndDateUTC update was false for customer with id: {invoice.CustomerId}");
                 }
                 else if (stripeEvent.Type == Events.ChargeRefunded)
