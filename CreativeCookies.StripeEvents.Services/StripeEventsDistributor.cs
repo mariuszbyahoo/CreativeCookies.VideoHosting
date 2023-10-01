@@ -26,8 +26,7 @@ namespace CreativeCookies.StripeEvents.Services
         public async Task RedirectEvent(StripeEventDTO stripeEventDto)
         {
             string endpointSecret = _configuration.GetValue<string>("WebhookEndpointSecret");
-            var msg = "Check logs for an exception - event has not been forwarded ";
-
+            _logger.LogInformation("\nStarting event redirection process");
             try
             { // This service is vulnerable for timeouts. User story #168
                 var stripeEvent = EventUtility.ConstructEvent(stripeEventDto.JsonRequestBody,
@@ -38,6 +37,7 @@ namespace CreativeCookies.StripeEvents.Services
                     var accountId = stripeEvent.Account;
                     var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
                     var targetUrl = $"https://{apiDomain}";
+                    _logger.LogInformation($"\nEvent type {stripeEvent.Type}");
 
                     await RedirectEvent(targetUrl, stripeEventDto.JsonRequestBody, stripeEventDto.StripeSignature);
                 }
@@ -46,6 +46,7 @@ namespace CreativeCookies.StripeEvents.Services
                     var accountId = stripeEvent.Account;
                     var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
                     string targetUrl = $"https://{apiDomain}";
+                    _logger.LogInformation($"\nEvent type {stripeEvent.Type}");
 
                     await RedirectEvent(targetUrl, stripeEventDto.JsonRequestBody, stripeEventDto.StripeSignature);
                 }
@@ -58,6 +59,7 @@ namespace CreativeCookies.StripeEvents.Services
                         var tableResponse = await _service.UpdateAccountId(account.Email, account.Id, _tableStorageAccountKey);
                         var apiDomain = await _service.GetDestinationUrlByEmail(account.Email, _tableStorageAccountKey);
                         var targetUrl = $"https://{apiDomain}";
+                        _logger.LogInformation($"\nEvent type {stripeEvent.Type}");
 
                         await RedirectEvent(targetUrl, stripeEventDto.JsonRequestBody, stripeEventDto.StripeSignature);
                     }
@@ -67,6 +69,7 @@ namespace CreativeCookies.StripeEvents.Services
                     var accountId = stripeEvent.Account;
                     var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
                     var targetUrl = $"https://{apiDomain}";
+                    _logger.LogInformation($"\nEvent type {stripeEvent.Type}");
 
                     await RedirectEvent(targetUrl, stripeEventDto.JsonRequestBody, stripeEventDto.StripeSignature);
                 }
@@ -75,6 +78,7 @@ namespace CreativeCookies.StripeEvents.Services
                     var accountId = stripeEvent.Account;
                     var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
                     var targetUrl = $"https://{apiDomain}";
+                    _logger.LogInformation($"\nEvent type {stripeEvent.Type}");
 
                     await RedirectEvent(targetUrl, stripeEventDto.JsonRequestBody, stripeEventDto.StripeSignature);
                 }
@@ -83,6 +87,7 @@ namespace CreativeCookies.StripeEvents.Services
                     var accountId = stripeEvent.Account;
                     var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
                     var targetUrl = $"https://{apiDomain}";
+                    _logger.LogInformation($"\nEvent type {stripeEvent.Type}");
 
                     await RedirectEvent(targetUrl, stripeEventDto.JsonRequestBody, stripeEventDto.StripeSignature);
                 }
@@ -91,25 +96,26 @@ namespace CreativeCookies.StripeEvents.Services
                     var accountId = stripeEvent.Account;
                     var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
                     var targetUrl = $"https://{apiDomain}";
+                    _logger.LogInformation($"\nEvent type {stripeEvent.Type}");
 
                     await RedirectEvent(targetUrl, stripeEventDto.JsonRequestBody, stripeEventDto.StripeSignature);
                 }
                 else
                 {
-                    _logger.LogWarning("Unexpected event type has been received, not redirected");
+                    _logger.LogWarning("\nUnexpected event type has been received, not redirected");
                 }
             }
             catch (StripeException e)
             {
-                msg = $"{msg} Exception message: {e.Message}, InnerException: {e.InnerException}, StackTrace: {e.StackTrace}, Source: {e.Source}";
-                _logger.LogError(msg, e );
+                var exMsg = $"\nException message: {e.Message}, InnerException: {e.InnerException}, StackTrace: {e.StackTrace}, Source: {e.Source}";
+                _logger.LogError(exMsg, e );
             }
             catch (Exception e)
             {
-                msg = $"{msg} Exception message: {e.Message}, InnerException: {e.InnerException}, StackTrace: {e.StackTrace}, Source: {e.Source}";
-                _logger.LogError(msg, e );
+                var exMsg = $"\nException message: {e.Message}, InnerException: {e.InnerException}, StackTrace: {e.StackTrace}, Source: {e.Source}";
+                _logger.LogError(exMsg, e );
             }
-            _logger.LogInformation(msg);
+            _logger.LogInformation("\nSuccessfully finished redirection process.");
         }
         private async Task RedirectEvent(string targetUrl, string jsonRequestBody, string stripeSignature)
         {
@@ -122,7 +128,7 @@ namespace CreativeCookies.StripeEvents.Services
 
             var response = await client.ExecuteAsync(request);
 
-            _logger.LogInformation($"Redirection result status code: {response.StatusCode}");
+            _logger.LogInformation($"\nRedirection result status code: {response.StatusCode}");
         }
     }
 }
