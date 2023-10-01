@@ -22,7 +22,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         public async Task<MyHubUserDto> GetUserByStripeCustomerId(string stripeCustomerId)
         {
             var dao = await _context.Users.Where(u => u.StripeCustomerId.Equals(stripeCustomerId)).FirstOrDefaultAsync();
-            var dto =  new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionEndDateUTC);
+            var dto =  new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC);
             dto.Role = string.Join(",",await _userManager.GetRolesAsync(dto));
             return dto;
         }
@@ -30,6 +30,15 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         public async Task<bool> ChangeSubscriptionEndDateUTC(string customerId, DateTime endDateUtc)
         {
             var dao = await _context.Users.Where(u => u.StripeCustomerId.Equals(customerId)).FirstOrDefaultAsync();
+            dao.SubscriptionEndDateUTC = endDateUtc;
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+
+        public async Task<bool> ChangeSubscriptionDatesUTC(string customerId, DateTime startDateUtc, DateTime endDateUtc)
+        {
+            var dao = await _context.Users.Where(u => u.StripeCustomerId.Equals(customerId)).FirstOrDefaultAsync();
+            dao.SubscriptionStartDateUTC = startDateUtc;
             dao.SubscriptionEndDateUTC = endDateUtc;
             var result = await _context.SaveChangesAsync();
             return result > 0;

@@ -6,6 +6,7 @@ namespace CreativeCookies.VideoHosting.DAL.DAOs.OAuth
     public class MyHubUser : IdentityUser
     {
         public string StripeCustomerId { get; set; }
+        public DateTime SubscriptionStartDateUTC { get; set; }
         public DateTime SubscriptionEndDateUTC { get; set; }
     }
 }

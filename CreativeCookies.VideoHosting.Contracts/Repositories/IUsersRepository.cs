@@ -6,6 +6,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
     public interface IUsersRepository
     {
         Task<MyHubUserDto> GetUserByStripeCustomerId(string stripeCustomerId);
+
         /// <summary>
         /// Changes the AspNetUser.SubscriptionEndDateUtc value
         /// </summary>
@@ -13,6 +14,15 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
         /// <param name="endDateUtc">UTC subscription's end date</param>
         /// <returns>true - if operation succeeded, otherwise false</returns>
         Task<bool> ChangeSubscriptionEndDateUTC(string customerId, DateTime endDateUtc);
+
+        /// <summary>
+        /// Changes both of the AspNetUser.SubscriptionStartDateUTC and SubscriptionEndDateUTC
+        /// </summary>
+        /// <param name="customerId">Stripe customer Id of a user</param>
+        /// <param name="startDateUtc">UTC subscription's start date</param>
+        /// <param name="endDateUtc">UTC subscription's end date</param>
+        /// <returns>true - if operation succeeded, otherwise false</returns>
+        Task<bool> ChangeSubscriptionDatesUTC(string customerId, DateTime startDateUtc, DateTime endDateUtc);
 
         Task<UsersPaginatedResultDto> GetUsersPaginatedResult(string search, int pageNumber, int pageSize, string role);
 
