@@ -33,48 +33,116 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             _connectAccountId = _connectAccountsRepo.GetConnectedAccountId();
         }
 
-        public async Task<string> CreateNewSession(string priceId, string stripeCustomerId)
+        public async Task<string> CreateNewSession(string priceId, string stripeCustomerId, bool isCoolingOffPeriodApplicable = false)
         {
             // HACK Task 178 :
             // Depending from the new optional argument : bool isCoolingOffPeriodApplicable 
             // 1. create a one-time invoice within the session, and return the session.URL
+
+            Session session;
             StripeConfiguration.ApiKey = _stripeApiSecretKey;
+            var successUrl = $"{_clientUrl}/success?sessionId="; // HACK Task 178: design different success page, success expects 
+            // user has not choosen to use 14 days cooling off period
+            successUrl += "{CHECKOUT_SESSION_ID}";
+            
+
             if (string.IsNullOrWhiteSpace(_connectAccountId))
             {
                 _logger.LogError("No connect account found in database, aborting creation of new session");
                 return string.Empty;
             }
-            var successUrl = $"{_clientUrl}/success?sessionId=";
-            successUrl += "{CHECKOUT_SESSION_ID}";
-            var options = new SessionCreateOptions
-            {
-                Customer = stripeCustomerId,
-                LineItems = new List<SessionLineItemOptions>
-                {
-                    new SessionLineItemOptions
-                    {
-                        Price = priceId,
-                        Quantity = 1,
-                    },
-                },
-                Mode = "subscription",
-                SubscriptionData = new SessionSubscriptionDataOptions
-                {
-                    ApplicationFeePercent = 10, // HACK: Make this configurable amount of percent
-                },
-                BillingAddressCollection = "required", // HACK: is this necessary?
-                SuccessUrl = successUrl, 
-                CancelUrl = $"{_clientUrl}/cancel",
-            };
 
             var requestOptions = new RequestOptions
             {
                 StripeAccount = _connectAccountId,
             };
             var service = new SessionService();
-            Session session = service.Create(options, requestOptions);
-            
-            return session.Url;
+
+            if (isCoolingOffPeriodApplicable)
+            {
+                // HACK Task 178 
+                // Is it better to use invoice or session.checkout.completed? Maybe it'd be better in both scenarios?
+
+                //var invoiceItemCreateOptions = new InvoiceItemCreateOptions
+                //{
+                //    Customer = stripeCustomerId,
+                //    UnitAmount = long.Parse(amount),
+                //    Currency = currency,
+                //};
+                //var invoiceItemService = new InvoiceItemService();
+                //var invoiceItem = invoiceItemService.Create(invoiceItemCreateOptions, requestOptions);
+
+                //var invoiceOptions = new InvoiceCreateOptions
+                //{
+                //    Customer = stripeCustomerId,
+                //    AutoAdvance = true
+                //};
+                //var invoiceService = new InvoiceService();
+                //var invoice = invoiceService.Create(invoiceOptions, requestOptions);
+                long amount = 1000;
+                var currency = "PLN";
+                var sessionOptions = new SessionCreateOptions
+                {
+                    PaymentMethodTypes = new List<string>
+                    {
+                        "card",
+                    },
+                    Mode = "payment",
+                    Customer = stripeCustomerId,
+                    LineItems = new List<SessionLineItemOptions>
+                    {
+                        new SessionLineItemOptions
+                        {
+                            PriceData = new SessionLineItemPriceDataOptions
+                            {
+                                UnitAmount = amount,
+                                Currency = currency,
+                                ProductData = new SessionLineItemPriceDataProductDataOptions
+                                {
+                                    Name = "Order for subscription with 14 days cooling off period"
+                                }
+                            },
+                            Quantity = 1,
+                        }
+                    },
+                    PaymentIntentData = new SessionPaymentIntentDataOptions
+                    {
+                        ApplicationFeeAmount = long.Parse($"{amount * 0.1}") 
+                    },
+                    SuccessUrl = successUrl,
+                    CancelUrl = $"{_clientUrl}/cancel",
+                };
+                var sessionService = new SessionService();
+                session = sessionService.Create(sessionOptions, requestOptions);
+
+                return session.Url;
+            }
+            else
+            {
+                var options = new SessionCreateOptions
+                {
+                    Customer = stripeCustomerId,
+                    LineItems = new List<SessionLineItemOptions>
+                    {
+                        new SessionLineItemOptions
+                        {
+                            Price = priceId,
+                            Quantity = 1,
+                        },
+                    },
+                    Mode = "subscription",
+                    SubscriptionData = new SessionSubscriptionDataOptions
+                    {
+                        ApplicationFeePercent = 10, // HACK: Make this configurable amount of percent
+                    },
+                    BillingAddressCollection = "required", // HACK: is this necessary?
+                    SuccessUrl = successUrl,
+                    CancelUrl = $"{_clientUrl}/cancel",
+                };
+                session = service.Create(options, requestOptions);
+
+                return session.Url;
+            }
         }
 
         public async Task<bool> IsSessionPaymentPaid(string sessionId)
