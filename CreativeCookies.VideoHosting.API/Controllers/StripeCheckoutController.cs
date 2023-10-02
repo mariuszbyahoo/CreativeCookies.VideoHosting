@@ -42,7 +42,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     var emailClaim = token.Claims.FirstOrDefault(c => c.Type.Equals("email", StringComparison.InvariantCultureIgnoreCase));
                     var user = await _userManager.FindByEmailAsync(emailClaim.Value);
                     if (string.IsNullOrWhiteSpace(dto.PriceId)) return BadRequest("PriceId is required");
-                    var sessionUrl = await _checkoutService.CreateNewSession(dto.PriceId, user.StripeCustomerId);
+                    var sessionUrl = await _checkoutService.CreateNewSession(dto.PriceId, user.StripeCustomerId); // HACK Task 178 : Pass dto.IsCoolingOffPeriodApplicable into CreateNewSession
 
                     return Ok(new StripeCreateSessionResponseDto(sessionUrl));
                 }

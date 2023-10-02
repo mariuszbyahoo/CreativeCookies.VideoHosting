@@ -59,5 +59,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
             return false;
         }
+
+        // HACK Task 178 : Add some way to retrieve current user's subscription date time range (and return the UTC times) in order to show it on the top bar
+        // Maybe instead of returning bool in IsUserASubscriber method - return some DTO with bool IsUserSubscriber, DateTime StartUtc, DateTime EndUtc
     }
 }

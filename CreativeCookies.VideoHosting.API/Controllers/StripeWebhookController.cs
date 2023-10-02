@@ -79,7 +79,11 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 }
                 else if (stripeEvent.Type == Events.InvoicePaymentSucceeded)
                 {
-                    // HACK: Distinguish between one time invoices and a subscription invoices
+                    // HACK task 178: Distinguish between one time invoices and a subscription invoices
+                    // if one time invoice: 
+                    // 1. create a new subscription and set it to paid for the current period
+                    // 2. adjust the SubscriptionStartDateUTC and SubscriptionEndDate UTC to the first month after DateTime.Now + TimeSpan.FromDays(14) from the midnight 
+                    // 2.a - user will get access to the service at the beginning of the 15th day
                     _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
                     var invoice = stripeEvent.Data.Object as Invoice;
                     var res = await _userRepo.ChangeSubscriptionDatesUTC(invoice.CustomerId, invoice.Lines.Data[0].Period.Start, invoice.Lines.Data[0].Period.End);
@@ -88,6 +92,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 }
                 else if (stripeEvent.Type == Events.ChargeRefunded)
                 {
+                    // HACK task 178: this event will be used ONLY in the situation where user has ordered a subscription (with regards to the EU's 14 days cooling off period)
+                    // And later on - he declined from using it.
+                    // In that case - set both SubscriptionEndDates to DateTime.MinValue
                     _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
                     var accountId = stripeEvent.Account;
                     var charge = stripeEvent.Data.Object as Charge;

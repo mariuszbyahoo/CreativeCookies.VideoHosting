@@ -35,6 +35,9 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 
         public async Task<string> CreateNewSession(string priceId, string stripeCustomerId)
         {
+            // HACK Task 178 :
+            // Depending from the new optional argument : bool isCoolingOffPeriodApplicable 
+            // 1. create a one-time invoice within the session, and return the session.URL
             StripeConfiguration.ApiKey = _stripeApiSecretKey;
             if (string.IsNullOrWhiteSpace(_connectAccountId))
             {
@@ -57,9 +60,9 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                 Mode = "subscription",
                 SubscriptionData = new SessionSubscriptionDataOptions
                 {
-                    ApplicationFeePercent = 10,
+                    ApplicationFeePercent = 10, // HACK: Make this configurable amount of percent
                 },
-                BillingAddressCollection = "required",
+                BillingAddressCollection = "required", // HACK: is this necessary?
                 SuccessUrl = successUrl, 
                 CancelUrl = $"{_clientUrl}/cancel",
             };

@@ -356,7 +356,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
         private async Task<MyHubUserDto> CheckSubscriptionStatus(MyHubUserDto user)
         {
-            if (user.SubscriptionStartDateUTC < DateTime.UtcNow && user.SubscriptionEndDateUTC > DateTime.UtcNow)
+            if (user.SubscriptionStartDateUTC < DateTime.UtcNow && user.SubscriptionEndDateUTC > DateTime.UtcNow) // HACK: Stripe has 1,5 hr delay between subscription end date and this.
             {
                 await _userManager.AddToRoleAsync(user, "subscriber");
                 await _userManager.RemoveFromRoleAsync(user, "nonsubscriber");
