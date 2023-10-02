@@ -79,8 +79,9 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                 //};
                 //var invoiceService = new InvoiceService();
                 //var invoice = invoiceService.Create(invoiceOptions, requestOptions);
-                long amount = 1000;
-                var currency = "PLN";
+
+                long amount = 1000; // HACK: take this from the price selected by the end user
+                var currency = "PLN"; // HACK: this one too
                 var sessionOptions = new SessionCreateOptions
                 {
                     PaymentMethodTypes = new List<string>
