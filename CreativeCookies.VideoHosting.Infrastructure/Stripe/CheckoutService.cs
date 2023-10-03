@@ -33,10 +33,10 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             _connectAccountId = _connectAccountsRepo.GetConnectedAccountId();
         }
 
-        public async Task<string> CreateNewSession(string priceId, string stripeCustomerId, bool isCoolingOffPeriodApplicable = false)
+        public async Task<string> CreateNewSession(string priceId, string stripeCustomerId, bool HasDeclinedCoolingOffPeriod = false)
         {
             // HACK Task 178 :
-            // Depending from the new optional argument : bool isCoolingOffPeriodApplicable 
+            // Depending from the new optional argument : bool HasDeclinedCoolingOffPeriod 
             // 1. create a one-time invoice within the session, and return the session.URL
 
             Session session;
@@ -58,11 +58,34 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             };
             var service = new SessionService();
 
-            if (isCoolingOffPeriodApplicable)
+            if (HasDeclinedCoolingOffPeriod)
+            {
+                var options = new SessionCreateOptions
+                {
+                    Customer = stripeCustomerId,
+                    LineItems = new List<SessionLineItemOptions>
+                    {
+                        new SessionLineItemOptions
+                        {
+                            Price = priceId,
+                            Quantity = 1,
+                        },
+                    },
+                    Mode = "subscription",
+                    SubscriptionData = new SessionSubscriptionDataOptions
+                    {
+                        ApplicationFeePercent = 10, // HACK: Make this configurable amount of percent
+                    },
+                    SuccessUrl = successUrl,
+                    CancelUrl = $"{_clientUrl}/cancel",
+                };
+                session = service.Create(options, requestOptions);
+
+                return session.Url;
+            }
+            else
             {
                 // HACK Task 178 
-                // Is it better to use invoice or session.checkout.completed? Maybe it'd be better in both scenarios?
-
                 //var invoiceItemCreateOptions = new InvoiceItemCreateOptions
                 //{
                 //    Customer = stripeCustomerId,
@@ -108,39 +131,13 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                     },
                     PaymentIntentData = new SessionPaymentIntentDataOptions
                     {
-                        ApplicationFeeAmount = long.Parse($"{amount * 0.1}") 
+                        ApplicationFeeAmount = long.Parse($"{amount * 0.1}")
                     },
                     SuccessUrl = successUrl,
                     CancelUrl = $"{_clientUrl}/cancel",
                 };
                 var sessionService = new SessionService();
                 session = sessionService.Create(sessionOptions, requestOptions);
-
-                return session.Url;
-            }
-            else
-            {
-                var options = new SessionCreateOptions
-                {
-                    Customer = stripeCustomerId,
-                    LineItems = new List<SessionLineItemOptions>
-                    {
-                        new SessionLineItemOptions
-                        {
-                            Price = priceId,
-                            Quantity = 1,
-                        },
-                    },
-                    Mode = "subscription",
-                    SubscriptionData = new SessionSubscriptionDataOptions
-                    {
-                        ApplicationFeePercent = 10, // HACK: Make this configurable amount of percent
-                    },
-                    BillingAddressCollection = "required", // HACK: is this necessary?
-                    SuccessUrl = successUrl,
-                    CancelUrl = $"{_clientUrl}/cancel",
-                };
-                session = service.Create(options, requestOptions);
 
                 return session.Url;
             }

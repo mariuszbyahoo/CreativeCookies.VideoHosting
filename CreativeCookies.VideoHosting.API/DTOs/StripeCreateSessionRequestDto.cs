@@ -3,12 +3,12 @@
     public class StripeCreateSessionRequestDto
     {
         public string PriceId { get; set; }
-        public bool IsCoolingOffPeriodApplicable { get; set; }
+        public bool HasDeclinedCoolingOffPeriod { get; set; }
 
-        public StripeCreateSessionRequestDto(string priceId, bool isCoolingOffPeriodApplicable = false)
+        public StripeCreateSessionRequestDto(string priceId, bool HasDeclinedCoolingOffPeriod = false)
         {
             PriceId = priceId;
-            IsCoolingOffPeriodApplicable = isCoolingOffPeriodApplicable;
+            this.HasDeclinedCoolingOffPeriod = HasDeclinedCoolingOffPeriod;
         }
     }
 }
