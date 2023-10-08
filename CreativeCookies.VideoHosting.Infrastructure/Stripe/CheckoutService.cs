@@ -20,31 +20,26 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         private readonly ILogger<CheckoutService> _logger;
         private readonly IConfiguration _configuration;
         private readonly IConnectAccountsRepository _connectAccountsRepo;
+        private readonly IStripeProductsService _stripeProductsService;
         private readonly string _clientUrl;
         private readonly string _connectAccountId;
 
-        public CheckoutService(StripeSecretKeyWrapper wrapper, ILogger<CheckoutService> logger, IConnectAccountsRepository connectAccountRepo, IConfiguration configuration)
+        public CheckoutService(StripeSecretKeyWrapper wrapper, ILogger<CheckoutService> logger, 
+            IConnectAccountsRepository connectAccountRepo, IConfiguration configuration, IStripeProductsService stripeProductsService)
         {
             _connectAccountsRepo = connectAccountRepo;
             _stripeApiSecretKey = wrapper.Value;
             _logger = logger;
             _configuration = configuration;
+            _stripeProductsService = stripeProductsService;
             _clientUrl = _configuration.GetValue<string>("ClientUrl");
             _connectAccountId = _connectAccountsRepo.GetConnectedAccountId();
         }
 
         public async Task<string> CreateNewSession(string priceId, string stripeCustomerId, bool HasDeclinedCoolingOffPeriod = false)
         {
-            // HACK Task 178 :
-            // Depending from the new optional argument : bool HasDeclinedCoolingOffPeriod 
-            // 1. create a one-time invoice within the session, and return the session.URL
-
             Session session;
             StripeConfiguration.ApiKey = _stripeApiSecretKey;
-            var successUrl = $"{_clientUrl}/success?sessionId="; // HACK Task 178: design different success page, success expects 
-            // user has not choosen to use 14 days cooling off period
-            successUrl += "{CHECKOUT_SESSION_ID}";
-            
 
             if (string.IsNullOrWhiteSpace(_connectAccountId))
             {
@@ -60,6 +55,9 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 
             if (HasDeclinedCoolingOffPeriod)
             {
+                var successUrl = $"{_clientUrl}/success?sessionId="; 
+                                                                     
+                successUrl += "{CHECKOUT_SESSION_ID}";
                 var options = new SessionCreateOptions
                 {
                     Customer = stripeCustomerId,
@@ -85,26 +83,10 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             }
             else
             {
-                // HACK Task 178 
-                //var invoiceItemCreateOptions = new InvoiceItemCreateOptions
-                //{
-                //    Customer = stripeCustomerId,
-                //    UnitAmount = long.Parse(amount),
-                //    Currency = currency,
-                //};
-                //var invoiceItemService = new InvoiceItemService();
-                //var invoiceItem = invoiceItemService.Create(invoiceItemCreateOptions, requestOptions);
-
-                //var invoiceOptions = new InvoiceCreateOptions
-                //{
-                //    Customer = stripeCustomerId,
-                //    AutoAdvance = true
-                //};
-                //var invoiceService = new InvoiceService();
-                //var invoice = invoiceService.Create(invoiceOptions, requestOptions);
-
-                long amount = 1000; // HACK: take this from the price selected by the end user
-                var currency = "PLN"; // HACK: this one too
+                var successUrl = $"{_clientUrl}/ordersuccess?sessionId="; 
+                                                                     
+                successUrl += "{CHECKOUT_SESSION_ID}";
+                var price = await _stripeProductsService.GetPriceById(priceId);
                 var sessionOptions = new SessionCreateOptions
                 {
                     PaymentMethodTypes = new List<string>
@@ -119,8 +101,8 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                         {
                             PriceData = new SessionLineItemPriceDataOptions
                             {
-                                UnitAmount = amount,
-                                Currency = currency,
+                                UnitAmount = price.UnitAmount,
+                                Currency = price.Currency,
                                 ProductData = new SessionLineItemPriceDataProductDataOptions
                                 {
                                     Name = "Order for subscription with 14 days cooling off period"
@@ -131,7 +113,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                     },
                     PaymentIntentData = new SessionPaymentIntentDataOptions
                     {
-                        ApplicationFeeAmount = long.Parse($"{amount * 0.1}")
+                        ApplicationFeeAmount = long.Parse($"{price.UnitAmount * 0.1}")
                     },
                     SuccessUrl = successUrl,
                     CancelUrl = $"{_clientUrl}/cancel",
