@@ -79,16 +79,29 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 }
                 else if (stripeEvent.Type == Events.InvoicePaymentSucceeded)
                 {
-                    // HACK task 178: Distinguish between one time invoices and a subscription invoices
-                    // if one time invoice: 
-                    // 1. create a new subscription and set it to paid for the current period
-                    // 2. adjust the SubscriptionStartDateUTC and SubscriptionEndDate UTC to the first month after DateTime.Now + TimeSpan.FromDays(14) from the midnight 
-                    // 2.a - user will get access to the service at the beginning of the 15th day
                     _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
                     var invoice = stripeEvent.Data.Object as Invoice;
                     var res = await _userRepo.ChangeSubscriptionDatesUTC(invoice.CustomerId, invoice.Lines.Data[0].Period.Start, invoice.Lines.Data[0].Period.End);
                     if (res) _logger.LogInformation($"Subscription dates range for a Stripe Customer id: {invoice.CustomerId} updated to {invoice.Lines.Data[0].Period.Start} - {invoice.Lines.Data[0].Period.End}");
                     else return BadRequest($"Database result of SubscriptionEndDateUTC update was false for customer with id: {invoice.CustomerId}");
+                }
+                else if (stripeEvent.Type == Events.CheckoutSessionCompleted)
+                {
+                    try
+                    {
+                        _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
+                        var startDate = DateTime.UtcNow.AddDays(14);
+                        var endDate = DateTime.UtcNow.AddMonths(1).AddDays(14);
+                        var checkoutSession = stripeEvent.Data.Object as Stripe.Checkout.Session;
+                        var res = await _userRepo.ChangeSubscriptionDatesUTC(checkoutSession.CustomerId, startDate, endDate);
+                        if (res) _logger.LogInformation($"Subscription dates range for a Stripe Customer id: {checkoutSession.CustomerId} updated to {startDate} - {endDate}");
+                        else return BadRequest($"Database result of SubscriptionEndDateUTC update was false for customer with id: {checkoutSession.CustomerId}");
+                    } 
+                    catch(Exception ex)
+                    {
+                        _logger.LogError(ex, ex.Message);
+                        throw ex;
+                    }
                 }
                 else if (stripeEvent.Type == Events.ChargeRefunded)
                 {
