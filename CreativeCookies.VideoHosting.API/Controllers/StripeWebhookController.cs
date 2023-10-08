@@ -103,6 +103,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                         var delay = TimeSpan.FromHours(6);
                         _logger.LogInformation($"Adding a subscription starting at {startDate} till {endDate}");
                         var checkoutSession = stripeEvent.Data.Object as Stripe.Checkout.Session;
+                        _logger.LogInformation($"Is a Received checkoutSession null? : {checkoutSession == null}");
                         var product = await _subscriptionPlanService.FetchSubscriptionPlan();
                         var prices = await _stripeProductsService.GetStripePrices(product.Id);
 
@@ -110,8 +111,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                             p.IsActive 
                             && p.Currency.Equals(checkoutSession.Currency, StringComparison.InvariantCultureIgnoreCase) 
                             && p.UnitAmount == checkoutSession.AmountTotal).FirstOrDefault();
+                        if(desiredPrice != null) _logger.LogInformation($"Desired price : {desiredPrice.Id}, {desiredPrice.Currency}, {desiredPrice.UnitAmount}");
 
-                        _backgroundJobClient.Schedule(() => _checkoutService.CreateDeferredSubscription(checkoutSession.Customer.Id, desiredPrice.Id), delay);
+                        var jobIdentifier = _backgroundJobClient.Schedule(() => _checkoutService.CreateDeferredSubscription(checkoutSession.CustomerId, desiredPrice.Id), delay);
 
                         var res = await _userRepo.ChangeSubscriptionDatesUTC(checkoutSession.CustomerId, startDate, endDate);
 
@@ -121,7 +123,6 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     catch(Exception ex)
                     {
                         _logger.LogError(ex, ex.Message);
-                        throw ex;
                     }
                 }
                 else if (stripeEvent.Type == Events.ChargeRefunded)
