@@ -220,32 +220,6 @@ namespace CreativeCookies.VideoHosting.DAL.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
-            modelBuilder.Entity("CreativeCookies.VideoHosting.DAL.DAOs.Price", b =>
-                {
-                    b.Property<string>("StripePriceId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("Amount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CurrencyCode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("StripeProductId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("StripePriceId");
-
-                    b.HasIndex("StripeProductId");
-
-                    b.ToTable("StripePrices");
-                });
-
             modelBuilder.Entity("CreativeCookies.VideoHosting.DAL.DAOs.StripeConfig", b =>
                 {
                     b.Property<Guid>("Id")
@@ -469,17 +443,6 @@ namespace CreativeCookies.VideoHosting.DAL.Migrations
                     b.Navigation("OAuthClient");
                 });
 
-            modelBuilder.Entity("CreativeCookies.VideoHosting.DAL.DAOs.Price", b =>
-                {
-                    b.HasOne("CreativeCookies.VideoHosting.DAL.DAOs.SubscriptionPlan", "SubscriptionPlan")
-                        .WithMany("StripePrices")
-                        .HasForeignKey("StripeProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SubscriptionPlan");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -534,11 +497,6 @@ namespace CreativeCookies.VideoHosting.DAL.Migrations
             modelBuilder.Entity("CreativeCookies.VideoHosting.DAL.DAOs.OAuth.OAuthClient", b =>
                 {
                     b.Navigation("AllowedScopes");
-                });
-
-            modelBuilder.Entity("CreativeCookies.VideoHosting.DAL.DAOs.SubscriptionPlan", b =>
-                {
-                    b.Navigation("StripePrices");
                 });
 #pragma warning restore 612, 618
         }

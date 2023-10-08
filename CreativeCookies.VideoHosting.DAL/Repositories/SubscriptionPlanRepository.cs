@@ -22,14 +22,8 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
 
         public async Task<SubscriptionPlanDto> CreateNewSubscriptionPlan(SubscriptionPlanDto newSubscriptionPlan)
         {
-            var plan = new SubscriptionPlan()
-            {
-                StripeProductId = newSubscriptionPlan.Id,
-                Name = newSubscriptionPlan.Name,
-                Description = newSubscriptionPlan.Description,
-                StripePrices = await FetchPriceDAOByProductId(newSubscriptionPlan.Id)
-            };
-            _ctx.SubscriptionPlans.Add(plan);
+            var plan = new SubscriptionPlan(newSubscriptionPlan.Id, newSubscriptionPlan.Name, newSubscriptionPlan.Description);
+            await _ctx.SubscriptionPlans.AddAsync(plan);
             var res = await _ctx.SaveChangesAsync();
             if (res > 0)
             {
@@ -41,7 +35,6 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         public async Task<SubscriptionPlanDto> GetSubscriptionPlan(string productId)
         {
             var plan = await FetchDAOById(productId);
-            plan.StripePrices = await FetchPriceDAOByProductId(productId);
             if (plan == null) return null;
             return new SubscriptionPlanDto(plan.StripeProductId, plan.Name, plan.Description);
         }
@@ -67,19 +60,17 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         {
             return await _ctx.SubscriptionPlans.AnyAsync();
         }
-        public async Task<IList<SubscriptionPlanDto>> GetAllSubscriptions()
-        {
-            return await _ctx.SubscriptionPlans.Select(p => new SubscriptionPlanDto(p.StripeProductId, p.Name, p.Description)).ToListAsync();
-        }
 
         private async Task<SubscriptionPlan> FetchDAOById(string productId)
         {
             return await _ctx.SubscriptionPlans.Where(p => p.StripeProductId.Equals(productId)).FirstOrDefaultAsync();
         }
 
-        private async Task<IList<Price>> FetchPriceDAOByProductId(string productId)
+        public async Task<IList<SubscriptionPlanDto>> GetAllSubscriptions()
         {
-            return await _ctx.StripePrices.Where(p => p.StripeProductId == productId && p.IsActive).ToListAsync();
+            return await _ctx.SubscriptionPlans.Select(p => new SubscriptionPlanDto(p.StripeProductId, p.Name, p.Description)).ToListAsync();
         }
+
+
     }
 }
