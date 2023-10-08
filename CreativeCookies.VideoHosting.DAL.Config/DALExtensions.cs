@@ -4,6 +4,7 @@ using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
 using CreativeCookies.VideoHosting.DAL.Repositories;
 using CreativeCookies.VideoHosting.DAL.Repositories.OAuth;
+using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -34,6 +35,8 @@ namespace CreativeCookies.VideoHosting.DAL.Config
             })
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>();
+
+            services.AddHangfire(conf => conf.UseSqlServerStorage(connectionString));
 
             services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
             services.AddScoped<IFilmsRepository, FilmsRepository>();

@@ -33,6 +33,8 @@ using CreativeCookies.VideoHosting.Contracts.Services.Stripe;
 using CreativeCookies.VideoHosting.Services.Subscriptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.ApplicationInsights.Extensibility;
+using Hangfire;
+using CreativeCookies.VideoHosting.API.Attributes;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -118,6 +120,7 @@ namespace CreativeCookies.VideoHosting.API
 
             builder.Services.AddDataAccessLayer(connectionString);
             builder.Services.AddApplicationInsightsTelemetry(appInsightsInstrumentationKey);
+            builder.Services.AddHangfireServer();
 
             builder.Services.AddSingleton<ISasTokenService, SasTokenService>();
             builder.Services.AddSingleton<IJWTGenerator, JwtGenerator>();
@@ -212,6 +215,11 @@ namespace CreativeCookies.VideoHosting.API
             var app = builder.Build();
 
             app.MigrateAndPopulateDatabase(adminEmail);
+
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions
+            {
+                Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
+            }); app.UseHangfireServer();
 
             if (app.Environment.IsDevelopment())
             {
