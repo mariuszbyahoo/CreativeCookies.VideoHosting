@@ -71,7 +71,7 @@ namespace CreativeCookies.VideoHosting.API
                     var appInsightsInstrumentationKey = hostingContext.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
                     if (string.IsNullOrWhiteSpace(appInsightsInstrumentationKey)) throw new InvalidOperationException("AppInsights Instrumentation key has not been found!");
                     loggerConfiguration
-                                .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Warning);
+                                .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Information);
                     loggerConfiguration
                                 .WriteTo.ApplicationInsights(new TelemetryClient(new TelemetryConfiguration
                                 {
