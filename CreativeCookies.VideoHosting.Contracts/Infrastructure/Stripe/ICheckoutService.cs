@@ -11,5 +11,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
         public Task<string> CreateNewSession(string priceId, string stripeCustomerId, bool HasDeclinedCoolingOffPeriod = false);
 
         public Task<bool> IsSessionPaymentPaid(string sessionId);
+
+        Task<string> CreateDeferredSubscription(string customerId, string priceId);
     }
 }

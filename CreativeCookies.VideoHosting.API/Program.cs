@@ -219,7 +219,8 @@ namespace CreativeCookies.VideoHosting.API
             app.UseHangfireDashboard("/hangfire", new DashboardOptions
             {
                 Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
-            }); app.UseHangfireServer();
+            }); 
+            app.UseHangfireServer();
 
             if (app.Environment.IsDevelopment())
             {

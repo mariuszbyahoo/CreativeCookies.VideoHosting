@@ -135,5 +135,36 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 
             return session.PaymentStatus.Equals("paid");
         }
+
+        public async Task<string> CreateDeferredSubscription(string customerId, string priceId)
+        {
+            StripeConfiguration.ApiKey = _stripeApiSecretKey;
+            var daysAmount = (DateTime.UtcNow - DateTime.UtcNow.AddMonths(1)).Days;
+            var requestOptions = new RequestOptions() { StripeAccount = _connectAccountId };
+
+            var options = new SubscriptionCreateOptions
+            {
+                Customer = customerId,
+                Items = new List<SubscriptionItemOptions>
+                {
+                    new SubscriptionItemOptions
+                    {
+                        Price = priceId
+                    },
+                },
+                TrialPeriodDays = daysAmount,
+                TrialSettings = new SubscriptionTrialSettingsOptions
+                {
+                    EndBehavior = new SubscriptionTrialSettingsEndBehaviorOptions
+                    {
+                        MissingPaymentMethod = "cancel"
+                    }
+                }
+            };
+
+            var service = new SubscriptionService();
+            Subscription subscription = service.Create(options, requestOptions: requestOptions);
+            return subscription.Id;
+        }
     }
 }

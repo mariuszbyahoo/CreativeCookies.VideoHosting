@@ -4,6 +4,7 @@ using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using CreativeCookies.VideoHosting.Contracts.Services.Stripe;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
+using Hangfire;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -18,20 +19,26 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly IStripeProductsService _stripeProductsService;
         private readonly ISubscriptionPlanService _subscriptionPlanService;
         private readonly IConnectAccountsService _connectAccountsSrv;
+        private readonly ICheckoutService _checkoutService;
         private readonly ILogger<StripeWebhookController> _logger;
         private readonly StripeWebhookSigningKeyWrapper _wrapper;
         private readonly IMyHubUserManager _userManager;
         private readonly IUsersRepository _userRepo;
+        private readonly IBackgroundJobClient _backgroundJobClient;
 
         public StripeWebhookController(IConnectAccountsService connectAccountsSrv, 
             IStripeProductsService stripeProductsService, ISubscriptionPlanService subscriptionPlanService, 
-            ILogger<StripeWebhookController> logger, StripeWebhookSigningKeyWrapper wrapper, IMyHubUserManager userManager, IUsersRepository userRepo)
+            ILogger<StripeWebhookController> logger, StripeWebhookSigningKeyWrapper wrapper, 
+            IMyHubUserManager userManager, IUsersRepository userRepo, ICheckoutService checkoutService,
+            IBackgroundJobClient backgroundJobClient)
         {
             _stripeProductsService = stripeProductsService;
             _subscriptionPlanService = subscriptionPlanService;
             _connectAccountsSrv = connectAccountsSrv;
             _userManager= userManager;
             _userRepo = userRepo;
+            _checkoutService = checkoutService; 
+            _backgroundJobClient = backgroundJobClient;
             _logger = logger;
             _wrapper = wrapper;
         }
@@ -87,13 +94,27 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 }
                 else if (stripeEvent.Type == Events.CheckoutSessionCompleted)
                 {
+                    // HACK: Will this event be fired if I'll use invoice.payment_succeed (without 14 days)?
                     try
                     {
                         _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
-                        var startDate = DateTime.UtcNow.AddDays(14);
-                        var endDate = DateTime.UtcNow.AddMonths(1).AddDays(14);
+                        var startDate = DateTime.UtcNow.AddHours(6);
+                        var endDate = DateTime.UtcNow.AddMonths(1).AddHours(6);
+                        var delay = TimeSpan.FromHours(6);
+                        _logger.LogInformation($"Adding a subscription starting at {startDate} till {endDate}");
                         var checkoutSession = stripeEvent.Data.Object as Stripe.Checkout.Session;
+                        var product = await _subscriptionPlanService.FetchSubscriptionPlan();
+                        var prices = await _stripeProductsService.GetStripePrices(product.Id);
+
+                        var desiredPrice = prices.Where(p => 
+                            p.IsActive 
+                            && p.Currency.Equals(checkoutSession.Currency, StringComparison.InvariantCultureIgnoreCase) 
+                            && p.UnitAmount == checkoutSession.AmountTotal).FirstOrDefault();
+
+                        _backgroundJobClient.Schedule(() => _checkoutService.CreateDeferredSubscription(checkoutSession.Customer.Id, desiredPrice.Id), delay);
+
                         var res = await _userRepo.ChangeSubscriptionDatesUTC(checkoutSession.CustomerId, startDate, endDate);
+
                         if (res) _logger.LogInformation($"Subscription dates range for a Stripe Customer id: {checkoutSession.CustomerId} updated to {startDate} - {endDate}");
                         else return BadRequest($"Database result of SubscriptionEndDateUTC update was false for customer with id: {checkoutSession.CustomerId}");
                     } 
