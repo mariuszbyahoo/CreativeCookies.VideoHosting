@@ -113,10 +113,12 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                     },
                     PaymentIntentData = new SessionPaymentIntentDataOptions
                     {
-                        ApplicationFeeAmount = long.Parse($"{price.UnitAmount * 0.1}")
+                        ApplicationFeeAmount = long.Parse($"{price.UnitAmount * 0.1}"),
+                        SetupFutureUsage = "off_session"
                     },
                     SuccessUrl = successUrl,
-                    CancelUrl = $"{_clientUrl}/cancel",
+                    CancelUrl = $"{_clientUrl}/cancel"
+
                 };
                 var sessionService = new SessionService();
                 session = sessionService.Create(sessionOptions, requestOptions);
