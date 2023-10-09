@@ -139,7 +139,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         public async Task<string> CreateDeferredSubscription(string customerId, string priceId)
         {
             StripeConfiguration.ApiKey = _stripeApiSecretKey;
-            var daysAmount = (DateTime.UtcNow - DateTime.UtcNow.AddMonths(1)).Days;
+            var daysAmount = (DateTime.UtcNow.AddDays(1) - DateTime.UtcNow).Days;
             var requestOptions = new RequestOptions() { StripeAccount = _connectAccountId };
 
             var options = new SubscriptionCreateOptions
