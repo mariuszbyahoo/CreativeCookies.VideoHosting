@@ -94,33 +94,56 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 }
                 else if (stripeEvent.Type == Events.CheckoutSessionCompleted)
                 {
-                    // HACK: Will this event be fired if I'll use invoice.payment_succeed (without 14 days)?
                     try
                     {
                         _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
-                        var startDate = DateTime.UtcNow.AddHours(6);
-                        var endDate = DateTime.UtcNow.AddMonths(1).AddHours(6);
-                        var delay = TimeSpan.FromHours(6);
-                        _logger.LogInformation($"Adding a subscription starting at {startDate} till {endDate}");
                         var checkoutSession = stripeEvent.Data.Object as Stripe.Checkout.Session;
-                        _logger.LogInformation($"Is a Received checkoutSession null? : {checkoutSession == null}");
-                        var product = await _subscriptionPlanService.FetchSubscriptionPlan();
-                        var prices = await _stripeProductsService.GetStripePrices(product.Id);
 
-                        var desiredPrice = prices.Where(p => 
-                            p.IsActive 
-                            && p.Currency.Equals(checkoutSession.Currency, StringComparison.InvariantCultureIgnoreCase) 
-                            && p.UnitAmount == checkoutSession.AmountTotal).FirstOrDefault();
-                        if(desiredPrice != null) _logger.LogInformation($"Desired price : {desiredPrice.Id}, {desiredPrice.Currency}, {desiredPrice.UnitAmount}");
+                        if (checkoutSession.Mode.Equals("payment"))
+                        {
+                            var paymentIntentService = new PaymentIntentService();
+                            var paymentIntent = paymentIntentService.Get(checkoutSession.PaymentIntentId, requestOptions: new RequestOptions() { StripeAccount = stripeEvent.Account });
+                            _logger.LogWarning($"Payment intent performed with an ID: {paymentIntent.Id}, methodId: {paymentIntent.PaymentMethodId}, and sourceId: {paymentIntent.SourceId}");
+                            var customerService = new CustomerService();
+                            var customerOptions = new CustomerUpdateOptions
+                            {
+                                InvoiceSettings = new CustomerInvoiceSettingsOptions()
+                                {
+                                    DefaultPaymentMethod = paymentIntent.PaymentMethodId
+                                }
+                            };
+                            Customer customer = customerService.Update(checkoutSession.CustomerId, customerOptions, requestOptions: new RequestOptions() { StripeAccount = stripeEvent.Account });
 
-                        var jobIdentifier = _backgroundJobClient.Schedule(() => _checkoutService.CreateDeferredSubscription(checkoutSession.CustomerId, desiredPrice.Id), delay);
+                            if(customer.StripeResponse.StatusCode == System.Net.HttpStatusCode.OK)
+                                _logger.LogInformation($"Default payment method set for customer {checkoutSession.CustomerId}");
+                            else
+                                _logger.LogError($"Setting payment as default has not respond with 200 due to error {customer.StripeResponse.StatusCode}, requestId: {customer.StripeResponse.RequestId} with paymentIntent data. An ID: {paymentIntent.Id}, methodId: {paymentIntent.PaymentMethodId}, and sourceId: {paymentIntent.SourceId}");
 
-                        var res = await _userRepo.ChangeSubscriptionDatesUTC(checkoutSession.CustomerId, startDate, endDate);
+                            var startDate = DateTime.UtcNow.AddDays(14);
+                            var endDate = DateTime.UtcNow.AddDays(14);
+                            var delay = TimeSpan.FromDays(14);
 
-                        if (res) _logger.LogInformation($"Subscription dates range for a Stripe Customer id: {checkoutSession.CustomerId} updated to {startDate} - {endDate}");
-                        else return BadRequest($"Database result of SubscriptionEndDateUTC update was false for customer with id: {checkoutSession.CustomerId}");
-                    } 
-                    catch(Exception ex)
+                            _logger.LogInformation($"Adding a subscription starting at {startDate} till {endDate}");
+
+                            var product = await _subscriptionPlanService.FetchSubscriptionPlan();
+                            var prices = await _stripeProductsService.GetStripePrices(product.Id);
+
+                            var desiredPrice = prices.Where(p => 
+                                p.IsActive 
+                                && p.Currency.Equals(checkoutSession.Currency, StringComparison.InvariantCultureIgnoreCase) 
+                                && p.UnitAmount == checkoutSession.AmountTotal).FirstOrDefault();
+
+                            var jobIdentifier = _backgroundJobClient.Schedule(() => _checkoutService.CreateDeferredSubscription(checkoutSession.CustomerId, desiredPrice.Id), delay);
+
+                            var res = await _userRepo.ChangeSubscriptionDatesUTC(checkoutSession.CustomerId, startDate, endDate);
+
+                            if (res) _logger.LogInformation($"Subscription dates range for a Stripe Customer id: {checkoutSession.CustomerId} updated to {startDate} - {endDate}");
+                            else return BadRequest($"Database result of SubscriptionEndDateUTC update was false for customer with id: {checkoutSession.CustomerId}");
+                        }
+                        _logger.LogInformation($"Session completed for a subscription with mode of: {checkoutSession.Mode}");
+                        return Ok($"Session completed for a subscription with mode of: {checkoutSession.Mode}");
+                    }
+                    catch (Exception ex)
                     {
                         _logger.LogError(ex, ex.Message);
                     }

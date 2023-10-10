@@ -141,7 +141,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         public async Task<string> CreateDeferredSubscription(string customerId, string priceId)
         {
             StripeConfiguration.ApiKey = _stripeApiSecretKey;
-            var daysAmount = (DateTime.UtcNow.AddDays(1) - DateTime.UtcNow).Days;
+
             var requestOptions = new RequestOptions() { StripeAccount = _connectAccountId };
 
             var options = new SubscriptionCreateOptions
@@ -154,14 +154,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                         Price = priceId
                     },
                 },
-                TrialPeriodDays = daysAmount,
-                TrialSettings = new SubscriptionTrialSettingsOptions
-                {
-                    EndBehavior = new SubscriptionTrialSettingsEndBehaviorOptions
-                    {
-                        MissingPaymentMethod = "cancel"
-                    }
-                }
+                TrialEnd = DateTime.UtcNow.AddDays(14)
             };
 
             var service = new SubscriptionService();

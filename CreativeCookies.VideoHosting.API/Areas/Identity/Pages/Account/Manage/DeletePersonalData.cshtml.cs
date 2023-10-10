@@ -155,6 +155,10 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                         }, requestOptions
                     ).ToList();
 
+                    // HACK: Task178 - this should not be existing, instead of that,
+                    // there should be code which should check is SubscriptionStartDate in the future, and if so, then 
+                    // it's 14 days cooling off period, and, 
+                    // The question is: Should deleting account's data be considered as a contract's renouciation?
                     if (paymentIntents.Count > 0)
                     {
                         foreach (var paymentIntent in paymentIntents)
@@ -168,10 +172,13 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                         }
                     }
 
+
                     var subscriptionCancelOptions = new SubscriptionCancelOptions()
                     {
-                        Prorate = true
+                        Prorate = true // this should not be prorated
                     };
+                    //  ENDHACK
+
                     subscriptionService.Cancel(subscriptionId, subscriptionCancelOptions, requestOptions);
                 }
                 if (!string.IsNullOrWhiteSpace(stripeCustomerId))
