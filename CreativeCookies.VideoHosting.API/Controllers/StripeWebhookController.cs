@@ -138,6 +138,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                                 && p.UnitAmount == checkoutSession.AmountTotal).FirstOrDefault();
 
                             var jobIdentifier = _backgroundJobClient.Schedule(() => _checkoutService.CreateDeferredSubscription(checkoutSession.CustomerId, desiredPrice.Id), delay);
+                            if(!string.IsNullOrWhiteSpace(jobIdentifier)) _userRepo.AssignHangfireJobIdToUser(checkoutSession.CustomerId, jobIdentifier);
 
                             var res = await _userRepo.ChangeSubscriptionDatesUTC(checkoutSession.CustomerId, subscriptionStartDate, subscriptionEndDate);
 

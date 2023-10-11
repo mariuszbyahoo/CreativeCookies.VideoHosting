@@ -7,6 +7,9 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
     {
         Task<MyHubUserDto> GetUserByStripeCustomerId(string stripeCustomerId);
 
+        Task<MyHubUserDto?> AssignHangfireJobIdToUser(string stripeCustomerId, string jobId);
+
+
         /// <summary>
         /// Changes the AspNetUser.SubscriptionEndDateUtc value
         /// </summary>

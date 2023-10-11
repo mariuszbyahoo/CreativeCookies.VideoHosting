@@ -141,6 +141,8 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                     Customer = stripeCustomerId
                 };
                 var requestOptions = await GetRequestOptions();
+                // DELETE Hangfire job in the background if awaiting ordered subscription
+                
                 StripeList<Subscription> subscriptions = subscriptionService.List(subscriptionListOptions, requestOptions);
 
                 foreach (var subscription in subscriptions)
@@ -154,6 +156,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                             Customer = stripeCustomerId,
                         }, requestOptions
                     ).ToList();
+
 
                     // HACK: Task178 - this should not be existing, instead of that,
                     // there should be code which should check is SubscriptionStartDate in the future, and if so, then 
