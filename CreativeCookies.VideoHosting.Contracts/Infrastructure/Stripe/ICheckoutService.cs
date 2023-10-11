@@ -12,6 +12,6 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
 
         public Task<bool> IsSessionPaymentPaid(string sessionId);
 
-        Task<string> CreateDeferredSubscription(string customerId, string priceId);
+        string CreateDeferredSubscription(string customerId, string priceId);
     }
 }

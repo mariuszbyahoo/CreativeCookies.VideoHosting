@@ -138,10 +138,10 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             return session.PaymentStatus.Equals("paid");
         }
 
-        public async Task<string> CreateDeferredSubscription(string customerId, string priceId)
+        public string CreateDeferredSubscription(string customerId, string priceId)
         {
             StripeConfiguration.ApiKey = _stripeApiSecretKey;
-
+            var beginningOfTommorow = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, 0, 0, 0, DateTimeKind.Utc).AddDays(1);
             var requestOptions = new RequestOptions() { StripeAccount = _connectAccountId };
 
             var options = new SubscriptionCreateOptions
@@ -154,7 +154,8 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                         Price = priceId
                     },
                 },
-                TrialEnd = DateTime.UtcNow.AddDays(14)
+                TrialEnd = beginningOfTommorow.AddDays(14)
+                // Set TrialEnd to next day's beginning and add 14 days for the trial period
             };
 
             var service = new SubscriptionService();

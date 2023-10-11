@@ -119,11 +119,13 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                             else
                                 _logger.LogError($"Setting payment as default has not respond with 200 due to error {customer.StripeResponse.StatusCode}, requestId: {customer.StripeResponse.RequestId} with paymentIntent data. An ID: {paymentIntent.Id}, methodId: {paymentIntent.PaymentMethodId}, and sourceId: {paymentIntent.SourceId}");
 
-                            var startDate = DateTime.UtcNow.AddDays(14);
-                            var endDate = DateTime.UtcNow.AddDays(14);
-                            var delay = TimeSpan.FromDays(14);
+                            // HACK: Adjust to subscription start on 00:00 UTC of the next day.
+                            var beginningOfTommorow = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, 0, 0, 0, DateTimeKind.Utc).AddDays(1);
+                            var subscriptionStartDate = beginningOfTommorow.AddDays(14); 
+                            var subscriptionEndDate = beginningOfTommorow.AddMonths(1).AddDays(14);
+                            var delay = subscriptionStartDate.Subtract(DateTime.UtcNow);
 
-                            _logger.LogInformation($"Adding a subscription starting at {startDate} till {endDate}");
+                            _logger.LogInformation($"Adding a subscription starting at {subscriptionStartDate} till {subscriptionEndDate}");
 
                             var product = await _subscriptionPlanService.FetchSubscriptionPlan();
                             var prices = await _stripeProductsService.GetStripePrices(product.Id);
@@ -135,9 +137,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
                             var jobIdentifier = _backgroundJobClient.Schedule(() => _checkoutService.CreateDeferredSubscription(checkoutSession.CustomerId, desiredPrice.Id), delay);
 
-                            var res = await _userRepo.ChangeSubscriptionDatesUTC(checkoutSession.CustomerId, startDate, endDate);
+                            var res = await _userRepo.ChangeSubscriptionDatesUTC(checkoutSession.CustomerId, subscriptionStartDate, subscriptionEndDate);
 
-                            if (res) _logger.LogInformation($"Subscription dates range for a Stripe Customer id: {checkoutSession.CustomerId} updated to {startDate} - {endDate}");
+                            if (res) _logger.LogInformation($"Subscription dates range for a Stripe Customer id: {checkoutSession.CustomerId} updated to {subscriptionStartDate} - {subscriptionEndDate}");
                             else return BadRequest($"Database result of SubscriptionEndDateUTC update was false for customer with id: {checkoutSession.CustomerId}");
                         }
                         _logger.LogInformation($"Session completed for a subscription with mode of: {checkoutSession.Mode}");

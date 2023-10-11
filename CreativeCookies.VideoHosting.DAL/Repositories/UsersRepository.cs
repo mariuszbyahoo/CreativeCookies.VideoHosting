@@ -39,7 +39,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         {
             var dao = await _context.Users.Where(u => u.StripeCustomerId.Equals(customerId)).FirstOrDefaultAsync();
             dao.SubscriptionStartDateUTC = startDateUtc;
-            dao.SubscriptionEndDateUTC = endDateUtc + TimeSpan.FromHours(6);
+            dao.SubscriptionEndDateUTC = endDateUtc + TimeSpan.FromHours(3);
             var result = await _context.SaveChangesAsync();
             return result > 0;
         }
