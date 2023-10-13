@@ -1,4 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Services;
+using CreativeCookies.VideoHosting.DTOs.Films;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -60,7 +61,33 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             return false;
         }
 
-        // HACK Task 178 : Add some way to retrieve current user's subscription date time range (and return the UTC times) in order to show it on the top bar
-        // Maybe instead of returning bool in IsUserASubscriber method - return some DTO with bool IsUserSubscriber, DateTime StartUtc, DateTime EndUtc
+        [HttpGet("SubscriptionDates")]
+        [Authorize]
+        public async Task<ActionResult<SubscriptionDateRange?>> SubscriptionDates()
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var stac = Request.Cookies["stac"];
+            if (tokenHandler.CanReadToken(stac))
+            {
+                var token = tokenHandler.ReadJwtToken(stac);
+                string userId = null;
+
+                foreach (var claim in token.Claims)
+                {
+                    if (claim.Type.Equals("nameid"))
+                    {
+                        userId = claim.Value;
+                        break;
+                    }
+                }
+
+                if (userId != null)
+                {
+                    var res = await _srv.GetSubscriptionDates(userId);
+                    return res;
+                }
+            }
+            return null;
+        }
     }
 }

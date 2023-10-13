@@ -2,6 +2,7 @@
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
+using CreativeCookies.VideoHosting.DTOs.Films;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -105,6 +106,13 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             var result = await _context.Users.Where(u => u.Id.ToLower() == userId.ToLower()).FirstOrDefaultAsync();
 
             return result != null && result.SubscriptionStartDateUTC < DateTime.UtcNow && result.SubscriptionEndDateUTC > DateTime.UtcNow;
+        }
+
+        public async Task<SubscriptionDateRange> GetSubscriptionDates(string userId)
+        {
+            var result = await _context.Users.Where(u => u.Id.ToLower() == userId.ToLower()).FirstOrDefaultAsync();
+            if (result == null) return null;
+            return new SubscriptionDateRange(result.SubscriptionStartDateUTC, result.SubscriptionEndDateUTC);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Services;
+using CreativeCookies.VideoHosting.DTOs.Films;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 
 namespace CreativeCookies.VideoHosting.Services
@@ -28,6 +29,12 @@ namespace CreativeCookies.VideoHosting.Services
         public async Task<bool> IsUserSubscriber(string userId)
         {
             var res = await _repo.IsUserSubscriber(userId);
+            return res;
+        }
+
+        public async Task<SubscriptionDateRange> GetSubscriptionDates(string userId)
+        {
+            var res = await _repo.GetSubscriptionDates(userId);
             return res;
         }
     }

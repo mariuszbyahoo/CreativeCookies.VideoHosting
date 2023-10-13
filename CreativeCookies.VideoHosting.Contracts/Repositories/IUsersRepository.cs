@@ -1,4 +1,5 @@
 ﻿
+using CreativeCookies.VideoHosting.DTOs.Films;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 
 namespace CreativeCookies.VideoHosting.Contracts.Repositories
@@ -43,5 +44,12 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
         /// <param name="userId">Id of a user to look up for</param>
         /// <returns>true - user successfuly granted with access, false - no or some error occured</returns>
         Task<bool> IsUserSubscriber(string userId);
+
+        /// <summary>
+        /// Returns date range of {StartDateUTC} - {EndDateUTC}
+        /// </summary>
+        /// <param name="userId">Id of a user to look up for</param>
+        /// <returns>null, if no user has been found</returns>
+        Task<SubscriptionDateRange> GetSubscriptionDates(string userId);
     }
 }
