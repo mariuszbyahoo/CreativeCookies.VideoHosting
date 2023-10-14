@@ -17,5 +17,12 @@ namespace CreativeCookies.VideoHosting.Contracts.Services
         Task<bool> IsUserSubscriber(string userId);
 
         Task<SubscriptionDateRange> GetSubscriptionDates(string userId);
+
+        /// <summary>
+        /// Deletes the background hangfire job with scheduled order for a subscription
+        /// </summary>
+        /// <param name="userId">UserId to delete the background job for</param>
+        /// <returns>true - operation succeed, otherwise false</returns>
+        Task<bool> DeleteBackgroundJobForUser(string userId);
     }
 }

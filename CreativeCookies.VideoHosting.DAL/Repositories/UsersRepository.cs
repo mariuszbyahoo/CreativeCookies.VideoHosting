@@ -20,6 +20,16 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             _userManager = userManager;
         }
 
+        public async Task<MyHubUserDto> GetUserById(string userId)
+        {
+            var dao = await _context.Users.Where(u => u.Id.Equals(userId, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefaultAsync();
+            if (dao == null)
+            {
+                return null;
+            }
+            var dto = new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC, dao.HangfireJobId);
+            return dto;
+        }
 
         public async Task<MyHubUserDto> GetUserByStripeCustomerId(string stripeCustomerId)
         {

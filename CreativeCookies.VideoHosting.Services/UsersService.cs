@@ -2,16 +2,19 @@
 using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.DTOs.Films;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
+using Hangfire;
 
 namespace CreativeCookies.VideoHosting.Services
 {
     public class UsersService : IUsersService
     {
         private readonly IUsersRepository _repo;
+        private readonly IBackgroundJobClient _hangfireJobClient;
 
-        public UsersService(IUsersRepository repo)
+        public UsersService(IUsersRepository repo, IBackgroundJobClient hangfireJobClient)
         {
             _repo = repo;
+            _hangfireJobClient = hangfireJobClient;
         }
 
         public async Task<UsersPaginatedResultDto> GetUsersPaginatedResult(string search, int pageNumber, int pageSize, string role)
@@ -36,6 +39,17 @@ namespace CreativeCookies.VideoHosting.Services
         {
             var res = await _repo.GetSubscriptionDates(userId);
             return res;
+        }
+
+        public async Task<bool> DeleteBackgroundJobForUser(string userId)
+        {
+            var user = await _repo.GetUserById(userId);
+            if(user == null) return false;
+            else
+            {
+                var res = _hangfireJobClient.Delete(user.HangfireJobId);
+                return res;
+            }
         }
     }
 }
