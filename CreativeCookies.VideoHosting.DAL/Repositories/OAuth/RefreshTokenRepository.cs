@@ -78,7 +78,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories.OAuth
                 var roleId = intermediateLookup.RoleId;
                 var role = await _context.Roles.FirstOrDefaultAsync(r => r.Id.Equals(roleId));
 
-                return new MyHubUserDto(Guid.Parse(tokenEntry.UserId), user.NormalizedEmail, role.NormalizedName, user.EmailConfirmed, user.StripeCustomerId, user.SubscriptionStartDateUTC, user.SubscriptionEndDateUTC);
+                return new MyHubUserDto(Guid.Parse(tokenEntry.UserId), user.NormalizedEmail, role.NormalizedName, user.EmailConfirmed, user.StripeCustomerId, user.SubscriptionStartDateUTC, user.SubscriptionEndDateUTC, user.HangfireJobId);
             }
         }
 

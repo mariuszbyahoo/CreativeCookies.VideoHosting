@@ -26,7 +26,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
         /// <param name="startDateUtc">UTC subscription's start date</param>
         /// <param name="endDateUtc">UTC subscription's end date</param>
         /// <returns>true - if operation succeeded, otherwise false</returns>
-        Task<bool> ChangeSubscriptionDatesUTC(string customerId, DateTime startDateUtc, DateTime endDateUtc);
+        bool ChangeSubscriptionDatesUTC(string customerId, DateTime startDateUtc, DateTime endDateUtc);
 
         Task<UsersPaginatedResultDto> GetUsersPaginatedResult(string search, int pageNumber, int pageSize, string role);
 

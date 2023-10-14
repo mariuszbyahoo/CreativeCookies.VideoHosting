@@ -7,9 +7,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
+using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using CreativeCookies.VideoHosting.Contracts.Services.OAuth;
 using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
+using Hangfire;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +27,8 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
         private readonly IMyHubSignInManager _signInManager;
         private readonly IRefreshTokenService _refreshTokenService;
         private readonly IConnectAccountsService _connectAccountsService;
+        private readonly IBackgroundJobClient _hangfireJobClient;
+        private readonly IUsersRepository _usersRepo;
         private readonly string _stripeApiSecretKey;
         private readonly ILogger<DeletePersonalDataModel> _logger;
 
@@ -34,6 +38,8 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
             IMyHubSignInManager signInManager,
             IRefreshTokenService refreshTokenService,
             IConnectAccountsService connectAccountsService,
+            IUsersRepository usersRepo,
+            IBackgroundJobClient hangfireJobClient,
             StripeSecretKeyWrapper wrapper,
             ILogger<DeletePersonalDataModel> logger)
         {
@@ -41,6 +47,8 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
             _signInManager = signInManager;
             _refreshTokenService = refreshTokenService;
             _connectAccountsService = connectAccountsService;
+            _usersRepo = usersRepo;
+            _hangfireJobClient = hangfireJobClient;
             _stripeApiSecretKey = wrapper.Value;
             _logger = logger;
         }
@@ -109,6 +117,10 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                     return Page();
                 }
             }
+            if (!string.IsNullOrEmpty(user.HangfireJobId))
+            {
+                _hangfireJobClient.Delete(user.HangfireJobId);
+            }
             await DeleteStripeEntities(user.StripeCustomerId);
 
             var userId = await _userManager.GetUserIdAsync(user);
@@ -141,7 +153,6 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                     Customer = stripeCustomerId
                 };
                 var requestOptions = await GetRequestOptions();
-                // DELETE Hangfire job in the background if awaiting ordered subscription
                 
                 StripeList<Subscription> subscriptions = subscriptionService.List(subscriptionListOptions, requestOptions);
 
@@ -157,30 +168,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                         }, requestOptions
                     ).ToList();
 
-
-                    // HACK: Task178 - this should not be existing, instead of that,
-                    // there should be code which should check is SubscriptionStartDate in the future, and if so, then 
-                    // it's 14 days cooling off period, and, 
-                    // The question is: Should deleting account's data be considered as a contract's renouciation?
-                    if (paymentIntents.Count > 0)
-                    {
-                        foreach (var paymentIntent in paymentIntents)
-                        {
-                            var refundService = new RefundService();
-                            var refundOptions = new RefundCreateOptions
-                            {
-                                PaymentIntent = paymentIntent.Id
-                            };
-                            refundService.Create(refundOptions, requestOptions);
-                        }
-                    }
-
-
-                    var subscriptionCancelOptions = new SubscriptionCancelOptions()
-                    {
-                        Prorate = true // this should not be prorated
-                    };
-                    //  ENDHACK
+                    var subscriptionCancelOptions = new SubscriptionCancelOptions();
 
                     subscriptionService.Cancel(subscriptionId, subscriptionCancelOptions, requestOptions);
                 }
