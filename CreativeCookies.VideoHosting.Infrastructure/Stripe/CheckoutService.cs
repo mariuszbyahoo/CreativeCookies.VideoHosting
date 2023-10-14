@@ -20,58 +20,111 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         private readonly ILogger<CheckoutService> _logger;
         private readonly IConfiguration _configuration;
         private readonly IConnectAccountsRepository _connectAccountsRepo;
+        private readonly IStripeProductsService _stripeProductsService;
         private readonly string _clientUrl;
         private readonly string _connectAccountId;
 
-        public CheckoutService(StripeSecretKeyWrapper wrapper, ILogger<CheckoutService> logger, IConnectAccountsRepository connectAccountRepo, IConfiguration configuration)
+        public CheckoutService(StripeSecretKeyWrapper wrapper, ILogger<CheckoutService> logger, 
+            IConnectAccountsRepository connectAccountRepo, IConfiguration configuration, IStripeProductsService stripeProductsService)
         {
             _connectAccountsRepo = connectAccountRepo;
             _stripeApiSecretKey = wrapper.Value;
             _logger = logger;
             _configuration = configuration;
+            _stripeProductsService = stripeProductsService;
             _clientUrl = _configuration.GetValue<string>("ClientUrl");
             _connectAccountId = _connectAccountsRepo.GetConnectedAccountId();
         }
 
-        public async Task<string> CreateNewSession(string priceId, string stripeCustomerId)
+        public async Task<string> CreateNewSession(string priceId, string stripeCustomerId, bool HasDeclinedCoolingOffPeriod = false)
         {
+            Session session;
             StripeConfiguration.ApiKey = _stripeApiSecretKey;
+
             if (string.IsNullOrWhiteSpace(_connectAccountId))
             {
                 _logger.LogError("No connect account found in database, aborting creation of new session");
                 return string.Empty;
             }
-            var successUrl = $"{_clientUrl}/success?sessionId=";
-            successUrl += "{CHECKOUT_SESSION_ID}";
-            var options = new SessionCreateOptions
-            {
-                Customer = stripeCustomerId,
-                LineItems = new List<SessionLineItemOptions>
-                {
-                    new SessionLineItemOptions
-                    {
-                        Price = priceId,
-                        Quantity = 1,
-                    },
-                },
-                Mode = "subscription",
-                SubscriptionData = new SessionSubscriptionDataOptions
-                {
-                    ApplicationFeePercent = 10,
-                },
-                BillingAddressCollection = "required",
-                SuccessUrl = successUrl, 
-                CancelUrl = $"{_clientUrl}/cancel",
-            };
 
             var requestOptions = new RequestOptions
             {
                 StripeAccount = _connectAccountId,
             };
             var service = new SessionService();
-            Session session = service.Create(options, requestOptions);
-            
-            return session.Url;
+
+            if (HasDeclinedCoolingOffPeriod)
+            {
+                var successUrl = $"{_clientUrl}/success?sessionId="; 
+                                                                     
+                successUrl += "{CHECKOUT_SESSION_ID}";
+                var options = new SessionCreateOptions
+                {
+                    Customer = stripeCustomerId,
+                    LineItems = new List<SessionLineItemOptions>
+                    {
+                        new SessionLineItemOptions
+                        {
+                            Price = priceId,
+                            Quantity = 1,
+                        },
+                    },
+                    Mode = "subscription",
+                    SubscriptionData = new SessionSubscriptionDataOptions
+                    {
+                        ApplicationFeePercent = 10, // HACK: Make this configurable amount of percent
+                    },
+                    SuccessUrl = successUrl,
+                    CancelUrl = $"{_clientUrl}/cancel",
+                };
+                session = service.Create(options, requestOptions);
+
+                return session.Url;
+            }
+            else
+            {
+                var successUrl = $"{_clientUrl}/ordersuccess?sessionId="; 
+                                                                     
+                successUrl += "{CHECKOUT_SESSION_ID}";
+                var price = await _stripeProductsService.GetPriceById(priceId);
+                var sessionOptions = new SessionCreateOptions
+                {
+                    PaymentMethodTypes = new List<string>
+                    {
+                        "card",
+                    },
+                    Mode = "payment",
+                    Customer = stripeCustomerId,
+                    LineItems = new List<SessionLineItemOptions>
+                    {
+                        new SessionLineItemOptions
+                        {
+                            PriceData = new SessionLineItemPriceDataOptions
+                            {
+                                UnitAmount = price.UnitAmount,
+                                Currency = price.Currency,
+                                ProductData = new SessionLineItemPriceDataProductDataOptions
+                                {
+                                    Name = "Order for subscription with 14 days cooling off period"
+                                }
+                            },
+                            Quantity = 1,
+                        }
+                    },
+                    PaymentIntentData = new SessionPaymentIntentDataOptions
+                    {
+                        ApplicationFeeAmount = long.Parse($"{price.UnitAmount * 0.1}"),
+                        SetupFutureUsage = "off_session"
+                    },
+                    SuccessUrl = successUrl,
+                    CancelUrl = $"{_clientUrl}/cancel"
+
+                };
+                var sessionService = new SessionService();
+                session = sessionService.Create(sessionOptions, requestOptions);
+
+                return session.Url;
+            }
         }
 
         public async Task<bool> IsSessionPaymentPaid(string sessionId)
@@ -83,6 +136,31 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             Session session = await service.GetAsync(sessionId, requestOptions: requestOptions);
 
             return session.PaymentStatus.Equals("paid");
+        }
+
+        public string CreateDeferredSubscription(string customerId, string priceId)
+        {
+            StripeConfiguration.ApiKey = _stripeApiSecretKey;
+            var beginningOfTommorow = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, 0, 0, 0, DateTimeKind.Utc).AddDays(1);
+            var requestOptions = new RequestOptions() { StripeAccount = _connectAccountId };
+
+            var options = new SubscriptionCreateOptions
+            {
+                Customer = customerId,
+                Items = new List<SubscriptionItemOptions>
+                {
+                    new SubscriptionItemOptions
+                    {
+                        Price = priceId
+                    },
+                },
+                TrialEnd = beginningOfTommorow.AddDays(14)
+                // Set TrialEnd to next day's beginning and add 14 days for the trial period
+            };
+
+            var service = new SubscriptionService();
+            Subscription subscription = service.Create(options, requestOptions: requestOptions);
+            return subscription.Id;
         }
     }
 }

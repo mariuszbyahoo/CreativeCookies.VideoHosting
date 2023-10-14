@@ -10,7 +10,11 @@ namespace CreativeCookies.VideoHosting.DTOs.OAuth
         public string StripeCustomerId { get; set; }
         public DateTime SubscriptionStartDateUTC { get; set; }
         public DateTime SubscriptionEndDateUTC { get; set; }
-        public MyHubUserDto(Guid id, string userEmail, string role, bool isActive, string stripeCustomerId, DateTime subscriptionStartDateUTC, DateTime subscriptionEndDateUTC)
+        /// <summary>
+        /// Id of Hangfire Job, which will create a subscription in the background after 14 days cooling off period
+        /// </summary>
+        public string? HangfireJobId { get; set; }
+        public MyHubUserDto(Guid id, string userEmail, string role, bool isActive, string stripeCustomerId, DateTime subscriptionStartDateUTC, DateTime subscriptionEndDateUTC, string? hangfireJobId)
         {
             Id = id;
             UserEmail = userEmail;
@@ -19,6 +23,7 @@ namespace CreativeCookies.VideoHosting.DTOs.OAuth
             StripeCustomerId = stripeCustomerId;
             SubscriptionStartDateUTC = subscriptionStartDateUTC;
             SubscriptionEndDateUTC = subscriptionEndDateUTC;
+            HangfireJobId = hangfireJobId;
         }
     }
 }

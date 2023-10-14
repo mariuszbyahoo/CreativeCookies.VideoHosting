@@ -73,6 +73,15 @@ namespace CreativeCookies.StripeEvents.Services
 
                     await RedirectEvent(targetUrl, stripeEventDto.JsonRequestBody, stripeEventDto.StripeSignature);
                 }
+                else if (stripeEvent.Type == Events.CheckoutSessionCompleted)
+                {
+                    var accountId = stripeEvent.Account;
+                    var apiDomain = await _service.GetDestinationUrlByAccountId(accountId, _tableStorageAccountKey);
+                    var targetUrl = $"https://{apiDomain}";
+                    _logger.LogInformation($"\nEvent type {stripeEvent.Type}");
+
+                    await RedirectEvent(targetUrl, stripeEventDto.JsonRequestBody, stripeEventDto.StripeSignature);
+                }
                 else if (stripeEvent.Type == Events.ChargeRefunded)
                 {
                     var accountId = stripeEvent.Account;

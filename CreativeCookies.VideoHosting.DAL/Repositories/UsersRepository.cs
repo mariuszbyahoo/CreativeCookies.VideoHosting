@@ -2,6 +2,7 @@
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
+using CreativeCookies.VideoHosting.DTOs.Films;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,12 +20,26 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             _userManager = userManager;
         }
 
+
         public async Task<MyHubUserDto> GetUserByStripeCustomerId(string stripeCustomerId)
         {
             var dao = await _context.Users.Where(u => u.StripeCustomerId.Equals(stripeCustomerId)).FirstOrDefaultAsync();
-            var dto =  new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC);
+            var dto =  new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC, dao.HangfireJobId);
             dto.Role = string.Join(",",await _userManager.GetRolesAsync(dto));
             return dto;
+        }
+
+        public async Task<MyHubUserDto?> AssignHangfireJobIdToUser(string stripeCustomerId, string jobId)
+        {
+            var dao = await _context.Users.Where(u => u.StripeCustomerId.Equals(stripeCustomerId)).FirstOrDefaultAsync();
+            dao.HangfireJobId = jobId;
+            var result = await _context.SaveChangesAsync();
+            if (result > 0)
+            {
+                var dto = new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC, dao.HangfireJobId);
+                return dto;
+            }
+            return null;
         }
 
         public async Task<bool> ChangeSubscriptionEndDateUTC(string customerId, DateTime endDateUtc)
@@ -35,12 +50,12 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             return result > 0;
         }
 
-        public async Task<bool> ChangeSubscriptionDatesUTC(string customerId, DateTime startDateUtc, DateTime endDateUtc)
+        public bool ChangeSubscriptionDatesUTC(string customerId, DateTime startDateUtc, DateTime endDateUtc)
         {
-            var dao = await _context.Users.Where(u => u.StripeCustomerId.Equals(customerId)).FirstOrDefaultAsync();
+            var dao = _context.Users.Where(u => u.StripeCustomerId.Equals(customerId)).FirstOrDefault();
             dao.SubscriptionStartDateUTC = startDateUtc;
-            dao.SubscriptionEndDateUTC = endDateUtc;
-            var result = await _context.SaveChangesAsync();
+            dao.SubscriptionEndDateUTC = endDateUtc + TimeSpan.FromHours(3);
+            var result = _context.SaveChanges();
             return result > 0;
         }
 
@@ -90,6 +105,13 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             var result = await _context.Users.Where(u => u.Id.ToLower() == userId.ToLower()).FirstOrDefaultAsync();
 
             return result != null && result.SubscriptionStartDateUTC < DateTime.UtcNow && result.SubscriptionEndDateUTC > DateTime.UtcNow;
+        }
+
+        public async Task<SubscriptionDateRange> GetSubscriptionDates(string userId)
+        {
+            var result = await _context.Users.Where(u => u.Id.ToLower() == userId.ToLower()).FirstOrDefaultAsync();
+            if (result == null) return null;
+            return new SubscriptionDateRange(result.SubscriptionStartDateUTC, result.SubscriptionEndDateUTC);
         }
     }
 }

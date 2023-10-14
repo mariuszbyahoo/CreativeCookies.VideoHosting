@@ -1,4 +1,5 @@
-﻿using CreativeCookies.VideoHosting.DTOs.OAuth;
+﻿using CreativeCookies.VideoHosting.DTOs.Films;
+using CreativeCookies.VideoHosting.DTOs.OAuth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,5 +15,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Services
         Task<bool> AssignStripeCustomerId(string userId, string stripeCustomerId);
 
         Task<bool> IsUserSubscriber(string userId);
+
+        Task<SubscriptionDateRange> GetSubscriptionDates(string userId);
     }
 }

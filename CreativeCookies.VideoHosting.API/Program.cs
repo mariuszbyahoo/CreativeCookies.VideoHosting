@@ -33,6 +33,8 @@ using CreativeCookies.VideoHosting.Contracts.Services.Stripe;
 using CreativeCookies.VideoHosting.Services.Subscriptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.ApplicationInsights.Extensibility;
+using Hangfire;
+using CreativeCookies.VideoHosting.API.Attributes;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -69,7 +71,7 @@ namespace CreativeCookies.VideoHosting.API
                     var appInsightsInstrumentationKey = hostingContext.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
                     if (string.IsNullOrWhiteSpace(appInsightsInstrumentationKey)) throw new InvalidOperationException("AppInsights Instrumentation key has not been found!");
                     loggerConfiguration
-                                .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Warning);
+                                .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Information);
                     loggerConfiguration
                                 .WriteTo.ApplicationInsights(new TelemetryClient(new TelemetryConfiguration
                                 {
@@ -118,6 +120,7 @@ namespace CreativeCookies.VideoHosting.API
 
             builder.Services.AddDataAccessLayer(connectionString);
             builder.Services.AddApplicationInsightsTelemetry(appInsightsInstrumentationKey);
+            builder.Services.AddHangfireServer();
 
             builder.Services.AddSingleton<ISasTokenService, SasTokenService>();
             builder.Services.AddSingleton<IJWTGenerator, JwtGenerator>();
@@ -212,6 +215,12 @@ namespace CreativeCookies.VideoHosting.API
             var app = builder.Build();
 
             app.MigrateAndPopulateDatabase(adminEmail);
+
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions
+            {
+                Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
+            }); 
+            app.UseHangfireServer();
 
             if (app.Environment.IsDevelopment())
             {

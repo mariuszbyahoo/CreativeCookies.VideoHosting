@@ -1,4 +1,5 @@
 ﻿
+using CreativeCookies.VideoHosting.DTOs.Films;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 
 namespace CreativeCookies.VideoHosting.Contracts.Repositories
@@ -6,6 +7,9 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
     public interface IUsersRepository
     {
         Task<MyHubUserDto> GetUserByStripeCustomerId(string stripeCustomerId);
+
+        Task<MyHubUserDto?> AssignHangfireJobIdToUser(string stripeCustomerId, string jobId);
+
 
         /// <summary>
         /// Changes the AspNetUser.SubscriptionEndDateUtc value
@@ -22,7 +26,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
         /// <param name="startDateUtc">UTC subscription's start date</param>
         /// <param name="endDateUtc">UTC subscription's end date</param>
         /// <returns>true - if operation succeeded, otherwise false</returns>
-        Task<bool> ChangeSubscriptionDatesUTC(string customerId, DateTime startDateUtc, DateTime endDateUtc);
+        bool ChangeSubscriptionDatesUTC(string customerId, DateTime startDateUtc, DateTime endDateUtc);
 
         Task<UsersPaginatedResultDto> GetUsersPaginatedResult(string search, int pageNumber, int pageSize, string role);
 
@@ -40,5 +44,12 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
         /// <param name="userId">Id of a user to look up for</param>
         /// <returns>true - user successfuly granted with access, false - no or some error occured</returns>
         Task<bool> IsUserSubscriber(string userId);
+
+        /// <summary>
+        /// Returns date range of {StartDateUTC} - {EndDateUTC}
+        /// </summary>
+        /// <param name="userId">Id of a user to look up for</param>
+        /// <returns>null, if no user has been found</returns>
+        Task<SubscriptionDateRange> GetSubscriptionDates(string userId);
     }
 }

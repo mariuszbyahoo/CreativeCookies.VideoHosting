@@ -7,9 +7,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
+using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using CreativeCookies.VideoHosting.Contracts.Services.OAuth;
 using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
+using Hangfire;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +27,8 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
         private readonly IMyHubSignInManager _signInManager;
         private readonly IRefreshTokenService _refreshTokenService;
         private readonly IConnectAccountsService _connectAccountsService;
+        private readonly IBackgroundJobClient _hangfireJobClient;
+        private readonly IUsersRepository _usersRepo;
         private readonly string _stripeApiSecretKey;
         private readonly ILogger<DeletePersonalDataModel> _logger;
 
@@ -34,6 +38,8 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
             IMyHubSignInManager signInManager,
             IRefreshTokenService refreshTokenService,
             IConnectAccountsService connectAccountsService,
+            IUsersRepository usersRepo,
+            IBackgroundJobClient hangfireJobClient,
             StripeSecretKeyWrapper wrapper,
             ILogger<DeletePersonalDataModel> logger)
         {
@@ -41,6 +47,8 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
             _signInManager = signInManager;
             _refreshTokenService = refreshTokenService;
             _connectAccountsService = connectAccountsService;
+            _usersRepo = usersRepo;
+            _hangfireJobClient = hangfireJobClient;
             _stripeApiSecretKey = wrapper.Value;
             _logger = logger;
         }
@@ -109,6 +117,10 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                     return Page();
                 }
             }
+            if (!string.IsNullOrEmpty(user.HangfireJobId))
+            {
+                _hangfireJobClient.Delete(user.HangfireJobId);
+            }
             await DeleteStripeEntities(user.StripeCustomerId);
 
             var userId = await _userManager.GetUserIdAsync(user);
@@ -141,6 +153,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                     Customer = stripeCustomerId
                 };
                 var requestOptions = await GetRequestOptions();
+                
                 StripeList<Subscription> subscriptions = subscriptionService.List(subscriptionListOptions, requestOptions);
 
                 foreach (var subscription in subscriptions)
@@ -155,23 +168,8 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                         }, requestOptions
                     ).ToList();
 
-                    if (paymentIntents.Count > 0)
-                    {
-                        foreach (var paymentIntent in paymentIntents)
-                        {
-                            var refundService = new RefundService();
-                            var refundOptions = new RefundCreateOptions
-                            {
-                                PaymentIntent = paymentIntent.Id
-                            };
-                            refundService.Create(refundOptions, requestOptions);
-                        }
-                    }
+                    var subscriptionCancelOptions = new SubscriptionCancelOptions();
 
-                    var subscriptionCancelOptions = new SubscriptionCancelOptions()
-                    {
-                        Prorate = true
-                    };
                     subscriptionService.Cancel(subscriptionId, subscriptionCancelOptions, requestOptions);
                 }
                 if (!string.IsNullOrWhiteSpace(stripeCustomerId))
