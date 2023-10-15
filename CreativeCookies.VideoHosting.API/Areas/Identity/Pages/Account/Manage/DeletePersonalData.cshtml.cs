@@ -29,6 +29,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
         private readonly IConnectAccountsService _connectAccountsService;
         private readonly IBackgroundJobClient _hangfireJobClient;
         private readonly IUsersRepository _usersRepo;
+        private readonly ICheckoutService _checkoutService;
         private readonly string _stripeApiSecretKey;
         private readonly ILogger<DeletePersonalDataModel> _logger;
 
@@ -39,6 +40,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
             IRefreshTokenService refreshTokenService,
             IConnectAccountsService connectAccountsService,
             IUsersRepository usersRepo,
+            ICheckoutService checkoutService,
             IBackgroundJobClient hangfireJobClient,
             StripeSecretKeyWrapper wrapper,
             ILogger<DeletePersonalDataModel> logger)
@@ -47,6 +49,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
             _signInManager = signInManager;
             _refreshTokenService = refreshTokenService;
             _connectAccountsService = connectAccountsService;
+            _checkoutService = checkoutService;
             _usersRepo = usersRepo;
             _hangfireJobClient = hangfireJobClient;
             _stripeApiSecretKey = wrapper.Value;
@@ -95,7 +98,6 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
 
         public async Task<IActionResult> OnPostAsync()
         {
-            // HACK: Add deletion of underlying Stripe entities: Subscription, consumer and so on.
             var user = await _userManager.GetUserAsync(User);
             var cookieOptions = new CookieOptions
             {
@@ -122,8 +124,16 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
                 _hangfireJobClient.Delete(user.HangfireJobId);
             }
             await DeleteStripeEntities(user.StripeCustomerId);
-
+                
             var userId = await _userManager.GetUserIdAsync(user);
+
+            if (user.SubscriptionStartDateUTC > DateTime.UtcNow)
+            {
+                var res = await _checkoutService.RefundCanceledOrder(userId);
+                if (res) _logger.LogInformation($"User with ID:{userId} and SubscriptionStartDate: {user.SubscriptionStartDateUTC} has canceled his order for subscription, therefore a refund has been initiated");
+                else _logger.LogError($"User with ID:{userId} and SubscriptionStartDate: {user.SubscriptionStartDateUTC} has canceled his order for subscription, but something went wrong when a refund initiation attempt occured");
+            }
+
             await _refreshTokenService.DeleteIssuedRefreshTokens(Guid.Parse(userId));
 
             Response.Cookies.Delete("stac", cookieOptions);

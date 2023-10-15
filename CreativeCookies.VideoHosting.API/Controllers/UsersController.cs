@@ -1,9 +1,11 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Services;
+﻿using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
+using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.DTOs.Films;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Stripe;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
@@ -12,11 +14,15 @@ namespace CreativeCookies.VideoHosting.API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly IUsersService _srv;
+        private readonly IUsersService _usersSrv;
+        private readonly ICheckoutService _checkoutSrv;
+        private readonly ILogger<UsersController> _logger;
 
-        public UsersController(IUsersService usersService)
+        public UsersController(IUsersService usersService, ICheckoutService checkoutSrv, ILogger<UsersController> logger)
         {
-            _srv = usersService;
+            _usersSrv = usersService;
+            _checkoutSrv = checkoutSrv;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -28,7 +34,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 return BadRequest("PageNumber and PageSize must be greater than zero.");
             }
 
-            var result = await _srv.GetUsersPaginatedResult(search, pageNumber, pageSize, role);
+            var result = await _usersSrv.GetUsersPaginatedResult(search, pageNumber, pageSize, role);
 
             return Ok(result);
         }
@@ -55,7 +61,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
                 if (userId != null)
                 {
-                    return await _srv.IsUserSubscriber(userId);
+                    return await _usersSrv.IsUserSubscriber(userId);
                 }
             }
             return false;
@@ -83,11 +89,51 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
                 if (userId != null)
                 {
-                    var res = await _srv.GetSubscriptionDates(userId);
+                    var res = await _usersSrv.GetSubscriptionDates(userId);
                     return res;
                 }
             }
             return null;
+        }
+
+        [HttpPost("OrderCancellation")]
+        [Authorize]
+        public async Task<ActionResult<bool>> OrderCancellation()
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var stac = Request.Cookies["stac"];
+            if (tokenHandler.CanReadToken(stac))
+            {
+                var token = tokenHandler.ReadJwtToken(stac);
+                string userId = null;
+
+                foreach (var claim in token.Claims)
+                {
+                    if (claim.Type.Equals("nameid"))
+                    {
+                        userId = claim.Value;
+                        break;
+                    }
+                }
+
+                if (userId != null)
+                {
+                    var res = await _usersSrv.DeleteBackgroundJobForUser(userId);
+
+                    if (res) _logger.LogInformation($"Background job for user {userId} deleted successfully");
+                    else _logger.LogError($"Error occured when deleting job for user {userId}");
+
+                    var refundRes = await _checkoutSrv.RefundCanceledOrder(userId);
+
+                    var datesRes = await _usersSrv.ResetSubscriptionDates(userId);
+
+
+                    if (refundRes) _logger.LogInformation($"Full refund for user {userId} created successfully");
+                    else _logger.LogError($"Error occured when initiating full refund for user {userId}");
+                    if (res && refundRes) return true;
+                }
+            }
+            return false;
         }
     }
 }

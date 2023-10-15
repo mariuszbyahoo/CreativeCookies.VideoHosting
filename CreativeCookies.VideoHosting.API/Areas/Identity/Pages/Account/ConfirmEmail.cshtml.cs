@@ -53,7 +53,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             var result = await _userManager.ConfirmEmailAsync(user, code);
             if (result.Succeeded)
             {
-                stripeResult = await _stripeCustomerService.CreateStripeCustomer(user.Id.ToString(), user.UserEmail);
+                stripeResult = _stripeCustomerService.CreateStripeCustomer(user.Id.ToString(), user.UserEmail);
             }
             StatusMessage = result.Succeeded && stripeResult ? "Thank you for confirming your email." : "Error confirming your email.";
             return Page();

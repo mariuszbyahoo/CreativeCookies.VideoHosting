@@ -8,16 +8,16 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
     {
         Task<MyHubUserDto> GetUserByStripeCustomerId(string stripeCustomerId);
 
-        Task<MyHubUserDto?> AssignHangfireJobIdToUser(string stripeCustomerId, string jobId);
+        MyHubUserDto? AssignHangfireJobIdToUser(string stripeCustomerId, string jobId);
 
-
+        Task<MyHubUserDto> GetUserById(string userId);
         /// <summary>
         /// Changes the AspNetUser.SubscriptionEndDateUtc value
         /// </summary>
         /// <param name="customerId">Stripe customer Id of a user</param>
         /// <param name="endDateUtc">UTC subscription's end date</param>
         /// <returns>true - if operation succeeded, otherwise false</returns>
-        Task<bool> ChangeSubscriptionEndDateUTC(string customerId, DateTime endDateUtc);
+        bool ChangeSubscriptionEndDateUTC(string customerId, DateTime endDateUtc);
 
         /// <summary>
         /// Changes both of the AspNetUser.SubscriptionStartDateUTC and SubscriptionEndDateUTC
@@ -25,8 +25,9 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
         /// <param name="customerId">Stripe customer Id of a user</param>
         /// <param name="startDateUtc">UTC subscription's start date</param>
         /// <param name="endDateUtc">UTC subscription's end date</param>
+        /// <param name="addDelayForSubscriptions">This param controls is there a need to add 3 hours to specified endDateUtc</param>
         /// <returns>true - if operation succeeded, otherwise false</returns>
-        bool ChangeSubscriptionDatesUTC(string customerId, DateTime startDateUtc, DateTime endDateUtc);
+        bool ChangeSubscriptionDatesUTC(string customerId, DateTime startDateUtc, DateTime endDateUtc, bool addDelayForSubscriptions = true);
 
         Task<UsersPaginatedResultDto> GetUsersPaginatedResult(string search, int pageNumber, int pageSize, string role);
 
@@ -36,7 +37,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
         /// <param name="userId">Id of an user </param>
         /// <param name="stripeCustomerId">Stripe Customer Id to assign</param>
         /// <returns>True - success, False - error occured or no user has been found in the database</returns>
-        Task<bool> AssignStripeCustomerId(string userId, string stripeCustomerId);
+        bool AssignStripeCustomerId(string userId, string stripeCustomerId);
 
         /// <summary>
         /// Checks underlying DAL inf. and returns true if all is set as Subscriber

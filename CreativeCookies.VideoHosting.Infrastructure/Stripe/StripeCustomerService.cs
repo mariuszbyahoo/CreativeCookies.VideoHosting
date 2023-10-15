@@ -25,7 +25,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             _stripeSecretAPIKey = _wrapper.Value;
         }
 
-        public async Task<bool> CreateStripeCustomer(string userId, string userEmail)
+        public bool CreateStripeCustomer(string userId, string userEmail)
         {
             StripeConfiguration.ApiKey = _stripeSecretAPIKey;
             var connectAccountId = _connectAccountsService.GetConnectedAccountId();
@@ -47,7 +47,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             {
                 var stripeCustomer = customerService.Create(customerOptions, requestOptions);
 
-                var hasAssigned = await _usersSrv.AssignStripeCustomerId(userId, stripeCustomer.Id);
+                var hasAssigned = _usersSrv.AssignStripeCustomerId(userId, stripeCustomer.Id);
                 if (!hasAssigned)
                 {
                     _logger.LogError($"Error creating Stripe customer for user: {userId}. A stripe customer with an ID of: {stripeCustomer.Id} has been created, but it's Id has not been assigned to SQL column");

@@ -21,19 +21,24 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         private readonly IConfiguration _configuration;
         private readonly IConnectAccountsRepository _connectAccountsRepo;
         private readonly IStripeProductsService _stripeProductsService;
+        private readonly IUsersRepository _usersRepo;
+        private readonly RequestOptions _requestOptions;
         private readonly string _clientUrl;
         private readonly string _connectAccountId;
 
         public CheckoutService(StripeSecretKeyWrapper wrapper, ILogger<CheckoutService> logger, 
-            IConnectAccountsRepository connectAccountRepo, IConfiguration configuration, IStripeProductsService stripeProductsService)
+            IConnectAccountsRepository connectAccountRepo, IConfiguration configuration, IStripeProductsService stripeProductsService,
+            IUsersRepository usersRepo)
         {
             _connectAccountsRepo = connectAccountRepo;
             _stripeApiSecretKey = wrapper.Value;
             _logger = logger;
             _configuration = configuration;
             _stripeProductsService = stripeProductsService;
+            _usersRepo = usersRepo; 
             _clientUrl = _configuration.GetValue<string>("ClientUrl");
             _connectAccountId = _connectAccountsRepo.GetConnectedAccountId();
+            _requestOptions = new RequestOptions { StripeAccount = _connectAccountId };
         }
 
         public async Task<string> CreateNewSession(string priceId, string stripeCustomerId, bool HasDeclinedCoolingOffPeriod = false)
@@ -47,10 +52,6 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                 return string.Empty;
             }
 
-            var requestOptions = new RequestOptions
-            {
-                StripeAccount = _connectAccountId,
-            };
             var service = new SessionService();
 
             if (HasDeclinedCoolingOffPeriod)
@@ -77,7 +78,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                     SuccessUrl = successUrl,
                     CancelUrl = $"{_clientUrl}/cancel",
                 };
-                session = service.Create(options, requestOptions);
+                session = service.Create(options, _requestOptions);
 
                 return session.Url;
             }
@@ -121,7 +122,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 
                 };
                 var sessionService = new SessionService();
-                session = sessionService.Create(sessionOptions, requestOptions);
+                session = sessionService.Create(sessionOptions, _requestOptions);
 
                 return session.Url;
             }
@@ -132,8 +133,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             StripeConfiguration.ApiKey = _stripeApiSecretKey;
 
             var service = new SessionService();
-            var requestOptions = new RequestOptions() { StripeAccount = _connectAccountId };
-            Session session = await service.GetAsync(sessionId, requestOptions: requestOptions);
+            Session session = await service.GetAsync(sessionId, requestOptions: _requestOptions);
 
             return session.PaymentStatus.Equals("paid");
         }
@@ -142,7 +142,6 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         {
             StripeConfiguration.ApiKey = _stripeApiSecretKey;
             var beginningOfTommorow = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, 0, 0, 0, DateTimeKind.Utc).AddDays(1);
-            var requestOptions = new RequestOptions() { StripeAccount = _connectAccountId };
 
             var options = new SubscriptionCreateOptions
             {
@@ -159,8 +158,50 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             };
 
             var service = new SubscriptionService();
-            Subscription subscription = service.Create(options, requestOptions: requestOptions);
+            Subscription subscription = service.Create(options, requestOptions: _requestOptions);
             return subscription.Id;
+        }
+
+        public async Task<bool> RefundCanceledOrder(string userId)
+        {
+            var res = false;
+            var user = await _usersRepo.GetUserById(userId);
+            StripeConfiguration.ApiKey = _stripeApiSecretKey;
+
+            try
+            {
+                // Retrieve the customer's latest payment intent
+                var paymentIntentService = new PaymentIntentService();
+                var paymentIntentListOptions = new PaymentIntentListOptions
+                {
+                    Customer = user.StripeCustomerId,
+                    Limit = 1
+                };
+                var paymentIntents = paymentIntentService.List(paymentIntentListOptions, _requestOptions);
+                var latestPaymentIntent = paymentIntents.FirstOrDefault();
+
+                if (latestPaymentIntent != null)
+                {
+                    // Initiate a refund for the payment intent
+                    var refundService = new RefundService();
+                    var refundOptions = new RefundCreateOptions
+                    {
+                        PaymentIntent = latestPaymentIntent.Id
+                    };
+                    var refund = refundService.Create(refundOptions, _requestOptions);
+
+                    if (refund.Status.Equals("succeeded", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        res = true;
+                    }
+                }
+            }
+            catch (StripeException ex)
+            {
+                _logger.LogError(ex, $"StripeException occured: {ex.Message}, {ex.StripeError}, {ex.HelpLink}, Status Code: {ex.HttpStatusCode}, {ex.StackTrace}, InnerException: {ex.InnerException}");
+            }
+
+            return res;
         }
     }
 }
