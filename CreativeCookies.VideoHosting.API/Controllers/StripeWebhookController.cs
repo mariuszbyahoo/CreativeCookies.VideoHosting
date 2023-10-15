@@ -161,7 +161,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
                     var accountId = stripeEvent.Account;
                     var charge = stripeEvent.Data.Object as Charge;
-                    var res = await _userRepo.ChangeSubscriptionEndDateUTC(charge.CustomerId, DateTime.UtcNow);
+                    var res = _userRepo.ChangeSubscriptionDatesUTC(charge.CustomerId, DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)), DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)), false);
                     if (res) _logger.LogInformation($"SubscriptionEndDateUTC of Stripe Customer id: {charge.CustomerId} updated to {DateTime.UtcNow}");
                     else return BadRequest($"Database result of SubscriptionEndDateUTC update was false for customer with id: {charge.CustomerId}");
                 }
@@ -170,7 +170,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
                     var accountId = stripeEvent.Account;
                     var subscription = stripeEvent.Data.Object as Subscription;
-                    var res = await _userRepo.ChangeSubscriptionEndDateUTC(subscription.CustomerId, DateTime.UtcNow);
+                    var res = _userRepo.ChangeSubscriptionDatesUTC(subscription.CustomerId, DateTime.UtcNow, DateTime.UtcNow);
                     if (res) _logger.LogInformation($"SubscriptionEndDateUTC of Stripe Customer id: {subscription.CustomerId} updated to {DateTime.UtcNow}");
                     else return BadRequest($"Database result of SubscriptionEndDateUTC update was false for customer with id: {subscription.CustomerId}");
                 }

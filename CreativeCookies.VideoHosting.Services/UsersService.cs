@@ -23,9 +23,9 @@ namespace CreativeCookies.VideoHosting.Services
             return paginatedResult;
         }
 
-        public async Task<bool> AssignStripeCustomerId(string userId, string stripeCustomerId)
+        public bool AssignStripeCustomerId(string userId, string stripeCustomerId)
         {
-            var res = await _repo.AssignStripeCustomerId(userId, stripeCustomerId);
+            var res = _repo.AssignStripeCustomerId(userId, stripeCustomerId);
             return res;
         }
 
@@ -50,6 +50,14 @@ namespace CreativeCookies.VideoHosting.Services
                 var res = _hangfireJobClient.Delete(user.HangfireJobId);
                 return res;
             }
+        }
+
+        public async Task<bool> ResetSubscriptionDates(string userId)
+        {
+            var user = await _repo.GetUserById(userId);
+            if (user == null) return false;
+            var res = _repo.ChangeSubscriptionDatesUTC(user.StripeCustomerId, DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)), DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)), false);
+            return res;
         }
     }
 }

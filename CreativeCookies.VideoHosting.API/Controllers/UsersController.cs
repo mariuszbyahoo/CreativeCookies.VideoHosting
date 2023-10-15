@@ -5,6 +5,7 @@ using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Stripe;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
@@ -123,6 +124,9 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     else _logger.LogError($"Error occured when deleting job for user {userId}");
 
                     var refundRes = await _checkoutSrv.RefundCanceledOrder(userId);
+
+                    var datesRes = await _usersSrv.ResetSubscriptionDates(userId);
+
 
                     if (refundRes) _logger.LogInformation($"Full refund for user {userId} created successfully");
                     else _logger.LogError($"Error occured when initiating full refund for user {userId}");
