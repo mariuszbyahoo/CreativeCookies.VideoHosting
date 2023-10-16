@@ -57,6 +57,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     Request.Headers["Stripe-Signature"],
                     endpointSecret);
 
+                // HACK: Should I add WebHook Endpoint for each instance and then I'd have to handle those in here?
+
                 if (stripeEvent.Type == Events.ProductCreated || stripeEvent.Type == Events.ProductUpdated)
                 {
                     _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
@@ -177,7 +179,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 else if (stripeEvent.Type == Events.SubscriptionScheduleCanceled)
                 {
                     return Ok("TODO: IMPLEMENT SUBSCRIPITON SCHEDULE CANCELED HANDLER!");
-                    // HACK: TODO
+                    // HACK: TODO - is there any need for it?
                 }
                 else
                 {

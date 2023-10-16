@@ -20,5 +20,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
         /// <param name="userId">UserId of a customer to cancell the order for</param>
         /// <returns>true - operation succeed, otherwise false</returns>
         Task<bool> RefundCanceledOrder(string userId);
+
+        Task<bool> CancelSubscription(string userId);
     }
 }

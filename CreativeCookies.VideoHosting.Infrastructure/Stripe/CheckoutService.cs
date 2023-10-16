@@ -198,9 +198,43 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             }
             catch (StripeException ex)
             {
-                _logger.LogError(ex, $"StripeException occured: {ex.Message}, {ex.StripeError}, {ex.HelpLink}, Status Code: {ex.HttpStatusCode}, {ex.StackTrace}, InnerException: {ex.InnerException}");
+                _logger.LogError(ex, $"StripeException occured while cancelling an order for subscription: {ex.Message}, {ex.StripeError}, {ex.HelpLink}, Status Code: {ex.HttpStatusCode}, {ex.StackTrace}, InnerException: {ex.InnerException}");
             }
 
+            return res;
+        }
+
+        public async Task<bool> CancelSubscription(string userId)
+        {
+            var res = false;
+            StripeConfiguration.ApiKey = _stripeApiSecretKey;
+            var user = await _usersRepo.GetUserById(userId);
+            if (user == null)
+            {
+                _logger.LogError($"User with ID {userId} not found.");
+                return res;
+            }
+            try
+            {
+                var subscriptionService = new SubscriptionService();
+                var subscriptionListOptions = new SubscriptionListOptions
+                {
+                    Customer = user.StripeCustomerId,
+                };
+                var subscriptions = subscriptionService.List(subscriptionListOptions, requestOptions: _requestOptions);
+                var options = new SubscriptionCancelOptions { Prorate = false };
+                foreach (var subscription in subscriptions)
+                {
+                    if ((await subscriptionService.CancelAsync(subscription.Id, options, requestOptions: _requestOptions)) != null)
+                        _logger.LogError($"Subscription cancel: {subscription.Id} failed, inspect that");
+                }
+                subscriptions = subscriptionService.List(subscriptionListOptions, requestOptions: _requestOptions);
+                if (subscriptions.Count() == 0) res = true;
+            }
+            catch (StripeException ex)
+            {
+                _logger.LogError(ex, $"StripeException occured while cancelling a subscription: {ex.Message}, {ex.StripeError}, {ex.HelpLink}, Status Code: {ex.HttpStatusCode}, {ex.StackTrace}, InnerException: {ex.InnerException}");
+            }
             return res;
         }
     }
