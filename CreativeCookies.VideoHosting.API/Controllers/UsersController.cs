@@ -135,5 +135,46 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             }
             return false;
         }
+
+        [HttpPost("SubscriptionCancellation")]
+        [Authorize(Roles="subscriber,Subscriber,SUBSCRIBER")]
+        public async Task<IActionResult> SubscriptionCancellation()
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var stac = Request.Cookies["stac"];
+            if (tokenHandler.CanReadToken(stac))
+            {
+                var token = tokenHandler.ReadJwtToken(stac);
+                string userId = null;
+
+                foreach (var claim in token.Claims)
+                {
+                    if (claim.Type.Equals("nameid"))
+                    {
+                        userId = claim.Value;
+                        break;
+                    }
+                }
+
+                if (userId != null)
+                {
+                    _logger.LogInformation($"Subscription cancelation for user {userId} successfully");
+
+                    try
+                    {
+                        await _checkoutSrv.CancelSubscription(userId);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"An exception occured when cancelling subscription for user: {userId}: {ex.Message}, {ex.StackTrace}, {ex.InnerException}, {ex.HResult}");
+                        return BadRequest();
+                    }
+
+                    return Ok();
+                }
+            }
+            return BadRequest();
+
+        }
     }
 }

@@ -57,6 +57,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     Request.Headers["Stripe-Signature"],
                     endpointSecret);
 
+                // HACK: Should I add WebHook Endpoint for each instance and then I'd have to handle those in here?
+
                 if (stripeEvent.Type == Events.ProductCreated || stripeEvent.Type == Events.ProductUpdated)
                 {
                     _logger.LogInformation($"StripeWebhook with event type of {stripeEvent.Type}");
@@ -90,7 +92,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     var invoice = stripeEvent.Data.Object as Invoice;
                     var invoicePeriodEnd = invoice.Lines.Data[0].Period.End;
                     var accessPeriodEnd = new DateTime(invoicePeriodEnd.Year, invoicePeriodEnd.Month, invoicePeriodEnd.Day, 0, 0, 0, DateTimeKind.Utc).AddDays(1);
-                    var res = _userRepo.ChangeSubscriptionDatesUTC(invoice.CustomerId, invoice.Lines.Data[0].Period.Start, accessPeriodEnd);
+                    var res = _userRepo.ChangeSubscriptionDatesUTC(invoice.CustomerId, invoice.Lines.Data[0].Period.Start, accessPeriodEnd, false);
                     if (res) _logger.LogInformation($"Subscription dates range for a Stripe Customer id: {invoice.CustomerId} updated to {invoice.Lines.Data[0].Period.Start} - {accessPeriodEnd}");
                     else return BadRequest($"Database result of SubscriptionEndDateUTC update was false for customer with id: {invoice.CustomerId}");
                 }
@@ -177,7 +179,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 else if (stripeEvent.Type == Events.SubscriptionScheduleCanceled)
                 {
                     return Ok("TODO: IMPLEMENT SUBSCRIPITON SCHEDULE CANCELED HANDLER!");
-                    // HACK: TODO
+                    // HACK: TODO - is there any need for it?
                 }
                 else
                 {
