@@ -110,9 +110,9 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddHttpContextAccessor();
 
             var apiUrl = builder.Configuration.GetValue<string>("ApiUrl");            
-            var storageAccountName = builder.Configuration.GetValue<string>("Storage:AccountName");
-            var storageAccountKey = builder.Configuration.GetValue<string>("Storage:AccountKey");
-            var blobServiceUrl = builder.Configuration.GetValue<string>("Storage:BlobServiceUrl");
+            var storageAccountName = builder.Configuration.GetValue<string>("StorageAccountName");
+            var storageAccountKey = builder.Configuration.GetValue<string>("StorageAccountKey");
+            var blobServiceUrl = builder.Configuration.GetValue<string>("StorageBlobServiceUrl");
             var clientId = builder.Configuration.GetValue<string>("ClientId");
             var jwtSecretKey = builder.Configuration.GetValue<string>("JWTSecretKey");
             var adminEmail = builder.Configuration.GetValue<string>("AdminEmail");
@@ -171,7 +171,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddSingleton<IStripeOnboardingService, StripeOnboardingService>();
             
             builder.Services.AddHostedService<TokenCleanupWorker>();
-
+            builder.Services.AddHostedService<StripeMessageReceiver>();
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;

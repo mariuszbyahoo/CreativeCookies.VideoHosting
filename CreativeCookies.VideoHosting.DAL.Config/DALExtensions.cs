@@ -81,7 +81,7 @@ namespace CreativeCookies.VideoHosting.DAL.Config
                     if (result.Succeeded)
                     {
                         // HACK: Send an email about creation of the user to adminEmail
-                        userManager.AddToRoleAsync(adminUser, "Admin").Wait();
+                        userManager.AddToRoleAsync(adminUser, "admin").Wait();
                     }
                 }
             }
