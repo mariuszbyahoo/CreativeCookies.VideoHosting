@@ -84,5 +84,4 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             }
         }
     }
-
 }
