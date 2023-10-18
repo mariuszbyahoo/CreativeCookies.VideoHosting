@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CreativeCookies.StripeEvents.Contracts\CreativeCookies.StripeEvents.Contracts.csproj" />
     <ProjectReference Include="..\CreativeCookies.StripeEvents.Services\CreativeCookies.StripeEvents.Services.csproj" />
   </ItemGroup>
 
