@@ -190,9 +190,6 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Azure
                         }
                         else if (stripeEvent.Type == Events.ChargeRefunded)
                         {
-                            // HACK task 178: this event will be used ONLY in the situation where user has ordered a subscription (with regards to the EU's 14 days cooling off period)
-                            // And later on - he declined from using it.
-                            // In that case - set both SubscriptionEndDates to DateTime.MinValue
                             _logger.LogInformation($"StripeMessageReceiver with event type of {stripeEvent.Type}");
                             var accountId = stripeEvent.Account;
                             var charge = stripeEvent.Data.Object as Charge;
