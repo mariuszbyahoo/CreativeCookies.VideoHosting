@@ -4,8 +4,10 @@ using CreativeCookies.VideoHosting.DTOs.Films;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
@@ -162,7 +164,18 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
                     try
                     {
-                        await _checkoutSrv.CancelSubscription(userId);
+                        var user = await _usersSrv.GetUserById(userId);
+                        if (user == null) return BadRequest();
+                        var datesActive = user.SubscriptionStartDateUTC < DateTime.UtcNow && user.SubscriptionEndDateUTC < DateTime.UtcNow;
+                        var userHasSubscription = await _checkoutSrv.HasUserActiveSubscription(user.StripeCustomerId);
+                        if (datesActive && userHasSubscription)
+                        {
+                            await _checkoutSrv.CancelSubscription(userId);
+                        } 
+                        else
+                        {
+                            return StatusCode(402, new { message = "Subscription already canceled" });
+                        }
                     }
                     catch (Exception ex)
                     {

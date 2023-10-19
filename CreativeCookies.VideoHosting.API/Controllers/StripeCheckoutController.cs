@@ -1,5 +1,6 @@
 ﻿using CreativeCookies.VideoHosting.API.DTOs;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
+using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,11 +21,14 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly ICheckoutService _checkoutService;
         private readonly JwtSecurityTokenHandler _tokenHandler;
         private readonly IMyHubUserManager _userManager;
+        private readonly IUsersService _usersService;
 
-        public StripeCheckoutController(IConfiguration configuration, ILogger<StripeProductsController> logger, ICheckoutService checkoutService, IMyHubUserManager userManager)
+        public StripeCheckoutController(IConfiguration configuration, ILogger<StripeProductsController> logger, 
+            ICheckoutService checkoutService, IMyHubUserManager userManager, IUsersService usersService)
         {
             _configuration = configuration;
             _logger = logger;
+            _usersService = usersService;
             _checkoutService = checkoutService;
             _userManager = userManager;
             _tokenHandler = new JwtSecurityTokenHandler();
@@ -41,10 +45,39 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     var token = _tokenHandler.ReadJwtToken(accessToken);
                     var emailClaim = token.Claims.FirstOrDefault(c => c.Type.Equals("email", StringComparison.InvariantCultureIgnoreCase));
                     var user = await _userManager.FindByEmailAsync(emailClaim.Value);
-                    if (string.IsNullOrWhiteSpace(dto.PriceId)) return BadRequest("PriceId is required");
-                    var sessionUrl = await _checkoutService.CreateNewSession(dto.PriceId, user.StripeCustomerId, dto.HasDeclinedCoolingOffPeriod); 
 
-                    return Ok(new StripeCreateSessionResponseDto(sessionUrl));
+                    var datesActive = user.SubscriptionStartDateUTC < DateTime.UtcNow && user.SubscriptionEndDateUTC > DateTime.UtcNow;
+                    var userHasSubscription = await _checkoutService.HasUserActiveSubscription(user.StripeCustomerId);
+                    if (string.IsNullOrWhiteSpace(dto.PriceId)) return BadRequest("PriceId is required");
+                    var isUserWithinCoolingOffPeriod = _usersService.HasUserAScheduledSubscription(user.HangfireJobId);
+                    _logger.LogInformation($"User: {user.StripeCustomerId} has requested to create a new Checkout session where datesActive: {datesActive}, userHasSubscription: {userHasSubscription}, and isUserWithinCoolingOffPeriod: {isUserWithinCoolingOffPeriod}");
+                       /* 
+                        * HACK: I have to rewrite those conditionals because not it's working even in situation 
+                        * where datesActive: True, userHasSubscription: False, and isUserWithinCoolingOffPeriod: False
+                        * if user will be without subscription then all of the above would be false - then he should be let to receive sessionUrl
+                        * if user will have ongoing subscription, then it will be like true true false - then api should return 409
+                        * if user will have order for subscription scheduled, then it will be like false false true - then api should return 409
+                        */
+                    // User has an ongoing subscription
+                    if (datesActive && userHasSubscription && !isUserWithinCoolingOffPeriod)
+                    {
+                        return StatusCode(409, "User already has an active subscription");
+                    }
+                    // User has a subscription scheduled for the future
+                    else if (!datesActive && !userHasSubscription && isUserWithinCoolingOffPeriod)
+                    {
+                        return StatusCode(423, "User has a future scheduled subscription");
+                    }
+                    // User has no subscription, either ongoing or scheduled
+                    else if (!datesActive && !userHasSubscription && !isUserWithinCoolingOffPeriod)
+                    {
+                        var sessionUrl = await _checkoutService.CreateNewSession(dto.PriceId, user.StripeCustomerId, dto.HasDeclinedCoolingOffPeriod);
+                        return Ok(new StripeCreateSessionResponseDto(sessionUrl));
+                    }
+                    else
+                    {
+                        return StatusCode(400, "Some edge case occured, please investigate");
+                    }
                 }
                 return BadRequest("Invalid access token used, log in again");
             }

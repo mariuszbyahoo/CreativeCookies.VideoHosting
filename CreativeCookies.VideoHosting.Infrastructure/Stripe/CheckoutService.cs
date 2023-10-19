@@ -41,6 +41,28 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             _requestOptions = new RequestOptions { StripeAccount = _connectAccountId };
         }
 
+        public async Task<bool> HasUserActiveSubscription(string customerId)
+        {
+            StripeConfiguration.ApiKey = _stripeApiSecretKey;
+            var options = new SubscriptionListOptions
+            {
+                Customer = customerId,
+                Limit = 10,
+                Status = "active",  // Only fetch active subscriptions
+            };
+
+            var service = new SubscriptionService();
+            StripeList<Subscription> subscriptions = await service.ListAsync(options, _requestOptions);
+
+            // Check if there are any active subscriptions for the customer
+            if (subscriptions.Data.Count > 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         public async Task<string> CreateNewSession(string priceId, string stripeCustomerId, bool HasDeclinedCoolingOffPeriod = false)
         {
             Session session;
