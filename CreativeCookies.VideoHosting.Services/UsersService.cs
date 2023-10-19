@@ -59,5 +59,11 @@ namespace CreativeCookies.VideoHosting.Services
             var res = _repo.ChangeSubscriptionDatesUTC(user.StripeCustomerId, DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)), DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)), false);
             return res;
         }
+
+        public async Task<MyHubUserDto> GetUserById(string userId)
+        {
+            var user = await _repo.GetUserById(userId);
+            return user;
+        }
     }
 }

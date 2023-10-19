@@ -8,6 +8,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
 {
     public interface ICheckoutService
     {
+        Task<bool> HasUserActiveSubscription(string customerId);
         Task<string> CreateNewSession(string priceId, string stripeCustomerId, bool HasDeclinedCoolingOffPeriod = false);
 
         Task<bool> IsSessionPaymentPaid(string sessionId);
