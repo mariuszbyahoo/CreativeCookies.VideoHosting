@@ -50,6 +50,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     var userHasSubscription = await _checkoutService.HasUserActiveSubscription(user.StripeCustomerId);
                     if (string.IsNullOrWhiteSpace(dto.PriceId)) return BadRequest("PriceId is required");
                     var isUserWithinCoolingOffPeriod = _usersService.HasUserAScheduledSubscription(user.HangfireJobId);
+                    _logger.LogInformation($"User: {user.StripeCustomerId} has requested to create a new Checkout session where datesActive: {datesActive}, userHasSubscription: {userHasSubscription}, and isUserWithinCoolingOffPeriod: {isUserWithinCoolingOffPeriod}");
                     if (datesActive && userHasSubscription && !isUserWithinCoolingOffPeriod)
                     {
                         var sessionUrl = await _checkoutService.CreateNewSession(dto.PriceId, user.StripeCustomerId, dto.HasDeclinedCoolingOffPeriod);
