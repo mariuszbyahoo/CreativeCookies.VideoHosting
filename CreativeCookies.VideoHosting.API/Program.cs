@@ -35,6 +35,8 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.ApplicationInsights.Extensibility;
 using Hangfire;
 using CreativeCookies.VideoHosting.API.Attributes;
+using Hangfire.Storage;
+using Stripe;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -124,6 +126,7 @@ namespace CreativeCookies.VideoHosting.API
 
             builder.Services.AddSingleton<ISasTokenService, SasTokenService>();
             builder.Services.AddSingleton<IJWTGenerator, JwtGenerator>();
+            builder.Services.AddSingleton(sp => JobStorage.Current.GetMonitoringApi());
 
             builder.Services.AddScoped<IStripeProductsService, StripeProductsService>();
             builder.Services.AddScoped<IFilmService, FilmService>();
