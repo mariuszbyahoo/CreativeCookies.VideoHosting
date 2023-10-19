@@ -164,18 +164,18 @@ namespace CreativeCookies.VideoHosting.API.Controllers
 
                     try
                     {
-                        /* HACK: check following conditions:
-                        if SubscriptionStartDateUTC Lower than DateTime.UTCNow 
-                        and SubscriptionEndDateUTC higher than DateTime.UTCNow
-                        and Customer has active subscription on the Stripe's API side
-                        If A-C will be met, then perform normally and return OK
-                        If no, then return Forbidden 403 */
                         var user = await _usersSrv.GetUserById(userId);
                         if (user == null) return BadRequest();
                         var datesActive = user.SubscriptionStartDateUTC < DateTime.UtcNow && user.SubscriptionEndDateUTC < DateTime.UtcNow;
                         var userHasSubscription = await _checkoutSrv.HasUserActiveSubscription(user.StripeCustomerId);
-                        // HACK TODO
-                        await _checkoutSrv.CancelSubscription(userId);
+                        if (datesActive && userHasSubscription)
+                        {
+                            await _checkoutSrv.CancelSubscription(userId);
+                        } 
+                        else
+                        {
+                            return StatusCode(402, new { message = "Subscription already canceled" });
+                        }
                     }
                     catch (Exception ex)
                     {
