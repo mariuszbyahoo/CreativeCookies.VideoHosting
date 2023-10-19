@@ -11,6 +11,8 @@ namespace CreativeCookies.VideoHosting.Contracts.Services
     public interface IUsersService
     {
         Task<UsersPaginatedResultDto> GetUsersPaginatedResult(string search, int pageNumber, int pageSize, string role);
+        
+        bool HasUserAScheduledSubscription(string hangfireJobId);
 
         Task<MyHubUserDto> GetUserById(string userId);
 
