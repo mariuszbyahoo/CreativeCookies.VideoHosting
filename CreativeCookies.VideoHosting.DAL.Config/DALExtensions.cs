@@ -46,6 +46,7 @@ namespace CreativeCookies.VideoHosting.DAL.Config
             services.AddScoped<IAuthorizationCodeRepository, AuthorizationCodeRepository>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IClientStore, ClientStore>();
+            services.AddScoped<IAboutPageRepository, AboutPageRepository>();
 
             return services;
         }
@@ -84,6 +85,8 @@ namespace CreativeCookies.VideoHosting.DAL.Config
                         userManager.AddToRoleAsync(adminUser, "admin").Wait();
                     }
                 }
+
+                // HACK: Add initial homepage's contents
             }
             return app;
         }

@@ -21,6 +21,8 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
         public DbSet<StripeConfig> StripeConfig { get; set; }
         public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
 
+        public DbSet<AboutPageContent> AboutPageContent { get; set; }
+
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
 

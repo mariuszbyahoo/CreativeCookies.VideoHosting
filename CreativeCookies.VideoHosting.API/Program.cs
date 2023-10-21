@@ -37,6 +37,8 @@ using Hangfire;
 using CreativeCookies.VideoHosting.API.Attributes;
 using Hangfire.Storage;
 using Stripe;
+using CreativeCookies.VideoHosting.Contracts.Services.About;
+using CreativeCookies.VideoHosting.Services.About;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -141,6 +143,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddScoped<IMyHubUserManager, MyHubUserManager>();
             builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
             builder.Services.AddScoped<ICheckoutService, CheckoutService>();
+            builder.Services.AddScoped<IAboutPageService, AboutPageService>();
 
             builder.Services.AddScoped<IMyHubBlobService, MyHubBlobService>();
             builder.Services.AddScoped<IStripeCustomerService, StripeCustomerService>();
