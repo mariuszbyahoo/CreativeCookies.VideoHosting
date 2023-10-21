@@ -28,24 +28,27 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Azure
         private readonly StripeWebhookSigningKeyWrapper _wrapper;
         private readonly IBackgroundJobClient _backgroundJobClient;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly IConnectAccountsService _connectAccountsSrv;
         private readonly ILogger _logger;
         private readonly string _connectAccountId;
 
 
         public StripeMessageReceiver(IBackgroundJobClient backgroundJobClient, StripeWebhookSigningKeyWrapper wrapper, 
-             IServiceScopeFactory serviceScopeFactory, IConnectAccountsService connectAccountsSrv, IConfiguration configuration, ILogger<StripeMessageReceiver> logger)
+             IServiceScopeFactory serviceScopeFactory, IConfiguration configuration, ILogger<StripeMessageReceiver> logger)
         {
             _logger = logger;
             _serviceBusClient = new ServiceBusClient(configuration.GetValue<string>("ServiceBusConnectionString"));
             _wrapper = wrapper;
             _serviceScopeFactory = serviceScopeFactory;
              _backgroundJobClient = backgroundJobClient;
-            _connectAccountsSrv = connectAccountsSrv;
-            _connectAccountId = _connectAccountsSrv.GetConnectedAccountId();
+            
             _processor = _serviceBusClient.CreateProcessor("stripe_events_queue", new ServiceBusProcessorOptions());
             _processor.ProcessMessageAsync += MessageHandler;
             _processor.ProcessErrorAsync += ErrorHandler;
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var connectAccountsService = scope.ServiceProvider.GetRequiredService<IConnectAccountsService>();
+                _connectAccountId = connectAccountsService.GetConnectedAccountId();
+            }
         }
 
         public async Task StartAsync(CancellationToken token)
