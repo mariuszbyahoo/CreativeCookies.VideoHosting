@@ -21,7 +21,9 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         }
         public string GetConnectedAccountId()
         {
+            _logger.LogInformation("Collecting StripeConnectAccountId");
             var record = _ctx.StripeConfig.FirstOrDefault();
+            _logger.LogInformation($"Collected StripeConnectAccountId: {record?.StripeConnectedAccountId}");
             if (record == null) return string.Empty;
             return record.StripeConnectedAccountId;
         }
