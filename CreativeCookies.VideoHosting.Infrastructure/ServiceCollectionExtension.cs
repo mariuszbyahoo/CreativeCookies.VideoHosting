@@ -10,6 +10,9 @@ using Azure.Security.KeyVault.Secrets;
 using Azure.Identity;
 using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
 using CreativeCookies.VideoHosting.Infrastructure.Azure;
+using CreativeCookies.VideoHosting.Infrastructure.Stripe;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
+using System.Globalization;
 
 namespace CreativeCookies.VideoHosting.Infrastructure
 {
@@ -21,6 +24,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             var client = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
             KeyVaultSecret stripeSecretKey;
             KeyVaultSecret stripeWebhookSigningKey;
+            KeyVaultSecret nettApplicationFee;
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
             {
                 stripeSecretKey = client.GetSecret("StripeSecretAPIKey"); 
@@ -31,6 +35,8 @@ namespace CreativeCookies.VideoHosting.Infrastructure
                 stripeSecretKey = client.GetSecret("StripeTestAPIKey");
                 stripeWebhookSigningKey = client.GetSecret("StripeTestWebhookSigningKey");
             }
+            nettApplicationFee = client.GetSecret("NettApplicationFee");
+            services.AddSingleton(w => new ApplicationFeeWrapper(decimal.Parse(nettApplicationFee.Value, CultureInfo.InvariantCulture)));
             services.AddSingleton(w => new StripeSecretKeyWrapper(stripeSecretKey.Value));
             services.AddSingleton(w => new StripeWebhookSigningKeyWrapper(stripeWebhookSigningKey.Value));
             services.AddSingleton(x => new StorageSharedKeyCredential(storageAccountName, storageAccountKey));

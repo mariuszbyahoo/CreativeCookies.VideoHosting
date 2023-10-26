@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 {
@@ -21,6 +22,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         private readonly IConfiguration _configuration;
         private readonly IConnectAccountsRepository _connectAccountsRepo;
         private readonly IStripeProductsService _stripeProductsService;
+        private readonly ApplicationFeeWrapper _applicationFeeWrapper;
         private readonly IUsersRepository _usersRepo;
         private readonly RequestOptions _requestOptions;
         private readonly string _clientUrl;
@@ -28,7 +30,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 
         public CheckoutService(StripeSecretKeyWrapper wrapper, ILogger<CheckoutService> logger, 
             IConnectAccountsRepository connectAccountRepo, IConfiguration configuration, IStripeProductsService stripeProductsService,
-            IUsersRepository usersRepo)
+            IUsersRepository usersRepo, ApplicationFeeWrapper applicationFeeWrapper)
         {
             _connectAccountsRepo = connectAccountRepo;
             _stripeApiSecretKey = wrapper.Value;
@@ -36,6 +38,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             _configuration = configuration;
             _stripeProductsService = stripeProductsService;
             _usersRepo = usersRepo; 
+            _applicationFeeWrapper = applicationFeeWrapper;
             _clientUrl = _configuration.GetValue<string>("ClientUrl");
             _connectAccountId = _connectAccountsRepo.GetConnectedAccountId();
             _requestOptions = new RequestOptions { StripeAccount = _connectAccountId };
@@ -68,6 +71,9 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             Session session;
             StripeConfiguration.ApiKey = _stripeApiSecretKey;
 
+            var grossApplicationFee = _applicationFeeWrapper.NettApplicationFee * 1.23m; // hardcoded to use Polish VAT
+            _logger.LogInformation($"Gross application fee set to {grossApplicationFee}");
+
             if (string.IsNullOrWhiteSpace(_connectAccountId))
             {
                 _logger.LogError("No connect account found in database, aborting creation of new session");
@@ -81,6 +87,8 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                 var successUrl = $"{_clientUrl}/success?sessionId="; 
                                                                      
                 successUrl += "{CHECKOUT_SESSION_ID}";
+                var roundedGrossApplicationFee = Math.Floor(grossApplicationFee * 100);
+
                 var options = new SessionCreateOptions
                 {
                     Customer = stripeCustomerId,
@@ -95,7 +103,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                     Mode = "subscription",
                     SubscriptionData = new SessionSubscriptionDataOptions
                     {
-                        ApplicationFeePercent = 10, // HACK: Make this configurable amount of percent
+                        ApplicationFeePercent = roundedGrossApplicationFee,
                     },
                     SuccessUrl = successUrl,
                     CancelUrl = $"{_clientUrl}/cancel",
@@ -106,10 +114,21 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             }
             else
             {
-                var successUrl = $"{_clientUrl}/ordersuccess?sessionId="; 
-                                                                     
-                successUrl += "{CHECKOUT_SESSION_ID}";
+                long applicationFeeAmount;
+                var successUrl = $"{_clientUrl}/ordersuccess?sessionId=";
                 var price = await _stripeProductsService.GetPriceById(priceId);
+                
+                if (price.UnitAmount.HasValue)
+                {
+                    applicationFeeAmount = (long)Math.Round(price.UnitAmount.Value * (double)grossApplicationFee);
+                }
+                else
+                {
+                    // Handle the case when price.UnitAmount is null, perhaps log an error or throw an exception
+                    _logger.LogError($"There is some problem in Stripe with {priceId}, when queried for it's UnitAmount.HasValue - it returned false!");
+                    throw new InvalidDataException($"There is some problem in Stripe with {priceId}, when queried for it's UnitAmount.HasValue - it returned false!");
+                }
+                successUrl += "{CHECKOUT_SESSION_ID}";
                 var sessionOptions = new SessionCreateOptions
                 {
                     PaymentMethodTypes = new List<string>
@@ -136,7 +155,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                     },
                     PaymentIntentData = new SessionPaymentIntentDataOptions
                     {
-                        ApplicationFeeAmount = long.Parse($"{price.UnitAmount * 0.1}"),
+                        ApplicationFeeAmount = applicationFeeAmount,
                         SetupFutureUsage = "off_session"
                     },
                     SuccessUrl = successUrl,
