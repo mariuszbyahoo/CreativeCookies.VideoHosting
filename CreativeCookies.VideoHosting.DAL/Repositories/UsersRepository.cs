@@ -124,5 +124,17 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             if (result == null) return null;
             return new SubscriptionDateRange(result.SubscriptionStartDateUTC, result.SubscriptionEndDateUTC);
         }
+
+        public async Task<IList<MyHubUserDto>> GetAllUsers()
+        {
+            var result = new List<MyHubUserDto>();
+            var userDAOs = _context.Users;
+            foreach (var dao in userDAOs)
+            {
+                var user = await _userManager.FindByIdAsync(dao.Id);
+                result.Add(user);
+            }
+            return result;
+        }
     }
 }

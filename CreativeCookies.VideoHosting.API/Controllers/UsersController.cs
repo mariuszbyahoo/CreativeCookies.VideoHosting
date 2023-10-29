@@ -1,4 +1,5 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
+﻿using CreativeCookies.VideoHosting.API.DTOs;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.DTOs.Films;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
@@ -9,6 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 using Stripe;
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using System.Text.Json;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
@@ -187,7 +190,43 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 }
             }
             return BadRequest();
+        }
 
+        [HttpGet("GetAllUsersExcel")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
+        public async Task<IActionResult> GetAllUsersExcel()
+        {
+            var users = await _usersSrv.GetAllUsers();
+            MemoryStream? excelStream = null;
+
+            try
+            {
+                excelStream = await _usersSrv.GenerateExcelFile(users);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return BadRequest("Failed to generate Excel file. Inspect logs.");
+            }
+
+            if (excelStream != null)
+            {
+                return File(excelStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "users.xlsx");
+            }
+
+            return BadRequest("Failed to generate Excel file. Inspect logs.");
+        }
+
+        [HttpGet("GetAllUsersJson")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
+        public async Task<IActionResult> GetAllUsersJson()
+        {
+            var users = await _usersSrv.GetAllUsers();
+            var usersDTOs = users.Select(u => new MyHubUserDownloadDTO(u.UserEmail,
+                u.Role, u.IsActive ? "Yes" : "No", u.SubscriptionStartDateUTC.ToString(),
+                u.SubscriptionEndDateUTC.ToString(), u.StripeCustomerId));
+            var json = JsonSerializer.Serialize(usersDTOs);
+            return File(Encoding.UTF8.GetBytes(json), "application/json", "users.json");
         }
     }
 }

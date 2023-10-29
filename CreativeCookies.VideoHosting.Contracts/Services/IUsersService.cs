@@ -11,6 +11,8 @@ namespace CreativeCookies.VideoHosting.Contracts.Services
     public interface IUsersService
     {
         Task<UsersPaginatedResultDto> GetUsersPaginatedResult(string search, int pageNumber, int pageSize, string role);
+
+        Task<IList<MyHubUserDto>> GetAllUsers();
         
         bool HasUserAScheduledSubscription(string hangfireJobId);
 
@@ -30,5 +32,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Services
         Task<bool> DeleteBackgroundJobForUser(string userId);
 
         Task<bool> ResetSubscriptionDates(string customerId);
+
+        Task<MemoryStream> GenerateExcelFile(IEnumerable<MyHubUserDto> users);
     }
 }
