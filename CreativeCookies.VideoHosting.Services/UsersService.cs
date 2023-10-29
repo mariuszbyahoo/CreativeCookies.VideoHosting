@@ -1,11 +1,11 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Repositories;
+﻿using ClosedXML.Excel;
+using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.DTOs.Films;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Hangfire;
 using Hangfire.Storage;
 using Microsoft.Extensions.Logging;
-using OfficeOpenXml;
 
 namespace CreativeCookies.VideoHosting.Services
 {
@@ -97,33 +97,31 @@ namespace CreativeCookies.VideoHosting.Services
             return users;
         }
 
-        public byte[]? GenerateExcelFile(IList<MyHubUserDto> users)
+        public async Task<MemoryStream> GenerateExcelFile(IEnumerable<MyHubUserDto> users)
         {
-            try
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Users");
+            worksheet.Cell("A1").Value = "Email";
+            worksheet.Cell("B1").Value = "Role";
+            worksheet.Cell("C1").Value = "Is Active";
+            worksheet.Cell("D1").Value = "Invoice Period Start Date UTC";
+            worksheet.Cell("E1").Value = "Invoice Period End Date UTC";
+
+            int row = 2;
+            foreach (var user in users)
             {
-                using var package = new ExcelPackage();
-                var worksheet = package.Workbook.Worksheets.Add("Users");
-
-                worksheet.Cells[1, 1].Value = "Email";
-                worksheet.Cells[1, 2].Value = "UserRole";
-                worksheet.Cells[1, 3].Value = "Stripe customer ID";
-                worksheet.Cells[1, 4].Value = "Status";
-
-                for (int i = 0; i < users.Count; i++)
-                {
-                    worksheet.Cells[i + 2, 1].Value = users[i].UserEmail;
-                    worksheet.Cells[i + 2, 2].Value = users[i].Role;
-                    worksheet.Cells[i + 2, 3].Value = users[i].StripeCustomerId;
-                    worksheet.Cells[i + 2, 4].Value = users[i].IsActive ? "Email confirmed" : "Email is not confirmed";
-                }
-
-                return package.GetAsByteArray();
-            } catch (Exception ex)
-            {
-                _logger.LogInformation("An exception occured inside of a GenerateExcelFile method");
-                _logger.LogError(ex, ex.Message);
-                return null;
+                worksheet.Cell($"A{row}").Value = user.UserEmail;
+                worksheet.Cell($"B{row}").Value = user.Role;
+                worksheet.Cell($"C{row}").Value = user.IsActive ? "Yes" : "No";
+                worksheet.Cell($"D{row}").Value = user.SubscriptionStartDateUTC;
+                worksheet.Cell($"E{row}").Value = user.SubscriptionEndDateUTC;
+                row++;
             }
+
+            var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            stream.Position = 0;
+            return stream;
         }
     }
 }

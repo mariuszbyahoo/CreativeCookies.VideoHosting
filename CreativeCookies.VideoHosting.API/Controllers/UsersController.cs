@@ -196,16 +196,21 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         public async Task<IActionResult> GetAllUsersExcel()
         {
             var users = await _usersSrv.GetAllUsers();
-            byte[]? excelFile = null;
+            MemoryStream? excelStream = null;
 
-            await Task.Run(() =>
+            try
             {
-                excelFile = _usersSrv.GenerateExcelFile(users);
-            });
+                excelStream = await _usersSrv.GenerateExcelFile(users);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return BadRequest("Failed to generate Excel file. Inspect logs.");
+            }
 
-            if (excelFile != null)
+            if (excelStream != null)
             {
-                return File(excelFile, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "users.xlsx");
+                return File(excelStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "users.xlsx");
             }
 
             return BadRequest("Failed to generate Excel file. Inspect logs.");

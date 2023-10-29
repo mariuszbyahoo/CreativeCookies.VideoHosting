@@ -33,6 +33,6 @@ namespace CreativeCookies.VideoHosting.Contracts.Services
 
         Task<bool> ResetSubscriptionDates(string customerId);
 
-        byte[]? GenerateExcelFile(IList<MyHubUserDto> users);
+        Task<MemoryStream> GenerateExcelFile(IEnumerable<MyHubUserDto> users);
     }
 }
