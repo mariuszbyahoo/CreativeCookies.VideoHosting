@@ -86,5 +86,11 @@ namespace CreativeCookies.VideoHosting.Services
             var user = await _repo.GetUserById(userId);
             return user;
         }
+
+        public async Task<IList<MyHubUserDto>> GetAllUsers()
+        {
+            var users = await _repo.GetAllUsers();
+            return users;
+        }
     }
 }

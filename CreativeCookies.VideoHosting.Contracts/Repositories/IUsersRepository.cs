@@ -8,6 +8,8 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
     {
         Task<MyHubUserDto> GetUserByStripeCustomerId(string stripeCustomerId);
 
+        Task<IList<MyHubUserDto>> GetAllUsers();
+
         MyHubUserDto? AssignHangfireJobIdToUser(string stripeCustomerId, string jobId);
 
         Task<MyHubUserDto> GetUserById(string userId);
