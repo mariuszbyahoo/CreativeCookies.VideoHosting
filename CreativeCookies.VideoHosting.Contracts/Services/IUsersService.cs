@@ -32,5 +32,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Services
         Task<bool> DeleteBackgroundJobForUser(string userId);
 
         Task<bool> ResetSubscriptionDates(string customerId);
+
+        byte[]? GenerateExcelFile(IList<MyHubUserDto> users);
     }
 }

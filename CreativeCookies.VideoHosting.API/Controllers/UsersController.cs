@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using Stripe;
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using System.Text.Json;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
@@ -187,7 +189,35 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                 }
             }
             return BadRequest();
+        }
 
+        [HttpGet("GetAllUsersExcel")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
+        public async Task<IActionResult> GetAllUsersExcel()
+        {
+            var users = await _usersSrv.GetAllUsers();
+            byte[]? excelFile = null;
+
+            await Task.Run(() =>
+            {
+                excelFile = _usersSrv.GenerateExcelFile(users);
+            });
+
+            if (excelFile != null)
+            {
+                return File(excelFile, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "users.xlsx");
+            }
+
+            return BadRequest("Failed to generate Excel file. Inspect logs.");
+        }
+
+        [HttpGet("GetAllUsersJson")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
+        public async Task<IActionResult> GetAllUsersJson()
+        {
+            var users = await _usersSrv.GetAllUsers();
+            var json = JsonSerializer.Serialize(users);
+            return File(Encoding.UTF8.GetBytes(json), "application/json", "users.json");
         }
     }
 }

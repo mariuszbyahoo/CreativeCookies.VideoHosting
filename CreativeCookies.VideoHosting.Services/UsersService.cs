@@ -4,6 +4,8 @@ using CreativeCookies.VideoHosting.DTOs.Films;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Hangfire;
 using Hangfire.Storage;
+using Microsoft.Extensions.Logging;
+using OfficeOpenXml;
 
 namespace CreativeCookies.VideoHosting.Services
 {
@@ -12,12 +14,14 @@ namespace CreativeCookies.VideoHosting.Services
         private readonly IUsersRepository _repo;
         private readonly IBackgroundJobClient _hangfireJobClient;
         private readonly IMonitoringApi _monitoringApi;
+        private readonly ILogger<UsersService> _logger;
 
-        public UsersService(IUsersRepository repo, IBackgroundJobClient hangfireJobClient, IMonitoringApi monitoringApi)
+        public UsersService(IUsersRepository repo, IBackgroundJobClient hangfireJobClient, IMonitoringApi monitoringApi, ILogger<UsersService> logger)
         {
             _repo = repo;
             _hangfireJobClient = hangfireJobClient;
             _monitoringApi = monitoringApi;
+            _logger = logger;
         }
 
         public bool HasUserAScheduledSubscription(string hangfireJobId)
@@ -91,6 +95,35 @@ namespace CreativeCookies.VideoHosting.Services
         {
             var users = await _repo.GetAllUsers();
             return users;
+        }
+
+        public byte[]? GenerateExcelFile(IList<MyHubUserDto> users)
+        {
+            try
+            {
+                using var package = new ExcelPackage();
+                var worksheet = package.Workbook.Worksheets.Add("Users");
+
+                worksheet.Cells[1, 1].Value = "Email";
+                worksheet.Cells[1, 2].Value = "UserRole";
+                worksheet.Cells[1, 3].Value = "Stripe customer ID";
+                worksheet.Cells[1, 4].Value = "Status";
+
+                for (int i = 0; i < users.Count; i++)
+                {
+                    worksheet.Cells[i + 2, 1].Value = users[i].UserEmail;
+                    worksheet.Cells[i + 2, 2].Value = users[i].Role;
+                    worksheet.Cells[i + 2, 3].Value = users[i].StripeCustomerId;
+                    worksheet.Cells[i + 2, 4].Value = users[i].IsActive ? "Email confirmed" : "Email is not confirmed";
+                }
+
+                return package.GetAsByteArray();
+            } catch (Exception ex)
+            {
+                _logger.LogInformation("An exception occured inside of a GenerateExcelFile method");
+                _logger.LogError(ex, ex.Message);
+                return null;
+            }
         }
     }
 }
