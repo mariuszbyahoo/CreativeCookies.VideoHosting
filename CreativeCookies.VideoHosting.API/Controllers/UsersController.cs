@@ -1,4 +1,5 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
+﻿using CreativeCookies.VideoHosting.API.DTOs;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.DTOs.Films;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
@@ -221,7 +222,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         public async Task<IActionResult> GetAllUsersJson()
         {
             var users = await _usersSrv.GetAllUsers();
-            var json = JsonSerializer.Serialize(users);
+            var usersDTOs = users.Select(u => new MyHubUserDownloadDTO(u.UserEmail,
+                u.Role, u.IsActive ? "Yes" : "No", u.SubscriptionStartDateUTC.ToString(),
+                u.SubscriptionEndDateUTC.ToString(), u.StripeCustomerId));
+            var json = JsonSerializer.Serialize(usersDTOs);
             return File(Encoding.UTF8.GetBytes(json), "application/json", "users.json");
         }
     }

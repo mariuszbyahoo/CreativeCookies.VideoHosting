@@ -106,6 +106,7 @@ namespace CreativeCookies.VideoHosting.Services
             worksheet.Cell("C1").Value = "Is Active";
             worksheet.Cell("D1").Value = "Invoice Period Start Date UTC";
             worksheet.Cell("E1").Value = "Invoice Period End Date UTC";
+            worksheet.Cell("F1").Value = "Stripe Customer ID";
 
             int row = 2;
             foreach (var user in users)
@@ -115,6 +116,7 @@ namespace CreativeCookies.VideoHosting.Services
                 worksheet.Cell($"C{row}").Value = user.IsActive ? "Yes" : "No";
                 worksheet.Cell($"D{row}").Value = user.SubscriptionStartDateUTC;
                 worksheet.Cell($"E{row}").Value = user.SubscriptionEndDateUTC;
+                worksheet.Cell($"F{row}").Value = user.StripeCustomerId;
                 row++;
             }
 
