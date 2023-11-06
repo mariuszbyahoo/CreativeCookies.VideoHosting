@@ -8,5 +8,17 @@
   "RegisterANewUser": "Zarejestruj nowego użytkownika",
   "RememberMe": "Zapamiętaj mnie",
   "ResendEmailConfirmation": "Wyślij ponownie email weryfikacyjny",
-  "Login":  "Zaloguj się"
+  "Login": "Zaloguj się",
+  "PasswordTooShort": "Hasło jest za krótkie",
+  "PasswordMismatch": "Hasła nie są takie same",
+  "InvalidToken": "Niewłaściwy token",
+  "RecoveryCodeRedemptionFailed": "Nieudane wykorzystanie kodu odzyskiwania",
+  "InvalidEmail": "Niepoprawny adres email",
+  "UsernameAlreadyExists": "Nazwa użytkownika już istnieje",
+  "EmailAlreadyExists": "Adres email już istnieje",
+  "PasswordRequiresUniqueChars": "Hasło wymaga unikatowych znaków",
+  "PasswordRequiresNonAlphanumeric": "Co najmniej jeden znak alfanumeryczny",
+  "PasswordRequiresDigit": "Co najmniej jedna cyfra",
+  "PasswordRequiresLower": "Co najmniej jedna mała litera",
+  "PasswordRequiresUpper": "Co najmniej jedna wielka litera",
 }
