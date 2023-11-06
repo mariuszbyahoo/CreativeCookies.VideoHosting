@@ -33,5 +33,9 @@
   "EnterYourEmail": "Wpisz swój email",
   "Resend": "Wyślij ponownie",
   "ResetYourPassword": "Zresetuj swoje hasło",
-  "Reset": "Zresetuj"
+  "Reset": "Zresetuj",
+  "ResetPasswordConfirmation": "Potwierdzenie zresetowania hasła",
+  "ResetPasswordConfirmationTxt": "Twoje hasło zostało zresetowane",
+  "LoginHere": "Zaloguj się tutaj",
+
 }

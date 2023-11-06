@@ -21,5 +21,8 @@
   "EnterYourEmail": "Enter your email",
   "Resend": "Resend",
   "ResetYourPassword": "Reset your password",
-  "Reset": "Reset"
+  "Reset": "Reset",
+  "ResetPasswordConfirmation": "Reset password confirmation",
+  "ResetPasswordConfirmationTxt": "Your password has been reseted",
+  "LoginHere": "Login here"
 }
