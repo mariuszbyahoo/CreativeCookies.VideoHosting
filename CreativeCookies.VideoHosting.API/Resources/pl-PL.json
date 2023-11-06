@@ -21,4 +21,11 @@
   "PasswordRequiresDigit": "Co najmniej jedna cyfra",
   "PasswordRequiresLower": "Co najmniej jedna mała litera",
   "PasswordRequiresUpper": "Co najmniej jedna wielka litera",
+  "TwoFactorAuthentication": "Logowanie dwuetapowe",
+  "TFAuthDesc": "Twoje konto jest chronione logowaniem dwuetapowym, wpisz kod z aplikajci poniżej",
+  "TFCode": "kod logowania dwuetapowego",
+  "RememberMachine": "Zapamiętaj urządzenie",
+  "NoAccessToAuthDeviceTxt1": "Nie masz dostępu do swojego urządzenia z aplikacją autoryzacji? Możesz jeszcze ",
+  "NoAccessToAuthDeviceTxt2": "zalogować się kodem odzyskania"
+
 }

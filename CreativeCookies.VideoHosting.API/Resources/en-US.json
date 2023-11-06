@@ -8,5 +8,12 @@
   "RegisterANewUser": "Register a new user",
   "RememberMe": "Remember me",
   "ResendEmailConfirmation": "Resend email confirmation",
-  "Login": "Login"
+  "Login": "Login",
+  "TwoFactorAuthentication": "Two factor authentication",
+  "TFAuthDesc": "Your login is protected with an authenticator app. Enter your authenticator code below",
+  "TFCode": "Two factor code",
+  "RememberMachine": "Remember machine",
+  "NoAccessToAuthDeviceTxt1": "Don't have access to your authenticator device? You can ",
+  "NoAccessToAuthDeviceTxt2": "log in with a recovery code"
+
 }
