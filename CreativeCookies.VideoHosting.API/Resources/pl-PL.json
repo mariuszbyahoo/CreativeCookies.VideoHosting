@@ -26,6 +26,9 @@
   "TFCode": "kod logowania dwuetapowego",
   "RememberMachine": "Zapamiętaj urządzenie",
   "NoAccessToAuthDeviceTxt1": "Nie masz dostępu do swojego urządzenia z aplikacją autoryzacji? Możesz jeszcze ",
-  "NoAccessToAuthDeviceTxt2": "zalogować się kodem odzyskania"
+  "NoAccessToAuthDeviceTxt2": "zalogować się kodem odzyskania",
+  "RecoveryCodeVerification": "Weryfikacja kodu odzyskiwania",
+  "RecoveryCodeVerificationTxt": "Poprosiłeś o zalogowanie się przy użyciu kodu odzyskania, twój login nie będzie zapamiętany do czasu, w którym nie wprowadzisz kodu autoryzacyjnego",
+  "RecoveryCode": "Kod odzyskiwania"
 
 }
