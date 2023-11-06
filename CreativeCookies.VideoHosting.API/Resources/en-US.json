@@ -1,0 +1,12 @@
+﻿{
+  "CreateANewAccount": "Create a new account",
+  "Register": "Register",
+  "Password": "Password",
+  "ConfirmPassword": "Confirm password",
+  "InvalidLoginAttempt": "Invalid login attempt",
+  "ForgotYourPassword": "Forgot your password",
+  "RegisterANewUser": "Register a new user",
+  "RememberMe": "Remember me",
+  "ResendEmailConfirmation": "Resend email confirmation",
+  "Login": "Login"
+}

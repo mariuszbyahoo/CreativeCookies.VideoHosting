@@ -1,0 +1,12 @@
+﻿{
+  "CreateANewAccount": "Zarejestruj nowe konto",
+  "Register": "Rejestracja",
+  "Password": "Hasło",
+  "ConfirmPassword": "Powtórz hasło",
+  "InvalidLoginAttempt": "Niepoprawna próba logowania",
+  "ForgotYourPassword": "Zapomniałeś hasła",
+  "RegisterANewUser": "Zarejestruj nowego użytkownika",
+  "RememberMe": "Zapamiętaj mnie",
+  "ResendEmailConfirmation": "Wyślij ponownie email weryfikacyjny",
+  "Login":  "Zaloguj się"
+}

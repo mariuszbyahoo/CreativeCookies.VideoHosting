@@ -42,6 +42,9 @@ using CreativeCookies.VideoHosting.Services.About;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Localization;
 using Microsoft.Extensions.Options;
+using CreativeCookies.VideoHosting.API.Utils.JsonStringLocalizer;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using Microsoft.Extensions.Localization;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -150,6 +153,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddSingleton<ISasTokenService, SasTokenService>();
             builder.Services.AddSingleton<IJWTGenerator, JwtGenerator>();
             builder.Services.AddSingleton(sp => JobStorage.Current.GetMonitoringApi());
+            builder.Services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
 
             builder.Services.AddScoped<IStripeProductsService, StripeProductsService>();
             builder.Services.AddScoped<IFilmService, FilmService>();
