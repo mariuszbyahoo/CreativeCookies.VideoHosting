@@ -44,5 +44,15 @@
   "PendingSaveMsg": "Dodałeś niedawno nowe konto Stripe, sprawdź za jakiś czas aby sprawdzić, czy dane zostały zsynchronizowane",
   "StripeConnectedMsg": "Twój MyHub jest w pełni podłączony do infrastruktury Stripe, i możesz już stworzyć swój pierwszy plan subskrypcji",
   "Redirecting": "Przekierowanie",
-  "ByClickingHere": "klikając tutaj"
+  "ByClickingHere": "klikając tutaj",
+  "ForgotPasswordConfirmation": "Potwierdzenie resetu hasła",
+  "ForgotPasswordConfirmationTxt": "Sprawdź swój adres email aby zresetować hasło",
+  "EmailWasNotSentDueToErrorTxt1": "Email z potwierdzeniem nie został wysłany z powodu błędu",
+  "EmailWasNotSentDueToErrorTxt2": "Spróbuj ponownie",
+  "EmailWasNotSentDueToErrorTxt3": "Klikając tutaj",
+  "ConfirmEmailChange": "Potwierdzenie zmiany email",
+  "ConfirmEmail": "Potwierdź email",
+  "ConfirmAccountTxt1": "Wysłano email zawierający link do uwierzytelnienia konta",
+  "ConfirmAccountTxt2": "Proszę kliknąć na link zawarty w w/w mailu",
+  "ConfirmAccountTxt3": "Powróć do"
 }

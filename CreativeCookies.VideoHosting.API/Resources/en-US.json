@@ -32,5 +32,15 @@
   "PendingSaveMsg": "You've submitted new account to Stripe recently, come back after a minute or so to check how it's going",
   "StripeConnectedMsg": "Your MyHub is fully connected to the Stripe infrastructure and you're free to create your subscription plan",
   "Redirecting": "Redirecting",
-  "ByClickingHere": "by clicking here"
+  "ByClickingHere": "by clicking here",
+  "ForgotPasswordConfirmation": "Forgot password confirmation",
+  "ForgotPasswordConfirmationTxt": "Please check your email to reset your password",
+  "EmailWasNotSentDueToErrorTxt1": "Email to confirm your account has not been sent due to unexpected error",
+  "EmailWasNotSentDueToErrorTxt2": "Try to resend this email by",
+  "EmailWasNotSentDueToErrorTxt3": "clicking here",
+  "ConfirmEmailChange": "Confirm email change",
+  "ConfirmEmail": "Confirm email",
+  "ConfirmAccountTxt1": "Confirmation link sent",
+  "ConfirmAccountTxt2": "Please click the link sent in email to confirm your account",
+  "CoinfirmAccountTxt3": "Return to"
 }

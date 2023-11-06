@@ -1,6 +1,7 @@
 ﻿@page
 @model CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.EmailWasNotSentDueToErrorModel
-@{
-}
-<p>Email to confirm your account has not been sent due to unexpected error.</p>
-<p>Try to resend this email by <a href="~/Identity/Account/ResendEmailConfirmation">clicking here</a>.</p>
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+<p>@Localizer["EmailWasNotSentDueToErrorTxt1"].</p>
+<p>@Localizer["EmailWasNotSentDueToErrorTxt2"] <a href="~/Identity/Account/ResendEmailConfirmation">@Localizer["EmailWasNotSentDueToErrorTxt3"]</a>.</p>
