@@ -64,5 +64,12 @@
   "OldPasswordPlaceholder": "wpisz stare hasło",
   "NewPasswordPlaceholder": "wpisz nowe hasło",
   "ConfirmPasswordPlaceholder": "wpisz nowe hasło ponownie",
-  "UpdatePassword": "Zresetuj hasło"
+  "UpdatePassword": "Zresetuj hasło",
+  "PleaseEnterYourPassword": "wpisz proszę Twoje hasło",
+  "DeletePersonalDataTitle": "Usuń swoje dane osobowe",
+  "DeletePersonalDataTxt1": "Usunięcie tych danych natychmiastowo usunie twoje konto, i to jest nieodwracalne",
+  "DeletePersonalDataTxt2": "Subskrybenci którzy usuną swoje dane z serwisu przed końcem bieżącego okresu rozliczeniowego utracą dostęp do zakupionych treści - pozostały okres subskrypcji przepada",
+  "DeletePersonalDataTxt3": "Jeśli złożyłeś zamówienie na dostęp do treści i jesteś w trakcie terminu 14 dni na odstąpienie od umowy, usunięcie konta będzie jednoznaczne z odstąpieniem od umowy w myśl regulaminu",
+  "DeletePersonalDataBtnTxt": "Usuń moje dane i zamknij konto",
+
 }

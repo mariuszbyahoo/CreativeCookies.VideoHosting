@@ -51,6 +51,13 @@
   "NewPassword": "Old password",
   "OldPasswordPlaceholder": "please enter your old password",
   "NewPasswordPlaceholder": "please enter your new password",
-  "ConfirmPasswordPlaceholder": "please confirm your new password"
-  "UpdatePassword": "Update password"
+  "ConfirmPasswordPlaceholder": "please confirm your new password",
+  "PleaseEnterYourPassword": "please enter your password",
+  "UpdatePassword": "Update password",
+  "DeletePersonalDataTitle": "Delete Your Personal Data",
+  "DeletePersonalDataTxt1": "Deleting this data will immediately remove your account, and this is irreversible",
+  "DeletePersonalDataTxt2": "Subscribers who remove their data from the service before the end of the current billing period will lose access to purchased content - the remaining subscription period will be forfeited",
+  "DeletePersonalDataTxt3": "If you have placed an order for content access and are within the 14-day withdrawal period, account deletion will be equivalent to withdrawing from the contract according to the terms and conditions",
+  "DeletePersonalDataBtnTxt": "Delete my data and close the account"
+
 }
