@@ -37,5 +37,12 @@
   "ResetPasswordConfirmation": "Potwierdzenie zresetowania hasła",
   "ResetPasswordConfirmationTxt": "Twoje hasło zostało zresetowane",
   "LoginHere": "Zaloguj się tutaj",
-
+  "ConnectStripe": "Podłącz Stripe",
+  "DisconnectedConnectFormMsg": "Aby podłączyć dostawcę płatności, rozpocznij proces Stripe Onboarding klikając poniżej",
+  "RestrictedConnectFormMsg": "Z jakiegoś powodu przerwałeś proces Onboarding'u, kontynuuj klikając poniżej",
+  "ContinueOnboarding": "Kontynuuj onboarding",
+  "PendingSaveMsg": "Dodałeś niedawno nowe konto Stripe, sprawdź za jakiś czas aby sprawdzić, czy dane zostały zsynchronizowane",
+  "StripeConnectedMsg": "Twój MyHub jest w pełni podłączony do infrastruktury Stripe, i możesz już stworzyć swój pierwszy plan subskrypcji",
+  "Redirecting": "Przekierowanie",
+  "ByClickingHere": "klikając tutaj"
 }

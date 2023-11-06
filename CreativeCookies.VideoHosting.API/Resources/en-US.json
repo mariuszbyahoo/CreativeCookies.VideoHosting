@@ -24,5 +24,13 @@
   "Reset": "Reset",
   "ResetPasswordConfirmation": "Reset password confirmation",
   "ResetPasswordConfirmationTxt": "Your password has been reseted",
-  "LoginHere": "Login here"
+  "LoginHere": "Login here",
+  "ConnectStripe": "Connect Stripe",
+  "DisconnectedConnectFormMsg": "In order to start setting up payment vendor, please select below",
+  "RestrictedConnectFormMsg": "For some reason, you've stopped Stripe onboarding. In order to continue your last attempt on payment setup, please select below",
+  "ContinueOnboarding": "Continue onboarding",
+  "PendingSaveMsg": "You've submitted new account to Stripe recently, come back after a minute or so to check how it's going",
+  "StripeConnectedMsg": "Your MyHub is fully connected to the Stripe infrastructure and you're free to create your subscription plan",
+  "Redirecting": "Redirecting",
+  "ByClickingHere": "by clicking here"
 }
