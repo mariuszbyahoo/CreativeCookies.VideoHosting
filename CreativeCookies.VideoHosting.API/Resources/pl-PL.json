@@ -29,6 +29,7 @@
   "NoAccessToAuthDeviceTxt2": "zalogować się kodem odzyskania",
   "RecoveryCodeVerification": "Weryfikacja kodu odzyskiwania",
   "RecoveryCodeVerificationTxt": "Poprosiłeś o zalogowanie się przy użyciu kodu odzyskania, twój login nie będzie zapamiętany do czasu, w którym nie wprowadzisz kodu autoryzacyjnego",
-  "RecoveryCode": "Kod odzyskiwania"
-
+  "RecoveryCode": "Kod odzyskiwania",
+  "EnterYourEmail": "Wpisz swój email",
+  "Resend": "Wyślij ponownie"
 }

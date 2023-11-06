@@ -17,5 +17,7 @@
   "NoAccessToAuthDeviceTxt2": "log in with a recovery code",
   "RecoveryCodeVerification": "Recovery code verification",
   "RecoveryCodeVerificationTxt": "You have requested to log in with a recovery code. This login will not be remembered until you provide, an authenticator app code at log in or disable 2FA and log in again."
-  "RecoveryCode": "Recovery code"
+  "RecoveryCode": "Recovery code",
+  "EnterYourEmail": "Enter your email",
+  "Resend": "Resend"
 }
