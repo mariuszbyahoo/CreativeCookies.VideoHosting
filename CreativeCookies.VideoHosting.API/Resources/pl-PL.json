@@ -54,5 +54,15 @@
   "ConfirmEmail": "Potwierdź email",
   "ConfirmAccountTxt1": "Wysłano email zawierający link do uwierzytelnienia konta",
   "ConfirmAccountTxt2": "Proszę kliknąć na link zawarty w w/w mailu",
-  "ConfirmAccountTxt3": "Powróć do"
+  "ConfirmAccountTxt3": "Powróć do",
+  "Profile": "Profil",
+  "PersonalData": "Dane osobowe",
+  "ExternalLogins": "Logowanie zewnętrzne",
+  "ChangePassword": "Zmień hasło",
+  "OldPassword": "Stare hasło",
+  "NewPassword": "Nowe hasło",
+  "OldPasswordPlaceholder": "wpisz stare hasło",
+  "NewPasswordPlaceholder": "wpisz nowe hasło",
+  "ConfirmPasswordPlaceholder": "wpisz nowe hasło ponownie",
+  "UpdatePassword": "Zresetuj hasło"
 }

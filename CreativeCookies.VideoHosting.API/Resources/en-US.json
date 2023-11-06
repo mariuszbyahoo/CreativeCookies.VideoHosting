@@ -42,5 +42,15 @@
   "ConfirmEmail": "Confirm email",
   "ConfirmAccountTxt1": "Confirmation link sent",
   "ConfirmAccountTxt2": "Please click the link sent in email to confirm your account",
-  "CoinfirmAccountTxt3": "Return to"
+  "CoinfirmAccountTxt3": "Return to",
+  "Profile": "Profile",
+  "PersonalData": "Personal data",
+  "ExternalLogins": "External login",
+  "ChangePassword": "Change password",
+  "OldPassword": "Old password",
+  "NewPassword": "Old password",
+  "OldPasswordPlaceholder": "please enter your old password",
+  "NewPasswordPlaceholder": "please enter your new password",
+  "ConfirmPasswordPlaceholder": "please confirm your new password"
+  "UpdatePassword": "Update password"
 }
