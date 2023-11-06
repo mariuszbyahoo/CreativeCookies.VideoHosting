@@ -18,6 +18,7 @@ using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using Microsoft.AspNetCore.Mvc.Localization;
 using Microsoft.Extensions.Localization;
+using CreativeCookies.VideoHosting.API.Resources;
 
 namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 {
@@ -26,10 +27,10 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
         private readonly IMyHubSignInManager _signInManager;
         private readonly ILogger<LoginModel> _logger;
         private readonly IConnectAccountsRepository _stripeService;
-        private readonly IStringLocalizer<LoginModel> _localizer;
+        private readonly IStringLocalizer<TranslatedStrings> _localizer; // HACK: Przerób to na customowy IStringLocalizer
 
         public LoginModel(IMyHubSignInManager signInManager, IConnectAccountsRepository stripeService, 
-            ILogger<LoginModel> logger, IStringLocalizer<LoginModel> localizer)
+            ILogger<LoginModel> logger, IStringLocalizer<TranslatedStrings> localizer)
         {
             _signInManager = signInManager;
             _stripeService = stripeService;
@@ -104,8 +105,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
                 }
                 else
                 {
-                    var errMsg = _localizer["InvalidLoginAttempt"];
-                    ModelState.AddModelError(string.Empty, errMsg.ToString());
+                    ModelState.AddModelError(string.Empty, "Invalid login attempt");
                     return Page();
                 }
             }
