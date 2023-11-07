@@ -32,7 +32,7 @@ namespace CreativeCookies.VideoHosting.API.Utils.JsonStringLocalizer
         }
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
         {
-            string filePath = $"Resources/{Thread.CurrentThread.CurrentCulture.Name}.json";
+            string filePath = $"Resources/pl-PL.json";
             using (var str = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
             using (var sReader = new StreamReader(str))
             using (var reader = new JsonTextReader(sReader))
@@ -50,17 +50,18 @@ namespace CreativeCookies.VideoHosting.API.Utils.JsonStringLocalizer
         }
         private string GetString(string key)
         {
-            string relativeFilePath = $"Resources/{Thread.CurrentThread.CurrentCulture.Name}.json";
+            string relativeFilePath = $"Resources/pl-PL.json";
             string fullFilePath = Path.GetFullPath(relativeFilePath);
             if (File.Exists(fullFilePath))
             {
-                string cacheKey = $"locale_{Thread.CurrentThread.CurrentCulture.Name}_{key}";
+                string cacheKey = $"locale_pl-PL_{key}";
                 string cacheValue = _cache.GetString(cacheKey);
                 if (!string.IsNullOrEmpty(cacheValue)) return cacheValue;
                 string result = GetValueFromJSON(key, Path.GetFullPath(relativeFilePath));
                 if (!string.IsNullOrEmpty(result)) _cache.SetString(cacheKey, result);
                 return result;
             }
+            else throw new ArgumentException($"There is no such file like {fullFilePath}");
             return default(string);
         }
         private string GetValueFromJSON(string propertyName, string filePath)
