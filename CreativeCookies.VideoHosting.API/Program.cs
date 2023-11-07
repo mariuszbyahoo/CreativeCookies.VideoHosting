@@ -39,6 +39,12 @@ using Hangfire.Storage;
 using Stripe;
 using CreativeCookies.VideoHosting.Contracts.Services.About;
 using CreativeCookies.VideoHosting.Services.About;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Localization;
+using Microsoft.Extensions.Options;
+using CreativeCookies.VideoHosting.API.Utils.JsonStringLocalizer;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using Microsoft.Extensions.Localization;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -47,6 +53,24 @@ namespace CreativeCookies.VideoHosting.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+            builder.Services.Configure<RequestLocalizationOptions>(options =>
+            {
+                var supportedCultures = new[] { "pl-PL", "en-US" };
+                var localizationOptions = new RequestLocalizationOptions()
+                    .SetDefaultCulture(supportedCultures[0])
+                    .AddSupportedCultures(supportedCultures)
+                    .AddSupportedUICultures(supportedCultures);
+
+                options.RequestCultureProviders = new List<IRequestCultureProvider>
+                {
+                    new QueryStringRequestCultureProvider(),
+                    new CookieRequestCultureProvider(),
+                    new AcceptLanguageHeaderRequestCultureProvider()
+                };
+            });
 
             builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
             {
@@ -129,6 +153,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddSingleton<ISasTokenService, SasTokenService>();
             builder.Services.AddSingleton<IJWTGenerator, JwtGenerator>();
             builder.Services.AddSingleton(sp => JobStorage.Current.GetMonitoringApi());
+            builder.Services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
 
             builder.Services.AddScoped<IStripeProductsService, StripeProductsService>();
             builder.Services.AddScoped<IFilmService, FilmService>();
@@ -213,7 +238,9 @@ namespace CreativeCookies.VideoHosting.API
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.Cookie.IsEssential = true;
             });
-            builder.Services.AddRazorPages().AddRazorRuntimeCompilation(); 
+            builder.Services.AddRazorPages()
+                .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+                .AddRazorRuntimeCompilation(); 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -221,7 +248,11 @@ namespace CreativeCookies.VideoHosting.API
             var app = builder.Build();
 
             app.MigrateAndPopulateDatabase(adminEmail);
-
+            var localizationOptions = app.Services.GetService<IOptions<RequestLocalizationOptions>>()?.Value;
+            if (localizationOptions != null)
+            {
+                app.UseRequestLocalization(localizationOptions);
+            }
             app.UseHangfireDashboard("/hangfire", new DashboardOptions
             {
                 Authorization = new[] { new HangfireDashboardAuthorizationFilter() }

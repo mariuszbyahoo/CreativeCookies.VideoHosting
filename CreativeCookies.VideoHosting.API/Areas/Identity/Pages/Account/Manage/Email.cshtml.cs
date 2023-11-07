@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Localization;
 
 namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
 {
@@ -25,18 +26,21 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
         private readonly IEmailService _emailSender;
         private readonly IConfiguration _configuration;
         private readonly ILogger<EmailModel> _logger;
+        private readonly IStringLocalizer<EmailModel> _stringLocalizer;
         public EmailModel(
             IMyHubUserManager userManager,
             IMyHubSignInManager signInManager,
             IEmailService emailSender,
             IConfiguration configuration,
-            ILogger<EmailModel> logger)
+            ILogger<EmailModel> logger,
+            IStringLocalizer<EmailModel> stringLocalizer)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _configuration = configuration;
             _logger = logger;
+            _stringLocalizer= stringLocalizer;
         }
 
         public string Email { get; set; }
@@ -104,17 +108,17 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
 
                 await _emailSender.SendEmailChangeLinkAsync(
                     Input.NewEmail,
-                    "Confirm your email",
-                    "Change an email assigned to your account",
+                    _stringLocalizer["ConfirmEmail"],
+                    _stringLocalizer["ConfirmEmailSubject"],
                     _configuration.GetValue<string>("WebsiteName"),
                     emailChangeLink
                     );
 
-                StatusMessage = $"Verification email sent. Please check {Input.NewEmail}";
+                StatusMessage = $"{_stringLocalizer["EmailChangeSent"]} {Input.NewEmail}";
                 return RedirectToPage();
             }
 
-            StatusMessage = "Your email is unchanged.";
+            StatusMessage = _stringLocalizer["EmailIsUnchanged"];
             return RedirectToPage();
         }
 
@@ -148,11 +152,11 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
 
             await _emailSender.SendAccountActivationEmailAsync(
                 email,
-                $"Confirm your account at {websiteName}",
-                $"You're recieving this email because you've requested to sign in at {websiteName}: {websiteUrl}",
+                $"{_stringLocalizer["ConfirmYourAccountAt"]} {websiteName}",
+                $"{_stringLocalizer["RegisterMailSubject"]} {websiteName}: {websiteUrl}",
                 websiteUrl, websiteName, callbackUrl);
 
-            StatusMessage = $"Verification email sent. Please check {email}";
+            StatusMessage = $"{_stringLocalizer["EmailChangeSent"]} {email}";
             return RedirectToPage();
         }
 

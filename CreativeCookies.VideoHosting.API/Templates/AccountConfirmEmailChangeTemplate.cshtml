@@ -1,11 +1,13 @@
 ﻿@model CreativeCookies.VideoHosting.API.Templates.AccountConfirmEmailChangeTemplateViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
 
-<p style="font-size:18px; font-family: 'Comic Sans MS'; font-weight:600;">Hello, @Model.RecipientName,</p>
+<p style="font-size:18px; font-weight:600;">@Localizer["Hello"], @Model.RecipientName,</p>
 
-<p style="font-size:16px; font-family: 'Comic Sans MS'; font-weight:500;">@Model.Introduction</p>
+<p style="font-size:16px; font-weight:500;">@Model.Introduction</p>
 
-<p style="font-size:16px; font-family: 'Comic Sans MS'; font-weight:500;">Please confirm your account's email change by <a href='@Model.EmailChangeLink'>clicking here</a>.</p>
+<p style="font-size:16px; font-weight:500;">@Localizer["ConfirmEmail"] <a href='@Model.EmailChangeLink'>CLICK</a>.</p>
 
-<p style="font-size:16px; font-family: 'Comic Sans MS'; font-weight:500;">Best regards,</p>
+<p style="font-size:16px; font-weight:500;">@Localizer["BestRegards"],</p>
 
-<p style="font-size:16px; font-family: 'Comic Sans MS'; font-weight:500;">@Model.WebsiteName Team</p>
+<p style="font-size:16px; font-weight:500;">@Model.WebsiteName</p>

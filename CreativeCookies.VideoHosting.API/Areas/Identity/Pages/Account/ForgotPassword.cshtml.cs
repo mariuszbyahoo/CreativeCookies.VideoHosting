@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Localization;
 
 namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 {
@@ -24,13 +25,15 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
         private readonly ILogger<ForgotPasswordModel> _logger;
+        private readonly IStringLocalizer<ForgotPasswordModel> _stringLocalizer;
 
-        public ForgotPasswordModel(IMyHubUserManager userManager, IEmailService emailService, IConfiguration configuration, ILogger<ForgotPasswordModel> logger)
+        public ForgotPasswordModel(IMyHubUserManager userManager, IEmailService emailService, IConfiguration configuration, ILogger<ForgotPasswordModel> logger, IStringLocalizer<ForgotPasswordModel> stringLocalizer)
         {
             _userManager = userManager;
             _emailService = emailService;
             _configuration = configuration;
             _logger = logger;
+            _stringLocalizer = stringLocalizer;
         }
 
         [BindProperty]
@@ -64,8 +67,8 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 
                 await _emailService.SendResetPasswordLinkAsync(
                     Input.Email,
-                    "Reset Password",
-                    $"You've requested to reset password assigned to your account", _configuration.GetValue<string>("WebsiteName"), callbackUrl);
+                    _stringLocalizer["ForgotPasswordEmailSubject"],
+                    _stringLocalizer["ForgotPasswordEmailTxt"], _configuration.GetValue<string>("WebsiteName"), callbackUrl);
 
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }

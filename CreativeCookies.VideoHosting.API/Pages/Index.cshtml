@@ -1,10 +1,11 @@
 ﻿@page
 @model CreativeCookies.VideoHosting.API.Pages.IndexModel
-
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
 <div style="text-align:center">
-    <h3>@Model.WebsiteName's Identity Directory</h3>
-    <p>On this page you can:</p>
-    <p><a href="~/Identity/Account/Manage" style="text-decoration:none; color:blue;">Manage your account's data</a> by reviewing, changing or deleting it.</p>
-    <p><a href="~/Identity/Account/Register" style="text-decoration:none; color:blue;">Register</a> a new account, or just <a href="~/Identity/Account/Login" style="text-decoration:none; color:blue;">Login</a> and then enjoy @Model.WebsiteName's content</p>
-    <p>Alternatively, you can just come back to <a href=@Model.ClientUrl style="text-decoration:none; color:blue;">@Model.WebsiteName</a> right away</p>
+    <h3>@Model.WebsiteName</h3>
+    <p>@Localizer["OnThisPageYouCan"]:</p>
+    <p><a href="~/Identity/Account/Manage" style="text-decoration:none; color:blue;">@Localizer["ManageYourAccountData"]</a> @Localizer["ByReviewingChangingOrDeleting"].</p>
+    <p><a href="~/Identity/Account/Register" style="text-decoration:none; color:blue;">@Localizer["Register2"]</a> @Localizer["ANewAccountOrJust"] <a href="~/Identity/Account/Login" style="text-decoration:none; color:blue;">@Localizer["Login"]</a></p>
+    <p>@Localizer["AlternativelyYouCanJustComeBackTo"] <a href=@Model.ClientUrl style="text-decoration:none; color:blue;">@Model.WebsiteName</a></p>
 </div>

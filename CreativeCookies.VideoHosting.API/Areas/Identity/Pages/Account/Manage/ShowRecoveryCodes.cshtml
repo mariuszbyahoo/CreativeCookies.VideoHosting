@@ -1,18 +1,19 @@
 ﻿@page
 @model ShowRecoveryCodesModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
 @{
-    ViewData["Title"] = "Recovery codes";
     ViewData["ActivePage"] = "TwoFactorAuthentication";
 }
 
 <partial name="_StatusMessage" for="StatusMessage" />
-<h3>@ViewData["Title"]</h3>
+<h3>@Localizer["RecoveryCodes"]</h3>
 <div class="alert alert-warning" role="alert">
     <p>
-        <strong>Put these codes in a safe place.</strong>
+        <strong>@Localizer["PutTheseCodesInASafePlace"].</strong>
     </p>
     <p>
-        If you lose your device and don't have the recovery codes you will lose access to your account.
+        @Localizer["Generate2FARecoveryCodesTxt1"].
     </p>
 </div>
 <div class="row">

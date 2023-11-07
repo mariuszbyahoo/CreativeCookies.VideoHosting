@@ -16,6 +16,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
+using Microsoft.AspNetCore.Mvc.Localization;
+using Microsoft.Extensions.Localization;
+using CreativeCookies.VideoHosting.API.Utils.JsonStringLocalizer;
 
 namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 {
@@ -24,12 +27,15 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
         private readonly IMyHubSignInManager _signInManager;
         private readonly ILogger<LoginModel> _logger;
         private readonly IConnectAccountsRepository _stripeService;
+        private readonly IStringLocalizer<LoginModel> _localizer; // HACK: Przerób to na customowy IStringLocalizer
 
-        public LoginModel(IMyHubSignInManager signInManager, IConnectAccountsRepository stripeService, ILogger<LoginModel> logger)
+        public LoginModel(IMyHubSignInManager signInManager, IConnectAccountsRepository stripeService, 
+            ILogger<LoginModel> logger, IStringLocalizer<LoginModel> localizer)
         {
             _signInManager = signInManager;
             _stripeService = stripeService;
             _logger = logger;
+            _localizer = localizer;
         }
 
         [BindProperty]
@@ -52,7 +58,6 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
             [DataType(DataType.Password)]
             public string Password { get; set; }
 
-            [Display(Name = "Remember me?")]
             public bool RememberMe { get; set; }
         }
 
@@ -100,7 +105,8 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    var errMsg = _localizer["InvalidLoginAttempt"];
+                    ModelState.AddModelError(string.Empty, errMsg);
                     return Page();
                 }
             }
