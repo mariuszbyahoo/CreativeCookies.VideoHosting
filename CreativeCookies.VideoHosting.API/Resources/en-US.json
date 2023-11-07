@@ -141,5 +141,12 @@
   "Download": "Download",
   "Delete": "Delete",
   "ManageYourAccount": "Manage your account",
-  "ChangeYourAccountSettings": "Change your account settings"
+  "ManageYourAccountData": "Manage your account data",
+  "ChangeYourAccountSettings": "Change your account settings",
+  "Logout": "Logout",
+  "OnThisPageYouCan": "On this page you can",
+  "ByReviewingChangingOrDeleting": "by reviewing, changing or deleting it",
+  "ANewAccountOrJust": "a new account, or just",
+  "AlternativelyYouCanJustComeBackTo": "Alternatively, you can just come back to",
+  "Register2": "Register"
 }
