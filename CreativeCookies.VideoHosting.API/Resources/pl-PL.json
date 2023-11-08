@@ -16,7 +16,7 @@
   "InvalidEmail": "Niepoprawny adres email",
   "PleaseEnterYourUsername": "Wpisz proszę nazwę użytkownika",
   "UsernameAlreadyExists": "Nazwa użytkownika już istnieje",
-  "EmailAlreadyExists": "Adres email już istnieje",
+  "EmailAlreadyExists": "Ten adres email jest zajęty",
   "PasswordRequiresUniqueChars": "Hasło wymaga unikatowych znaków",
   "PasswordRequiresNonAlphanumeric": "Co najmniej jeden znak alfanumeryczny",
   "PasswordRequiresDigit": "Co najmniej jedna cyfra",
