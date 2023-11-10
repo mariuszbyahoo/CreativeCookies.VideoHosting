@@ -46,6 +46,7 @@ using CreativeCookies.VideoHosting.API.Utils.JsonStringLocalizer;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.Extensions.Localization;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -157,6 +158,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddSingleton(sp => JobStorage.Current.GetMonitoringApi());
             builder.Services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
 
+            builder.Services.AddScoped<IInvoiceService, Infrastructure.InvoiceService>();
             builder.Services.AddScoped<IMerchantService, MerchantService>();
             builder.Services.AddScoped<IAddressService, AddressService>();
             builder.Services.AddScoped<IStripeProductsService, StripeProductsService>();

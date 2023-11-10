@@ -5,6 +5,8 @@ using CreativeCookies.VideoHosting.Contracts.Infrastructure;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Services.Stripe;
+using CreativeCookies.VideoHosting.DTOs;
+using CreativeCookies.VideoHosting.DTOs.OAuth;
 using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
 using Hangfire;
 using Microsoft.AspNetCore.Http;
@@ -29,25 +31,18 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         private readonly StripeWebhookSigningKeyWrapper _wrapper;
         private readonly IBackgroundJobClient _backgroundJobClient;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly IInvoiceService _invoiceService;
-        private readonly IUsersRepository _usersRepository;
-        private readonly IMerchantRepository _merchantRepository;
         private readonly ILogger _logger;
         private readonly string _connectAccountId;
 
 
         public StripeMessageReceiver(IBackgroundJobClient backgroundJobClient, StripeWebhookSigningKeyWrapper wrapper,
-             IServiceScopeFactory serviceScopeFactory, IInvoiceService invoiceService, IUsersRepository usersRepository,
-             IMerchantRepository merchantRepository, IConfiguration configuration, ILogger<StripeMessageReceiver> logger)
+             IServiceScopeFactory serviceScopeFactory, IConfiguration configuration, ILogger<StripeMessageReceiver> logger)
         {
             _logger = logger;
             _serviceBusClient = new ServiceBusClient(configuration.GetValue<string>("ServiceBusConnectionString"));
             _wrapper = wrapper;
             _serviceScopeFactory = serviceScopeFactory;
             _backgroundJobClient = backgroundJobClient;
-            _invoiceService = invoiceService;
-            _usersRepository = usersRepository;
-            _merchantRepository = merchantRepository;
             _processor = _serviceBusClient.CreateProcessor("stripe_events_queue", new ServiceBusProcessorOptions());
             _processor.ProcessMessageAsync += MessageHandler;
             _processor.ProcessErrorAsync += ErrorHandler;
@@ -252,18 +247,35 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 
         private async Task ProcessInvoice(string stripeCustomerId, decimal amount, string currency)
         {
-            var user = await _usersRepository.GetUserByStripeCustomerId(stripeCustomerId);
-            var merchant = await _merchantRepository.GetMerchant();
-            if (user.Address == null)
-                _logger.LogCritical($"No address for user: {user.UserEmail} found, aborting invoice generation");
+            MyHubUserDto user;
+            MerchantDto merchant;
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var usersRepo = scope.ServiceProvider.GetRequiredService<IUsersRepository>();
+                var merchantRepository = scope.ServiceProvider.GetRequiredService<IMerchantRepository>();
+                user = await usersRepo.GetUserByStripeCustomerId(stripeCustomerId);
+                merchant = await merchantRepository.GetMerchant();
+            }
+
+            if (user?.Address == null)
+                _logger.LogCritical($"No address for user: {user?.UserEmail} found, aborting invoice generation");
             if (merchant == null)
                 _logger.LogCritical($"No merchant found, aborting invoice generation");
 
             var canGenerateInvoice = merchant != null && user.Address != null;
             if (canGenerateInvoice)
             {
-                var invoiceData = _invoiceService.GenerateInvoicePdf(amount, currency, user.Address, merchant);
-                // HACK: SEND Invoice via E-mail
+                using (var scope = _serviceScopeFactory.CreateScope())
+                {
+                    // Resolve the scoped service from the scope
+                    var invoiceService = scope.ServiceProvider.GetRequiredService<IInvoiceService>();
+
+                    // Now you can use the scoped service
+                    var invoiceData = invoiceService.GenerateInvoicePdf(amount, currency, user.Address, merchant);
+
+                    // HACK: SEND Invoice via E-mail
+                    // ... (e.g., _emailService.Send(invoiceData))
+                }
             }
         }
     }
