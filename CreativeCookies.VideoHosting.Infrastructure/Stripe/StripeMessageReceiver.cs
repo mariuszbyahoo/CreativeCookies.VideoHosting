@@ -19,7 +19,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Infrastructure.Azure
+namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 {
     public class StripeMessageReceiver : IHostedService
     {
@@ -32,15 +32,15 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Azure
         private readonly string _connectAccountId;
 
 
-        public StripeMessageReceiver(IBackgroundJobClient backgroundJobClient, StripeWebhookSigningKeyWrapper wrapper, 
+        public StripeMessageReceiver(IBackgroundJobClient backgroundJobClient, StripeWebhookSigningKeyWrapper wrapper,
              IServiceScopeFactory serviceScopeFactory, IConfiguration configuration, ILogger<StripeMessageReceiver> logger)
         {
             _logger = logger;
             _serviceBusClient = new ServiceBusClient(configuration.GetValue<string>("ServiceBusConnectionString"));
             _wrapper = wrapper;
             _serviceScopeFactory = serviceScopeFactory;
-             _backgroundJobClient = backgroundJobClient;
-            
+            _backgroundJobClient = backgroundJobClient;
+
             _processor = _serviceBusClient.CreateProcessor("stripe_events_queue", new ServiceBusProcessorOptions());
             _processor.ProcessMessageAsync += MessageHandler;
             _processor.ProcessErrorAsync += ErrorHandler;
@@ -98,7 +98,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Azure
                             var product = stripeEvent.Data.Object as Product;
                             if (product != null)
                             {
-                                await subscriptonPlanService.UpsertSubscriptionPlan(new VideoHosting.DTOs.Stripe.SubscriptionPlanDto(product.Id, product.Name, product.Description));
+                                await subscriptonPlanService.UpsertSubscriptionPlan(new DTOs.Stripe.SubscriptionPlanDto(product.Id, product.Name, product.Description));
                                 _logger.LogInformation($"StripeMessageReceiver product upserted: {product.ToJson()}");
                             }
                         }

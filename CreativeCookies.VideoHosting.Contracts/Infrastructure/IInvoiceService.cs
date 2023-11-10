@@ -6,7 +6,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Contracts.Services
+namespace CreativeCookies.VideoHosting.Contracts.Infrastructure
 {
     public interface IInvoiceService
     {

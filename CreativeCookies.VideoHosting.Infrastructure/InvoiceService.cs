@@ -1,17 +1,10 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Infrastructure.Azure;
+﻿using CreativeCookies.VideoHosting.Contracts.Infrastructure;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure.Azure;
 using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.DTOs;
 using DinkToPdf;
-using DocumentFormat.OpenXml.Drawing.Charts;
-using System;
-using System.Collections.Generic;
-using System.Drawing.Imaging;
-using System.Drawing.Printing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Services
+namespace CreativeCookies.VideoHosting.Infrastructure
 {
     public class InvoiceService : IInvoiceService
     {

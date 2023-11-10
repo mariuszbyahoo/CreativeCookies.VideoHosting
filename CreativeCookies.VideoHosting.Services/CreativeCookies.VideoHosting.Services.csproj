@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CreativeCookies.VideoHosting.Contracts\CreativeCookies.VideoHosting.Contracts.csproj" />
+    <ProjectReference Include="..\CreativeCookies.VideoHosting.DAL\CreativeCookies.VideoHosting.DAL.csproj" />
     <ProjectReference Include="..\CreativeCookies.VideoHosting.Domain\CreativeCookies.VideoHosting.Domain.csproj" />
     <ProjectReference Include="..\CreativeCookies.VideoHosting.DTOs\CreativeCookies.VideoHosting.DTOs.csproj" />
   </ItemGroup>
