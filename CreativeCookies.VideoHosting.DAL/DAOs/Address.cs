@@ -10,6 +10,8 @@ namespace CreativeCookies.VideoHosting.DAL.DAOs
     public class Address
     {
         public Guid Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         public string Street { get; set; }
         public string HouseNo { get; set; }
         public int? AppartmentNo { get; set; }
@@ -24,16 +26,20 @@ namespace CreativeCookies.VideoHosting.DAL.DAOs
 
         }
 
-        public Address(string street, string houseNo, string postCode, string city, string country)
+        public Address(string firstName, string lastName, string street, string houseNo, string postCode, string city, string country)
         {
+            FirstName = firstName;
+            LastName = lastName;
             Street = street;
             HouseNo = houseNo;
             PostCode = postCode;
             City = city;
             Country = country;
         }
-        public Address(string street, string houseNo, int appartmentNo, string postCode, string city, string country)
+        public Address(string firstName, string lastName, string street, string houseNo, int appartmentNo, string postCode, string city, string country)
         {
+            FirstName = firstName;
+            LastName = lastName;
             Street = street;
             HouseNo = houseNo;
             PostCode = postCode;
