@@ -47,6 +47,7 @@ namespace CreativeCookies.VideoHosting.DAL.Config
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IClientStore, ClientStore>();
             services.AddScoped<IAboutPageRepository, AboutPageRepository>();
+            services.AddScoped<IAddressRepository, AddressRepository>();
 
             return services;
         }

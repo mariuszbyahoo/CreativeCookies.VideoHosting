@@ -26,7 +26,7 @@ namespace CreativeCookies.VideoHosting.DAL.DAOs
 
         }
 
-        public Address(string firstName, string lastName, string street, string houseNo, string postCode, string city, string country)
+        public Address(string firstName, string lastName, string street, string houseNo, string postCode, string city, string country, string userId)
         {
             FirstName = firstName;
             LastName = lastName;
@@ -35,8 +35,9 @@ namespace CreativeCookies.VideoHosting.DAL.DAOs
             PostCode = postCode;
             City = city;
             Country = country;
+            UserId = userId;
         }
-        public Address(string firstName, string lastName, string street, string houseNo, int appartmentNo, string postCode, string city, string country)
+        public Address(string firstName, string lastName, string street, string houseNo, int appartmentNo, string postCode, string city, string country, string userId)
         {
             FirstName = firstName;
             LastName = lastName;
@@ -46,6 +47,7 @@ namespace CreativeCookies.VideoHosting.DAL.DAOs
             City = city;
             Country = country;
             AppartmentNo = appartmentNo;
+            UserId = userId;
         }
     }
 }

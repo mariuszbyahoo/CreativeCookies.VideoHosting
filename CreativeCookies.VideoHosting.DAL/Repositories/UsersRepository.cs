@@ -81,7 +81,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
 
         public async Task<UsersPaginatedResultDto> GetUsersPaginatedResult(string search, int pageNumber, int pageSize, string role)
         {
-            var usersQuery = _context.Users.Where(user => string.IsNullOrEmpty(search) || user.Email.Contains(search) || user.UserName.Contains(search));
+            var usersQuery = _context.Users.Include(user => user.Address).Where(user => string.IsNullOrEmpty(search) || user.Email.Contains(search) || user.UserName.Contains(search));
             double usersCount = await usersQuery.CountAsync();
             var users = usersQuery
                 .OrderBy(user => user.Email)
