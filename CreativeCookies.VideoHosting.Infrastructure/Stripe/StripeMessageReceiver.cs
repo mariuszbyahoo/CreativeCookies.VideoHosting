@@ -207,20 +207,6 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                             if (res) _logger.LogInformation($"SubscriptionEndDateUTC of Stripe Customer id: {charge.CustomerId} updated to {DateTime.UtcNow}");
                             else _logger.LogError($"Database result of SubscriptionEndDateUTC update was false for customer with id: {charge.CustomerId}");
                         }
-                        else if (stripeEvent.Type == Events.CustomerSubscriptionDeleted)
-                        {
-                            _logger.LogInformation($"StripeMessageReceiver with event type of {stripeEvent.Type}");
-                            var accountId = stripeEvent.Account;
-                            var subscription = stripeEvent.Data.Object as Subscription;
-                            var res = userRepo.ChangeSubscriptionDatesUTC(subscription.CustomerId, DateTime.UtcNow, DateTime.UtcNow);
-                            if (res) _logger.LogInformation($"SubscriptionEndDateUTC of Stripe Customer id: {subscription.CustomerId} updated to {DateTime.UtcNow}");
-                            else _logger.LogError($"Database result of SubscriptionEndDateUTC update was false for customer with id: {subscription.CustomerId}");
-                        }
-                        else if (stripeEvent.Type == Events.SubscriptionScheduleCanceled)
-                        {
-                            _logger.LogInformation("TODO: IMPLEMENT SUBSCRIPITON SCHEDULE CANCELED HANDLER!");
-                            // HACK: TODO - is there any need for it?
-                        }
                         else
                         {
                             _logger.LogWarning($"Unexpected Stripe event's type: {stripeEvent.ToJson()}");
