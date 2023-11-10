@@ -1,31 +1,29 @@
 ﻿using CreativeCookies.VideoHosting.Contracts.Infrastructure;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Azure;
+using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.DTOs;
+using CreativeCookies.VideoHosting.DTOs.Email;
 using DinkToPdf;
 
 namespace CreativeCookies.VideoHosting.Infrastructure
 {
     public class InvoiceService : IInvoiceService
     {
-        private readonly IAddressService _addressSrv;
-        private readonly IMerchantService _merchantSrv;
         private readonly IMyHubBlobService _blobService;
+        private readonly IInvoiceNumsRepository _invoiceNumsRepository;
 
-        public InvoiceService(IAddressService addressSrv, IMerchantService merchantSrv, IMyHubBlobService blobService)
+        public InvoiceService(IMyHubBlobService blobService, IInvoiceNumsRepository invoiceNumsRepo)
         {
-            _addressSrv = addressSrv;
-            _merchantSrv = merchantSrv;
             _blobService = blobService;
+            _invoiceNumsRepository = invoiceNumsRepo;
         }
 
 
-        // HACK: GET COUNT INVOICES
-
-        public byte[] GenerateInvoicePdf(decimal amount, string currency, AddressDto buyerAddress, MerchantDto merchant)
+        public async Task<Attachement> GenerateInvoicePdf(decimal amount, string currency, AddressDto buyerAddress, MerchantDto merchant)
         {
             var converter = new BasicConverter(new PdfTools());
-            var invoiceNumber = GetInvoiceNumber();
+            var invoiceNumber = await _invoiceNumsRepository.GetNewNumber();
             var merchantHouseNoLine = $"{merchant.HouseNo} " + (merchant.AppartmentNo != null ? $"lok. {merchant.AppartmentNo}" : "");
             var buyerHouseNoLine = $"{buyerAddress.HouseNo} " + (buyerAddress.AppartmentNo != null ? $"lok. {buyerAddress.AppartmentNo}" : "");
             var nettAmount = amount/1.23m / 100;
@@ -164,16 +162,11 @@ namespace CreativeCookies.VideoHosting.Infrastructure
                 }
             };
 
-            var result = converter.Convert(doc);
+            var pdfFileAsBytes = converter.Convert(doc);
 
-            _blobService.UploadPdfToAzureAsync(result, $"{invoiceNumber}.pdf");
-
+            var uploadRes = await _blobService.UploadPdfToAzureAsync(pdfFileAsBytes, $"{invoiceNumber}.pdf");
+            var result = new Attachement(invoiceNumber, pdfFileAsBytes);
             return result;
-        }
-
-        public string GetInvoiceNumber()
-        {
-            return "Próbna FV212312";
         }
     }
 }

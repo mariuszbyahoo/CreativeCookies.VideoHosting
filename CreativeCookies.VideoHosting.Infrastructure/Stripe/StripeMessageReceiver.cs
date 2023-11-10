@@ -1,6 +1,7 @@
 ﻿using Azure.Core;
 using Azure.Messaging.ServiceBus;
 using CreativeCookies.StripeEvents.DTOs;
+using CreativeCookies.VideoHosting.Contracts.Email;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
@@ -267,14 +268,12 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             {
                 using (var scope = _serviceScopeFactory.CreateScope())
                 {
-                    // Resolve the scoped service from the scope
                     var invoiceService = scope.ServiceProvider.GetRequiredService<IInvoiceService>();
+                    var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
 
-                    // Now you can use the scoped service
-                    var invoiceData = invoiceService.GenerateInvoicePdf(amount, currency, user.Address, merchant);
+                    var invoiceData = await invoiceService.GenerateInvoicePdf(amount, currency, user.Address, merchant);
 
-                    // HACK: SEND Invoice via E-mail
-                    // ... (e.g., _emailService.Send(invoiceData))
+                    await emailService.SendInvoiceAsync(user.UserEmail, invoiceData.InvoiceNumber, "TODOWebsiteName", invoiceData);
                 }
             }
         }

@@ -47,6 +47,7 @@ using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.Extensions.Localization;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure;
+using CreativeCookies.VideoHosting.Contracts.Email;
 
 namespace CreativeCookies.VideoHosting.API
 {

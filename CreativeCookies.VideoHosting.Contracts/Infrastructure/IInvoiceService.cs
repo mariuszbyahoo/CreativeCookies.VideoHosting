@@ -1,4 +1,5 @@
 ﻿using CreativeCookies.VideoHosting.DTOs;
+using CreativeCookies.VideoHosting.DTOs.Email;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,6 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure
         /// <param name="buyerAddress"></param>
         /// <param name="merchant"></param>
         /// <returns>byte[] data for pdf file</returns>
-        byte[] GenerateInvoicePdf(decimal amount, string currency, AddressDto buyerAddress, MerchantDto merchant);
-        string GetInvoiceNumber();
+        Task<Attachement> GenerateInvoicePdf(decimal amount, string currency, AddressDto buyerAddress, MerchantDto merchant);
     }
 }
