@@ -1,6 +1,7 @@
 ﻿using Azure.Core;
 using Azure.Messaging.ServiceBus;
 using CreativeCookies.StripeEvents.DTOs;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Services.Stripe;
@@ -28,19 +29,25 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         private readonly StripeWebhookSigningKeyWrapper _wrapper;
         private readonly IBackgroundJobClient _backgroundJobClient;
         private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IInvoiceService _invoiceService;
+        private readonly IUsersRepository _usersRepository;
+        private readonly IMerchantRepository _merchantRepository;
         private readonly ILogger _logger;
         private readonly string _connectAccountId;
 
 
         public StripeMessageReceiver(IBackgroundJobClient backgroundJobClient, StripeWebhookSigningKeyWrapper wrapper,
-             IServiceScopeFactory serviceScopeFactory, IConfiguration configuration, ILogger<StripeMessageReceiver> logger)
+             IServiceScopeFactory serviceScopeFactory, IInvoiceService invoiceService, IUsersRepository usersRepository,
+             IMerchantRepository merchantRepository, IConfiguration configuration, ILogger<StripeMessageReceiver> logger)
         {
             _logger = logger;
             _serviceBusClient = new ServiceBusClient(configuration.GetValue<string>("ServiceBusConnectionString"));
             _wrapper = wrapper;
             _serviceScopeFactory = serviceScopeFactory;
             _backgroundJobClient = backgroundJobClient;
-
+            _invoiceService = invoiceService;
+            _usersRepository = usersRepository;
+            _merchantRepository = merchantRepository;
             _processor = _serviceBusClient.CreateProcessor("stripe_events_queue", new ServiceBusProcessorOptions());
             _processor.ProcessMessageAsync += MessageHandler;
             _processor.ProcessErrorAsync += ErrorHandler;
@@ -129,6 +136,8 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                             var res = userRepo.ChangeSubscriptionDatesUTC(invoice.CustomerId, invoice.Lines.Data[0].Period.Start, accessPeriodEnd, false);
                             if (res) _logger.LogInformation($"Subscription dates range for a Stripe Customer id: {invoice.CustomerId} updated to {invoice.Lines.Data[0].Period.Start} - {accessPeriodEnd}");
                             else _logger.LogError($"Database result of SubscriptionEndDateUTC update was false for customer with id: {invoice.CustomerId}");
+
+                            await ProcessInvoice(invoice.Customer.Id, invoice.AmountPaid, invoice.Currency);
                         }
                         else if (stripeEvent.Type == Events.CheckoutSessionCompleted)
                         {
@@ -183,6 +192,8 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 
                                     if (res) _logger.LogInformation($"Subscription dates range for a Stripe Customer id: {checkoutSession.CustomerId} updated to {subscriptionStartDate} - {subscriptionEndDate}");
                                     else _logger.LogError($"Database result of SubscriptionEndDateUTC update was false for customer with id: {checkoutSession.CustomerId}");
+
+                                    await ProcessInvoice(checkoutSession.CustomerId, paymentIntent.AmountReceived, paymentIntent.Currency);
                                 }
                                 _logger.LogInformation($"Session completed for a subscription with mode of: {checkoutSession.Mode}");
                             }
@@ -237,6 +248,23 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             _logger.LogInformation("StripeMessageReceiver returns 200");
 
             await args.CompleteMessageAsync(args.Message);
+        }
+
+        private async Task ProcessInvoice(string stripeCustomerId, decimal amount, string currency)
+        {
+            var user = await _usersRepository.GetUserByStripeCustomerId(stripeCustomerId);
+            var merchant = await _merchantRepository.GetMerchant();
+            if (user.Address == null)
+                _logger.LogCritical($"No address for user: {user.UserEmail} found, aborting invoice generation");
+            if (merchant == null)
+                _logger.LogCritical($"No merchant found, aborting invoice generation");
+
+            var canGenerateInvoice = merchant != null && user.Address != null;
+            if (canGenerateInvoice)
+            {
+                var invoiceData = _invoiceService.GenerateInvoicePdf(amount, currency, user.Address, merchant);
+                // HACK: SEND Invoice via E-mail
+            }
         }
     }
 }
