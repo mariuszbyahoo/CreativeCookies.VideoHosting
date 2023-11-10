@@ -14,6 +14,7 @@ namespace CreativeCookies.VideoHosting.DTOs.OAuth
         /// Id of Hangfire Job, which will create a subscription in the background after 14 days cooling off period
         /// </summary>
         public string? HangfireJobId { get; set; }
+        public AddressDto? Address { get; set; }
         public MyHubUserDto(Guid id, string userEmail, string role, bool isActive, string stripeCustomerId, DateTime subscriptionStartDateUTC, DateTime subscriptionEndDateUTC, string? hangfireJobId)
         {
             Id = id;
@@ -24,6 +25,19 @@ namespace CreativeCookies.VideoHosting.DTOs.OAuth
             SubscriptionStartDateUTC = subscriptionStartDateUTC;
             SubscriptionEndDateUTC = subscriptionEndDateUTC;
             HangfireJobId = hangfireJobId;
+        }
+
+        public MyHubUserDto(Guid id, string userEmail, string role, bool isActive, string stripeCustomerId, DateTime subscriptionStartDateUTC, DateTime subscriptionEndDateUTC, string? hangfireJobId, AddressDto? address)
+        {
+            Id = id;
+            UserEmail = userEmail;
+            Role = role;
+            IsActive = isActive;
+            StripeCustomerId = stripeCustomerId;
+            SubscriptionStartDateUTC = subscriptionStartDateUTC;
+            SubscriptionEndDateUTC = subscriptionEndDateUTC;
+            HangfireJobId = hangfireJobId;
+            Address = address;
         }
     }
 }

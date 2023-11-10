@@ -16,7 +16,7 @@
   "InvalidEmail": "Invalid email",
   "PleaseEnterYourUsername": "Please enter your username",
   "UsernameAlreadyExists": "Username already exists",
-  "EmailAlreadyExists": "Email already exists",
+  "EmailAlreadyExists": "This Email address already exists in the database",
   "PasswordRequiresUniqueChars": "Password requires unique chars",
   "PasswordRequiresNonAlphanumeric": "Password requires non alphanumeric",
   "PasswordRequiresDigit": "Password requires digit",

@@ -2,13 +2,14 @@ using CreativeCookies.VideoHosting.Contracts.Enums;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.DTOs.Stripe;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 {
-    [Authorize(Roles = "admin,ADMIN")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
     public class StripeOnboardingModel : PageModel
     {
         private readonly IConnectAccountsService _connectAccountsSrv;

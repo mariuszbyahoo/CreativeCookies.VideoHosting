@@ -95,7 +95,13 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
             }
 
             var email = await _userManager.GetEmailAsync(user);
-            if (Input.NewEmail != email)
+            var isEmailAvailable = (await _userManager.FindByEmailAsync(Input.NewEmail)) == null;
+            if (Input.NewEmail.Equals(email, StringComparison.InvariantCultureIgnoreCase))
+            {
+                StatusMessage = _stringLocalizer["EmailIsUnchanged"];
+                return RedirectToPage();
+            }
+            if (isEmailAvailable)
             {
                 var userId = await _userManager.GetUserIdAsync(user);
                 var code = await _userManager.GenerateChangeEmailTokenAsync(user, Input.NewEmail);
@@ -116,10 +122,14 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
 
                 StatusMessage = $"{_stringLocalizer["EmailChangeSent"]} {Input.NewEmail}";
                 return RedirectToPage();
+            } 
+            else
+            {
+                StatusMessage = _stringLocalizer["EmailAlreadyExists"];
+                return RedirectToPage();
             }
 
-            StatusMessage = _stringLocalizer["EmailIsUnchanged"];
-            return RedirectToPage();
+
         }
 
         public async Task<IActionResult> OnPostSendVerificationEmailAsync()

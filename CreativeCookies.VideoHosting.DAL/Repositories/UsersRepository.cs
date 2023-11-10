@@ -2,6 +2,7 @@
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using CreativeCookies.VideoHosting.DAL.Contexts;
 using CreativeCookies.VideoHosting.DAL.DAOs.OAuth;
+using CreativeCookies.VideoHosting.DTOs;
 using CreativeCookies.VideoHosting.DTOs.Films;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using Microsoft.AspNetCore.Identity;
@@ -22,21 +23,41 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
 
         public async Task<MyHubUserDto> GetUserById(string userId)
         {
+            MyHubUserDto dto;
             var loweredUserId = userId.ToLower();
-            var dao = await _context.Users.Where(u => u.Id.Equals(loweredUserId)).FirstOrDefaultAsync();
+            var dao = await _context.Users.Include(dao => dao.Address).Where(u => u.Id.Equals(loweredUserId)).FirstOrDefaultAsync();
             if (dao == null)
             {
                 return null;
             }
-            var dto = new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC, dao.HangfireJobId);
+            if (dao.Address == null)
+            {
+                dto = new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC, dao.HangfireJobId);
+            }
+            else
+            {
+                var addressDto = new AddressDto(dao.Address.Id, dao.Address.FirstName, dao.Address.LastName, dao.Address.Street, dao.Address.HouseNo, dao.Address.AppartmentNo, dao.Address.PostCode, dao.Address.City, dao.Address.Country, dao.Address.UserId);
+                dto = new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC, dao.HangfireJobId, addressDto);
+            }
+            dto.Role = string.Join(",", await _userManager.GetRolesAsync(dto));
             return dto;
         }
 
         public async Task<MyHubUserDto> GetUserByStripeCustomerId(string stripeCustomerId)
         {
-            var dao = await _context.Users.Where(u => u.StripeCustomerId.Equals(stripeCustomerId)).FirstOrDefaultAsync();
-            var dto =  new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC, dao.HangfireJobId);
-            dto.Role = string.Join(",",await _userManager.GetRolesAsync(dto));
+            MyHubUserDto dto;
+            var dao = await _context.Users.Include(dao => dao.Address).Where(u => u.StripeCustomerId.Equals(stripeCustomerId)).FirstOrDefaultAsync();
+            dto =  new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC, dao.HangfireJobId);
+            if (dao.Address == null)
+            {
+                dto = new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC, dao.HangfireJobId);
+            }
+            else
+            {
+                var addressDto = new AddressDto(dao.Address.Id, dao.Address.FirstName, dao.Address.LastName, dao.Address.Street, dao.Address.HouseNo, dao.Address.AppartmentNo, dao.Address.PostCode, dao.Address.City, dao.Address.Country, dao.Address.UserId);
+                dto = new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC, dao.HangfireJobId, addressDto);
+            }
+            dto.Role = string.Join(",", await _userManager.GetRolesAsync(dto));
             return dto;
         }
 
@@ -81,7 +102,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
 
         public async Task<UsersPaginatedResultDto> GetUsersPaginatedResult(string search, int pageNumber, int pageSize, string role)
         {
-            var usersQuery = _context.Users.Where(user => string.IsNullOrEmpty(search) || user.Email.Contains(search) || user.UserName.Contains(search));
+            var usersQuery = _context.Users.Include(user => user.Address).Where(user => string.IsNullOrEmpty(search) || user.Email.Contains(search) || user.UserName.Contains(search));
             double usersCount = await usersQuery.CountAsync();
             var users = usersQuery
                 .OrderBy(user => user.Email)
@@ -104,6 +125,11 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
                     matchingRole = userRoles.First();
                 }
                 else if (!string.IsNullOrWhiteSpace(matchingRole)) toAdd = true;
+                
+                if(user.Address != null)
+                {
+                    dto.Address = new AddressDto(user.Address.Id, user.Address.FirstName, user.Address.LastName, user.Address.Street, user.Address.HouseNo, user.Address.AppartmentNo, user.Address.PostCode, user.Address.City, user.Address.Country, user.Address.UserId);
+                }
 
                 if (toAdd) result.Add(dto);
 
@@ -132,6 +158,10 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             foreach (var dao in userDAOs)
             {
                 var user = await _userManager.FindByIdAsync(dao.Id);
+                if (dao.Address != null)
+                {
+                    user.Address = new AddressDto(user.Address.Id, user.Address.FirstName, user.Address.LastName, user.Address.Street, user.Address.HouseNo, user.Address.AppartmentNo, user.Address.PostCode, user.Address.City, user.Address.Country, user.Address.UserId);
+                }
                 result.Add(user);
             }
             return result;

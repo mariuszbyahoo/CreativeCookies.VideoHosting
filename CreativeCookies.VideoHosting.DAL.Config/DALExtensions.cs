@@ -38,6 +38,7 @@ namespace CreativeCookies.VideoHosting.DAL.Config
 
             services.AddHangfire(conf => conf.UseSqlServerStorage(connectionString));
 
+            services.AddScoped<IMerchantRepository, MerchantRepository>();
             services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
             services.AddScoped<IFilmsRepository, FilmsRepository>();
             services.AddScoped<IErrorLogsRepository, ErrorLogsRepository>();
@@ -47,6 +48,7 @@ namespace CreativeCookies.VideoHosting.DAL.Config
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IClientStore, ClientStore>();
             services.AddScoped<IAboutPageRepository, AboutPageRepository>();
+            services.AddScoped<IAddressRepository, AddressRepository>();
 
             return services;
         }

@@ -10,5 +10,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories.OAuth
     public interface IAccessTokenService
     {
         public string GetNewAccessToken(Guid userId, string userEmail, Guid clientId, IConfiguration configuration, string issuer, string userRole);
+
+        public string GetUserIdFromToken(string accessToken);
     }
 }

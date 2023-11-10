@@ -20,8 +20,9 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
         public DbSet<VideoMetadata> VideosMetadata { get; set; }
         public DbSet<StripeConfig> StripeConfig { get; set; }
         public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
-
         public DbSet<AboutPageContent> AboutPageContent { get; set; }
+        public DbSet<Address> Addresses { get; set; }
+        public DbSet<Merchant> Merchant { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -31,7 +32,11 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-
+            builder.Entity<MyHubUser>()
+                .HasOne(u => u.Address)
+                .WithOne(a => a.User)
+                .HasForeignKey<Address>(a => a.UserId)
+                .IsRequired(false);
             builder.Entity<MyHubUser>().Property(s => s.StripeCustomerId).IsRequired(false);
             builder.Entity<VideoMetadata>(o =>
             {
