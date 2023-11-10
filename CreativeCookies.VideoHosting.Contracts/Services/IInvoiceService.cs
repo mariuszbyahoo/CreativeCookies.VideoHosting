@@ -11,5 +11,6 @@ namespace CreativeCookies.VideoHosting.Contracts.Services
     public interface IInvoiceService
     {
         byte[] GenerateInvoicePdf(decimal amount, string currency, AddressDto buyerAddress, MerchantDto merchant);
+        string GetInvoiceNumber();
     }
 }

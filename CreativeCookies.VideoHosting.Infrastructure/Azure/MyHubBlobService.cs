@@ -1,4 +1,5 @@
-﻿using Azure.Storage.Blobs.Models;
+﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using CreativeCookies.VideoHosting.Contracts.Azure;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Azure;
 
@@ -19,6 +20,19 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Azure
             var blobClient = containerClient.GetBlobClient(blobName);
             var result = await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
             return result.Value;
+        }
+
+        public async Task<BlobContentInfo> UploadPdfToAzureAsync(byte[] pdfContent, string fileName)
+        {
+            string containerName = "pdf-invoices";
+            BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            await containerClient.CreateIfNotExistsAsync();
+
+            BlobClient blobClient = containerClient.GetBlobClient(fileName);
+
+            using var memoryStream = new MemoryStream(pdfContent);
+            var res = await blobClient.UploadAsync(memoryStream, overwrite: true);
+            return res;
         }
     }
 }

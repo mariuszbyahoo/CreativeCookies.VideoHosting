@@ -1,4 +1,5 @@
-﻿using CreativeCookies.VideoHosting.Contracts.Services;
+﻿using CreativeCookies.VideoHosting.Contracts.Infrastructure.Azure;
+using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.DTOs;
 using DinkToPdf;
 using DocumentFormat.OpenXml.Drawing.Charts;
@@ -16,9 +17,17 @@ namespace CreativeCookies.VideoHosting.Services
     {
         private readonly IAddressService _addressSrv;
         private readonly IMerchantService _merchantSrv;
+        private readonly IMyHubBlobService _blobService;
+
+        public InvoiceService(IAddressService addressSrv, IMerchantService merchantSrv, IMyHubBlobService blobService)
+        {
+            _addressSrv = addressSrv;
+            _merchantSrv = merchantSrv;
+            _blobService = blobService;
+        }
+
+
         // HACK: GET COUNT INVOICES
-        // HACK: STORE INVOICES 
-        // HACK: MAKE AN OPTION TO RETRIEVE INVOICES
 
         public byte[] GenerateInvoicePdf(decimal amount, string currency, AddressDto buyerAddress, MerchantDto merchant)
         {
@@ -162,10 +171,14 @@ namespace CreativeCookies.VideoHosting.Services
                 }
             };
 
-            return converter.Convert(doc);
+            var result = converter.Convert(doc);
+
+            _blobService.UploadPdfToAzureAsync(result, $"{invoiceNumber}.pdf");
+
+            return result;
         }
 
-        private string GetInvoiceNumber()
+        public string GetInvoiceNumber()
         {
             return "Próbna FV212312";
         }
