@@ -157,6 +157,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddSingleton(sp => JobStorage.Current.GetMonitoringApi());
             builder.Services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
 
+            builder.Services.AddScoped<IMerchantService, MerchantService>();
             builder.Services.AddScoped<IAddressService, AddressService>();
             builder.Services.AddScoped<IStripeProductsService, StripeProductsService>();
             builder.Services.AddScoped<IFilmService, FilmService>();

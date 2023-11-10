@@ -22,6 +22,7 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
         public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
         public DbSet<AboutPageContent> AboutPageContent { get; set; }
         public DbSet<Address> Addresses { get; set; }
+        public DbSet<Merchant> Merchant { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
