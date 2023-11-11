@@ -2,6 +2,7 @@
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
+using CreativeCookies.VideoHosting.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
@@ -22,9 +23,10 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         private readonly JwtSecurityTokenHandler _tokenHandler;
         private readonly IMyHubUserManager _userManager;
         private readonly IUsersService _usersService;
+        private readonly IAddressService _addressService;
 
         public StripeCheckoutController(IConfiguration configuration, ILogger<StripeProductsController> logger, 
-            ICheckoutService checkoutService, IMyHubUserManager userManager, IUsersService usersService)
+            ICheckoutService checkoutService, IMyHubUserManager userManager, IUsersService usersService, IAddressService addressService)
         {
             _configuration = configuration;
             _logger = logger;
@@ -32,6 +34,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             _checkoutService = checkoutService;
             _userManager = userManager;
             _tokenHandler = new JwtSecurityTokenHandler();
+            _addressService = addressService;
         }
 
         [HttpPost("CreateSession")]
@@ -67,6 +70,22 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     // User has no subscription, either ongoing or scheduled
                     else if (!datesActive && !userHasSubscription && !isUserWithinCoolingOffPeriod)
                     {
+                        var address = await _addressService.GetAddress(user.Id.ToString());
+                        if (address == null && dto.Address != null)
+                        {
+                            dto.Address.Country = "Polska";
+                            var invoiceAddress = new InvoiceAddressDto(
+                                Guid.NewGuid(), dto.Address.FirstName, dto.Address.LastName, 
+                                dto.Address.Street, dto.Address.HouseNo, dto.Address.AppartmentNo, 
+                                dto.Address.PostCode, dto.Address.City, dto.Address.Country, user.Id.ToString());
+                            var res = await _addressService.UpsertAddress(invoiceAddress);
+                            
+                            if(res != 1)
+                            {
+                                return StatusCode(400, $"New address for user: {user.UserEmail} has not been added, result of upsert operation was different than 1");
+                            }
+                        }
+
                         var sessionUrl = await _checkoutService.CreateNewSession(dto.PriceId, user.StripeCustomerId, dto.HasDeclinedCoolingOffPeriod);
                         return Ok(new StripeCreateSessionResponseDto(sessionUrl));
                     }

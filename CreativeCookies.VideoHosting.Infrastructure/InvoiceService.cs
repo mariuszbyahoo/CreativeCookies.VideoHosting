@@ -20,7 +20,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure
         }
 
 
-        public async Task<Attachement> GenerateInvoicePdf(decimal amount, string currency, AddressDto buyerAddress, MerchantDto merchant)
+        public async Task<Attachement> GenerateInvoicePdf(decimal amount, string currency, InvoiceAddressDto buyerAddress, MerchantDto merchant)
         {
             var converter = new BasicConverter(new PdfTools());
             var invoiceNumber = await _invoiceNumsRepository.GetNewNumber();

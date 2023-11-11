@@ -19,6 +19,6 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure
         /// <param name="buyerAddress"></param>
         /// <param name="merchant"></param>
         /// <returns>byte[] data for pdf file</returns>
-        Task<Attachement> GenerateInvoicePdf(decimal amount, string currency, AddressDto buyerAddress, MerchantDto merchant);
+        Task<Attachement> GenerateInvoicePdf(decimal amount, string currency, InvoiceAddressDto buyerAddress, MerchantDto merchant);
     }
 }

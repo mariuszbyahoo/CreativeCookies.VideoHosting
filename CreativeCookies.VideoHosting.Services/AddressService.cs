@@ -18,12 +18,12 @@ namespace CreativeCookies.VideoHosting.Services
             _repo = repo;
         }
 
-        public async Task<AddressDto?> GetAddress(string userId)
+        public async Task<InvoiceAddressDto?> GetAddress(string userId)
         {
             return await _repo.GetAddress(userId);
         }
 
-        public async Task<int> UpsertAddress(AddressDto address)
+        public async Task<int> UpsertAddress(InvoiceAddressDto address)
         {
             var lookup = await _repo.GetAddress(address.Id);
             if(lookup == null)

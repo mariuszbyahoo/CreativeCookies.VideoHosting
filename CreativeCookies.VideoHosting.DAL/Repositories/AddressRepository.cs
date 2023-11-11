@@ -20,7 +20,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             _ctx = ctx;
         }
 
-        public async Task<int> AddAddress(AddressDto address)
+        public async Task<int> AddAddress(InvoiceAddressDto address)
         {
             var dao = new Address(address.FirstName, address.LastName, 
                 address.Street, address.HouseNo, address.PostCode, 
@@ -32,28 +32,28 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             return await _ctx.SaveChangesAsync();
         }
 
-        public async Task<AddressDto?> GetAddress(string userId)
+        public async Task<InvoiceAddressDto?> GetAddress(string userId)
         {
             var lowerCaseUserId = userId.ToLowerInvariant();
             var dao = await _ctx.Addresses.Where(a => a.UserId == lowerCaseUserId).FirstOrDefaultAsync();
             if (dao == null) return null;
-            var dto = new AddressDto(dao.Id, dao.FirstName, dao.LastName, 
+            var dto = new InvoiceAddressDto(dao.Id, dao.FirstName, dao.LastName, 
                 dao.Street, dao.HouseNo, dao.AppartmentNo, dao.PostCode, 
                 dao.City, dao.Country, dao.UserId);
             return dto;
         }
 
-        public async Task<AddressDto?> GetAddress(Guid addressId)
+        public async Task<InvoiceAddressDto?> GetAddress(Guid addressId)
         {
             var dao = await _ctx.Addresses.FindAsync(addressId);
             if (dao == null) return null;
-            var dto = new AddressDto(dao.Id, dao.FirstName, dao.LastName, 
+            var dto = new InvoiceAddressDto(dao.Id, dao.FirstName, dao.LastName, 
                 dao.Street, dao.HouseNo, dao.AppartmentNo, dao.PostCode, 
                 dao.City, dao.Country, dao.UserId);
             return dto;
         }
 
-        public async Task<int> UpdateAddress(AddressDto updatedAddress)
+        public async Task<int> UpdateAddress(InvoiceAddressDto updatedAddress)
         {
             var address = await _ctx.Addresses.FindAsync(updatedAddress.Id);
             if (address == null)

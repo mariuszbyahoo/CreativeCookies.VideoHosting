@@ -25,7 +25,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<AddressDto>> GetByUserId()
+        public async Task<ActionResult<InvoiceAddressDto>> GetByUserId()
         {
             var cookie = _httpContextAccessor.HttpContext.Request.Cookies["stac"];
             if (string.IsNullOrEmpty(cookie))
@@ -38,7 +38,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<AddressDto>> UpsertAddress([FromBody] AddressDto newAddress)
+        public async Task<ActionResult<InvoiceAddressDto>> UpsertAddress([FromBody] InvoiceAddressDto newAddress)
         {
             var cookie = _httpContextAccessor.HttpContext.Request.Cookies["stac"];
             if (string.IsNullOrEmpty(cookie))
