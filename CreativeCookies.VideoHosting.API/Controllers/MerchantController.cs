@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CreativeCookies.VideoHosting.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,admin,ADMIN")]
     public class MerchantController : ControllerBase
