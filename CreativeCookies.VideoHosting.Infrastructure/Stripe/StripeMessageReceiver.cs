@@ -29,19 +29,22 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
     {
         private readonly ServiceBusClient _serviceBusClient;
         private readonly ServiceBusProcessor _processor;
-        private readonly StripeWebhookSigningKeyWrapper _wrapper;
+        private readonly StripeWebhookSigningKeyWrapper _endpointSecretWrapper;
+        private readonly StripeSecretKeyWrapper _secretKeyWrapper;
         private readonly IBackgroundJobClient _backgroundJobClient;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger _logger;
         private readonly string _connectAccountId;
 
 
-        public StripeMessageReceiver(IBackgroundJobClient backgroundJobClient, StripeWebhookSigningKeyWrapper wrapper,
-             IServiceScopeFactory serviceScopeFactory, IConfiguration configuration, ILogger<StripeMessageReceiver> logger)
+        public StripeMessageReceiver(IBackgroundJobClient backgroundJobClient, StripeWebhookSigningKeyWrapper endpointSecretWrapper,
+             IServiceScopeFactory serviceScopeFactory, IConfiguration configuration, ILogger<StripeMessageReceiver> logger,
+              StripeSecretKeyWrapper secretKeyWrapper)
         {
             _logger = logger;
             _serviceBusClient = new ServiceBusClient(configuration.GetValue<string>("ServiceBusConnectionString"));
-            _wrapper = wrapper;
+            _endpointSecretWrapper = endpointSecretWrapper;
+            _secretKeyWrapper = secretKeyWrapper;
             _serviceScopeFactory = serviceScopeFactory;
             _backgroundJobClient = backgroundJobClient;
             _processor = _serviceBusClient.CreateProcessor("stripe_events_queue", new ServiceBusProcessorOptions());
@@ -79,8 +82,8 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             // if so - then perform
 
             _logger.LogInformation("StripeMessageReceiver called");
-            string endpointSecret = _wrapper.Value;
-
+            string endpointSecret = _endpointSecretWrapper.Value;
+            StripeConfiguration.ApiKey = _secretKeyWrapper.Value;
             try
             {
                 using (var scope = _serviceScopeFactory.CreateScope())
