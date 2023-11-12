@@ -64,12 +64,15 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         public MyHubUserDto? AssignHangfireJobIdToUser(string stripeCustomerId, string jobId)
         {
             var dao = _context.Users.Where(u => u.StripeCustomerId.Equals(stripeCustomerId)).FirstOrDefault();
-            dao.HangfireJobId = jobId;
-            var result = _context.SaveChanges();
-            if (result > 0)
+            if (dao != null)
             {
-                var dto = new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC, dao.HangfireJobId);
-                return dto;
+                dao.HangfireJobId = jobId;
+                var result = _context.SaveChanges();
+                if (result > 0)
+                {
+                    var dto = new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC, dao.HangfireJobId);
+                    return dto;
+                }
             }
             return null;
         }
@@ -77,18 +80,26 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         public bool ChangeSubscriptionEndDateUTC(string customerId, DateTime endDateUtc)
         {
             var dao = _context.Users.Where(u => u.StripeCustomerId.Equals(customerId)).FirstOrDefault();
-            dao.SubscriptionEndDateUTC = endDateUtc;
-            var result = _context.SaveChanges();
-            return result > 0;
+            if (dao != null)
+            {
+                dao.SubscriptionEndDateUTC = endDateUtc;
+                var result = _context.SaveChanges();
+                return result > 0;
+            }
+            else return false;
         }
 
         public bool ChangeSubscriptionDatesUTC(string customerId, DateTime startDateUtc, DateTime endDateUtc, bool addDelayForSubscriptions = true)
         {
             var dao = _context.Users.Where(u => u.StripeCustomerId.Equals(customerId)).FirstOrDefault();
-            dao.SubscriptionStartDateUTC = startDateUtc;
-            dao.SubscriptionEndDateUTC = addDelayForSubscriptions ? endDateUtc + TimeSpan.FromHours(3) : endDateUtc;
-            var result = _context.SaveChanges();
-            return result > 0;
+            if (dao != null)
+            {
+                dao.SubscriptionStartDateUTC = startDateUtc;
+                dao.SubscriptionEndDateUTC = addDelayForSubscriptions ? endDateUtc + TimeSpan.FromHours(3) : endDateUtc;
+                var result = _context.SaveChanges();
+                return result > 0;
+            }
+            else return false;
         }
 
         public bool AssignStripeCustomerId(string userId, string stripeCustomerId)
