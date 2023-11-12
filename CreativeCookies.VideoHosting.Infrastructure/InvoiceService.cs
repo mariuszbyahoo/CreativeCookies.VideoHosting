@@ -4,7 +4,9 @@ using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.DTOs;
 using CreativeCookies.VideoHosting.DTOs.Email;
-using DinkToPdf;
+using Microsoft.Extensions.Logging;
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
 
 namespace CreativeCookies.VideoHosting.Infrastructure
 {
@@ -12,160 +14,85 @@ namespace CreativeCookies.VideoHosting.Infrastructure
     {
         private readonly IMyHubBlobService _blobService;
         private readonly IInvoiceNumsRepository _invoiceNumsRepository;
+        private readonly ILogger<IInvoiceService> _logger;
 
-        public InvoiceService(IMyHubBlobService blobService, IInvoiceNumsRepository invoiceNumsRepo)
+        public InvoiceService(IMyHubBlobService blobService, IInvoiceNumsRepository invoiceNumsRepo, ILogger<IInvoiceService> logger)
         {
             _blobService = blobService;
             _invoiceNumsRepository = invoiceNumsRepo;
+            _logger = logger;
         }
-
 
         public async Task<Attachement> GenerateInvoicePdf(decimal amount, string currency, InvoiceAddressDto buyerAddress, MerchantDto merchant)
         {
-            var converter = new BasicConverter(new PdfTools());
+            _logger.LogInformation($"Starting invoice generation to: {buyerAddress.FirstName} {buyerAddress.LastName}");
             var invoiceNumber = await _invoiceNumsRepository.GetNewNumber();
             var merchantHouseNoLine = $"{merchant.HouseNo} " + (merchant.AppartmentNo != null ? $"lok. {merchant.AppartmentNo}" : "");
             var buyerHouseNoLine = $"{buyerAddress.HouseNo} " + (buyerAddress.AppartmentNo != null ? $"lok. {buyerAddress.AppartmentNo}" : "");
-            var nettAmount = amount/1.23m / 100;
+            var merchantAddress = $"{merchant.Street} {merchantHouseNoLine}, {merchant.PostCode}, {merchant.City}, {merchant.Country}";
+            var buyerAddressLine = $"{buyerAddress.Street} {buyerHouseNoLine}, {buyerAddress.PostCode}, {buyerAddress.City}, {buyerAddress.Country}";
+            var nettAmount = amount / 1.23m / 100;
             var grossAmount = amount / 100;
             var nettAmountTxt = nettAmount.ToString("N2");
             var grossAmountTxt = grossAmount.ToString("N2");
+            // Create a new PDF document
+            PdfDocument document = new PdfDocument();
+            document.Info.Title = "Generated Invoice";
 
-            var htmlContent = $@"
-            <!DOCTYPE html>
-            <html lang=""en"">
-            <head>
-            <meta charset=""UTF-8"">
-            <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-            <title>Invoice</title>
-            <style>
-              body {{
-                font-family: 'Arial', sans-serif;
-                margin: 0;
-                padding: 0;
-                background-color: #ffd700;
-              }}
-              .container {{
-                padding: 20px;
-                background: #ffd700; /* This is a yellow background */
-              }}
-              .header {{
-                text-align: center;
-                margin-bottom: 30px;
-              }}
-              .invoice-number {{
-                text-align: right;
-                margin-bottom: 20px;
-              }}
-              .info {{
-                margin-bottom: 20px;
-              }}
-              .info p {{
-                margin: 0;
-              }}
-              .info-section {{
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 20px;
-              }}
-              .info-block {{
-                flex-basis: 48%;
-              }}
-              .details-table {{
-                width: 100%;
-                border-collapse: collapse;
-              }}
-              .details-table th, .details-table td {{
-                border: 1px solid #000;
-                padding: 8px;
-                text-align: left;
-              }}
-              .total {{
-                text-align: right;
-                margin-top: 20px;
-              }}
-            </style>
-            </head>
-            <body>
-              <div class=""container"">
-                <div class=""header"">
-                  <img src=""path-to-your-logo.png"" alt=""MyHub Logo"">
-                  <h2>Faktura VAT nr. {invoiceNumber}</h2>
-                </div>
-                <div class=""invoice-number"">
-                  <p>Wystawiona przez:</p>
-                  <p>Creative Cookies sp. z o.o.</p>
-                  <p>ul. Dunikowskiego 8, 05-501 Piaseczno, Polska</p>
-                  <p>NIP 1231479701 REGON 387576303</p>
-                </div>
-                <div class=""info-section"">
-                  <div class=""info-block"">
-                    <h4>Sprzedawca:</h4>
-                    <p>{merchant.CompanyName}</p>
-                    <p>NIP: {merchant.CompanyTaxId}</p>
-                    <p>{merchant.Street} {merchantHouseNoLine}</p>
-                    <p>{merchant.PostCode}, {merchant.City}, {merchant.Country}</p>
-                  </div>
-                  <div class=""info-block"">
-                    <h4>Kupujący:</h4>
-                    <p>{buyerAddress.FirstName} {buyerAddress.LastName}, {buyerAddress.Street}, {buyerHouseNoLine}</p>
-                    <p>{buyerAddress.PostCode}, {buyerAddress.City}, {buyerAddress.Country}</p>
-                  </div>
-                </div>
-                <div class=""info"">
-                  <p>Data wystawienia: {DateTime.UtcNow.Date}</p>
-                  <p>Data sprzedaży: {DateTime.UtcNow.Date}</p>
-                </div>
-                <table class=""details-table"">
-                  <thead>
-                    <tr>
-                      <th>Ilość</th>
-                      <th>Usługa</th>
-                      <th>Netto</th>
-                      <th>VAT</th>
-                      <th>Brutto</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>1.</td>
-                      <td>Subskrypcja</td>
-                      <td>{nettAmountTxt} {currency.ToUpper()}</td>
-                      <td>23%</td>
-                      <td>{grossAmountTxt} {currency.ToUpper()}</td>
-                    </tr>
-                  </tbody>
-                </table>
-                <div class=""total"">
-                  <p>Kwota należna ogółem: {grossAmountTxt} {currency.ToUpper()}</p>
-                </div>
-              </div>
-            </body>
-            </html>";
+            // Add a page
+            PdfPage page = document.AddPage();
+            page.Size = PdfSharp.PageSize.A4;
+            page.Orientation = PdfSharp.PageOrientation.Portrait;
 
-            var doc = new HtmlToPdfDocument()
-            {
-                GlobalSettings = {
-                    ColorMode = DinkToPdf.ColorMode.Color,
-                    Orientation = DinkToPdf.Orientation.Portrait,
-                    PaperSize = DinkToPdf.PaperKind.A4,
-            },
-                Objects = {
-                    new ObjectSettings()
-                    {
-                        PagesCount = true,
-                        HtmlContent = htmlContent,
-                        WebSettings = { DefaultEncoding = "utf-8" },
-                        HeaderSettings = { /* ... */ },
-                        FooterSettings = { /* ... */ }
-                    }
-                }
-            };
+            // Get an XGraphics object for drawing
+            XGraphics gfx = XGraphics.FromPdfPage(page);
 
-            var pdfFileAsBytes = converter.Convert(doc);
+            // Create fonts
+            XFont titleFont = new XFont("Helvetica", 20, XFontStyleEx.Bold);
+            XFont headerFont = new XFont("Helvetica", 14, XFontStyleEx.Bold);
+            XFont regularFont = new XFont("Helvetica", 10);
 
-            var uploadRes = await _blobService.UploadPdfToAzureAsync(pdfFileAsBytes, $"{invoiceNumber}.pdf");
-            var result = new Attachement(invoiceNumber, pdfFileAsBytes);
+            // Define the colors
+            XBrush brush = new XSolidBrush(XColor.FromArgb(255, 255, 215)); // Background color (Gold)
+            XBrush blackBrush = new XSolidBrush(XColor.FromArgb(0, 0, 0)); // Text color (Black)
+
+            // Draw the background
+            gfx.DrawRectangle(brush, 0, 0, page.Width, page.Height);
+
+            // Draw the title
+            gfx.DrawString($"Faktura VAT nr. {invoiceNumber}", titleFont, blackBrush, new XRect(0, 50, page.Width, page.Height), XStringFormats.TopCenter);
+
+            // Draw the header
+            gfx.DrawString($"Wystawiona przez:\n{merchant.CompanyName}\n{merchantAddress}\nNIP {merchant.CompanyTaxId}", headerFont, blackBrush, new XRect(40, 120, page.Width, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString($"Kupujący:\n{buyerAddress.FirstName} {buyerAddress.LastName}\n{buyerAddressLine}", headerFont, blackBrush, new XRect(page.Width - 250, 120, page.Width, page.Height), XStringFormats.TopLeft);
+
+            // Draw the table headers
+            var tableStartY = 250;
+            gfx.DrawString("Ilość", regularFont, blackBrush, new XRect(40, tableStartY, 50, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Usługa", regularFont, blackBrush, new XRect(100, tableStartY, 50, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Netto", regularFont, blackBrush, new XRect(250, tableStartY, 50, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("VAT", regularFont, blackBrush, new XRect(350, tableStartY, 50, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Brutto", regularFont, blackBrush, new XRect(450, tableStartY, page.Width, page.Height), XStringFormats.TopLeft);
+
+            // Draw the table content
+            gfx.DrawString("1.", regularFont, blackBrush, new XRect(40, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Subskrypcja", regularFont, blackBrush, new XRect(100, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString($"{nettAmountTxt} {currency}", regularFont, blackBrush, new XRect(250, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString($"23%", regularFont, blackBrush, new XRect(350, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString($"{grossAmountTxt} {currency}", regularFont, blackBrush, new XRect(450, tableStartY + 20, page.Width, page.Height), XStringFormats.TopLeft);
+
+            // Draw the total
+            gfx.DrawString($"Kwota należna ogółem: {grossAmount.ToString("N2")} {currency}", regularFont, blackBrush, new XRect(40, tableStartY + 80, page.Width, page.Height), XStringFormats.TopLeft);
+
+            // Save the document into a MemoryStream
+            MemoryStream stream = new MemoryStream();
+            document.Save(stream, false);
+            _logger.LogInformation($"Generated an invoice number: {invoiceNumber}");
+
+            var uploadRes = await _blobService.UploadPdfToAzureAsync(stream.ToArray(), $"{invoiceNumber}.pdf");
+            _logger.LogInformation($"Uploaded an invoice number: {invoiceNumber} to Azure Container");
+            _logger.LogInformation($"Retunrning invoice: {invoiceNumber} from the method");
+            var result = new Attachement(invoiceNumber, stream.ToArray());
             return result;
         }
     }
