@@ -6,6 +6,7 @@ using CreativeCookies.VideoHosting.DTOs;
 using CreativeCookies.VideoHosting.DTOs.Email;
 using Microsoft.Extensions.Logging;
 using PdfSharp.Drawing;
+using PdfSharp.Fonts;
 using PdfSharp.Pdf;
 
 namespace CreativeCookies.VideoHosting.Infrastructure
@@ -25,6 +26,8 @@ namespace CreativeCookies.VideoHosting.Infrastructure
 
         public async Task<Attachement> GenerateInvoicePdf(decimal amount, string currency, InvoiceAddressDto buyerAddress, MerchantDto merchant)
         {
+            GlobalFontSettings.FontResolver = new FileFontResolver();
+            
             _logger.LogInformation($"Starting invoice generation to: {buyerAddress.FirstName} {buyerAddress.LastName}");
             var invoiceNumber = await _invoiceNumsRepository.GetNewNumber();
             var merchantHouseNoLine = $"{merchant.HouseNo} " + (merchant.AppartmentNo != null ? $"lok. {merchant.AppartmentNo}" : "");
@@ -48,9 +51,9 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             XGraphics gfx = XGraphics.FromPdfPage(page);
 
             // Create fonts
-            XFont titleFont = new XFont("Helvetica", 20, XFontStyleEx.Bold);
-            XFont headerFont = new XFont("Helvetica", 14, XFontStyleEx.Bold);
-            XFont regularFont = new XFont("Helvetica", 10);
+            XFont titleFont = new XFont("Default", 20, XFontStyleEx.Bold);
+            XFont headerFont = new XFont("Default", 14, XFontStyleEx.Bold);
+            XFont regularFont = new XFont("Default", 10);
 
             // Define the colors
             XBrush brush = new XSolidBrush(XColor.FromArgb(255, 255, 215)); // Background color (Gold)
