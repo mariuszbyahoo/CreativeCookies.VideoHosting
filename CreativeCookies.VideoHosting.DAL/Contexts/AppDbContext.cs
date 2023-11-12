@@ -37,7 +37,9 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
                 .HasOne(u => u.Address)
                 .WithOne(a => a.User)
                 .HasForeignKey<Address>(a => a.UserId)
-                .IsRequired(false);
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Cascade);
+            ;
             builder.Entity<MyHubUser>().Property(s => s.StripeCustomerId).IsRequired(false);
             builder.Entity<VideoMetadata>(o =>
             {
