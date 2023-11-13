@@ -102,6 +102,7 @@ namespace CreativeCookies.VideoHosting.API.Helpers
         {
             try
             {
+                _logger.LogInformation($"Starting SendMessage()");
                 var emailMessage = new MimeMessage();
 
                 emailMessage.From.Add(MailboxAddress.Parse(_senderEmail));
@@ -125,7 +126,8 @@ namespace CreativeCookies.VideoHosting.API.Helpers
                     await client.ConnectAsync(_smtpHost, _smtpPort, SecureSocketOptions.StartTls);
                     await client.AuthenticateAsync(_senderEmail, _smtpPass);
 
-                    await client.SendAsync(emailMessage);
+                    var res = await client.SendAsync(emailMessage);
+                    _logger.LogInformation($"SMTPClient.SendAsync(emailMessage) result: {res}");
                     await client.DisconnectAsync(true);
                 }
                 return true;

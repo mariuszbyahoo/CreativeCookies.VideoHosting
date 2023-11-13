@@ -237,8 +237,8 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 
         private async Task ProcessInvoice(string stripeCustomerId, decimal amount, string currency)
         {
-            MyHubUserDto user;
-            MerchantDto merchant;
+            MyHubUserDto? user;
+            MerchantDto? merchant;
             using (var scope = _serviceScopeFactory.CreateScope())
             {
                 var usersRepo = scope.ServiceProvider.GetRequiredService<IUsersRepository>();
@@ -260,9 +260,11 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                     var invoiceService = scope.ServiceProvider.GetRequiredService<IInvoiceService>();
                     var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
 
+                    _logger.LogInformation($"Starting Invoice generation, is emailService null? {emailService == null}");
                     var invoiceData = await invoiceService.GenerateInvoicePdf(amount, currency, user.Address, merchant);
-
-                    await emailService.SendInvoiceAsync(user.UserEmail, invoiceData.InvoiceNumber, "TODOWebsiteName", invoiceData);
+                    _logger.LogInformation($"Invoice {invoiceData.InvoiceNumber}, generated successfully");
+                    var res = await emailService.SendInvoiceAsync(user.UserEmail, invoiceData.InvoiceNumber, "TODOWebsiteName", invoiceData);
+                    _logger.LogInformation($"Invoice generation finished, result of IEmailService.SendInvoiceAsync(args) = {res}");
                 }
             }
         }
