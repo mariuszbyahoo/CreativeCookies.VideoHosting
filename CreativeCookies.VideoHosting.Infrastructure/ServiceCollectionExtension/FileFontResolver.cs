@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Infrastructure
+namespace CreativeCookies.VideoHosting.Infrastructure.ServiceCollectionExtension
 {
-    internal class FileFontResolver : IFontResolver 
+    internal class FileFontResolver : IFontResolver
     {
         public string DefaultFontName => "Default";
 

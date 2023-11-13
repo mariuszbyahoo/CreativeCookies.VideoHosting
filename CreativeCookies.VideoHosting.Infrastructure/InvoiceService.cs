@@ -25,9 +25,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure
         }
 
         public async Task<Attachement> GenerateInvoicePdf(decimal amount, string currency, InvoiceAddressDto buyerAddress, MerchantDto merchant)
-        {
-            GlobalFontSettings.FontResolver = new FileFontResolver();
-            
+        {            
             _logger.LogInformation($"Starting invoice generation to: {buyerAddress.FirstName} {buyerAddress.LastName}");
             var invoiceNumber = await _invoiceNumsRepository.GetNewNumber();
             var merchantHouseNoLine = $"{merchant.HouseNo} " + (merchant.AppartmentNo != null ? $"lok. {merchant.AppartmentNo}" : "");
