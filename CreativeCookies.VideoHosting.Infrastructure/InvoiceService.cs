@@ -51,6 +51,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             // Create fonts
             XFont titleFont = new XFont("Default", 20, XFontStyleEx.Bold);
             XFont headerFont = new XFont("Default", 14, XFontStyleEx.Bold);
+            XFont regularBoldFont = new XFont("Default", 10, XFontStyleEx.Bold);
             XFont regularFont = new XFont("Default", 10);
 
             // Define the colors
@@ -115,11 +116,11 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             int columnSpacing = 70; // Adjust the spacing between the columns as needed
 
             // Draw the table headers with adjusted positions
-            gfx.DrawString("Ilość", regularFont, blackBrush, new XRect(leftMargin, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString("Usługa", regularFont, blackBrush, new XRect(leftMargin + columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString("Netto", regularFont, blackBrush, new XRect(leftMargin + 3 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString("VAT", regularFont, blackBrush, new XRect(leftMargin + 4 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString("Brutto", regularFont, blackBrush, new XRect(leftMargin + 5 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Ilość", regularBoldFont, blackBrush, new XRect(leftMargin, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Usługa", regularBoldFont, blackBrush, new XRect(leftMargin + columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Netto", regularBoldFont, blackBrush, new XRect(leftMargin + 3 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("VAT", regularBoldFont, blackBrush, new XRect(leftMargin + 4 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Brutto", regularBoldFont, blackBrush, new XRect(leftMargin + 5 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
 
             // Draw the table content
             gfx.DrawString("1.", regularFont, blackBrush, new XRect(40, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
