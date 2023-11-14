@@ -51,7 +51,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             // Create fonts
             XFont titleFont = new XFont("Default", 20, XFontStyleEx.Bold);
             XFont headerFont = new XFont("Default", 14, XFontStyleEx.Bold);
-            XFont regularBoldFont = new XFont("Default", 10, XFontStyleEx.Bold);
+            XFont upperRegularBoldFont = new XFont("Default", 12, XFontStyleEx.Bold);
             XFont regularFont = new XFont("Default", 10);
 
             // Define the colors
@@ -72,55 +72,54 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             // Define the page layout margins
             var leftMargin = 40;
             var rightMargin = (int)page.Width - 40; // Adjust as needed
-            var topMargin = 120;
             var columnWidth = (int)page.Width / 3; // Middle point of the page for two-column layout
 
             gfx.DrawString("Wystawione przez:", headerFont, blackBrush, new XRect(leftMargin, issuerYPos, columnWidth, page.Height), XStringFormats.TopLeft);
-            issuerYPos += lineSpacing;
-            gfx.DrawString("Creative Cookies sp. z o.o.", regularFont, blackBrush, new XRect(leftMargin, issuerYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
-            issuerYPos += lineSpacing;
-            gfx.DrawString("ul. Dunikowskiego 8" + " " + merchantHouseNoLine, regularFont, blackBrush, new XRect(leftMargin, issuerYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
-            issuerYPos += lineSpacing;
-            gfx.DrawString("05-501 Piaseczno", regularFont, blackBrush, new XRect(leftMargin, issuerYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
-            issuerYPos += lineSpacing;
-            gfx.DrawString("Polska", regularFont, blackBrush, new XRect(leftMargin, issuerYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
-            issuerYPos += lineSpacing;
-            gfx.DrawString("VAT EU 1231479701", regularFont, blackBrush, new XRect(leftMargin, issuerYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString("Creative Cookies sp. z o.o.", regularFont, blackBrush, new XRect(leftMargin, issuerYPos + lineSpacing, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString("ul. Dunikowskiego 8" + " " + merchantHouseNoLine, regularFont, blackBrush, new XRect(leftMargin, issuerYPos + (lineSpacing * 2), columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString("05-501 Piaseczno", regularFont, blackBrush, new XRect(leftMargin, issuerYPos + (lineSpacing * 3), columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString("Polska", regularFont, blackBrush, new XRect(leftMargin, issuerYPos + (lineSpacing * 4), columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString("VAT EU 1231479701", regularFont, blackBrush, new XRect(leftMargin, issuerYPos + (lineSpacing * 5), columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
 
+            gfx.DrawString("Data wystawienia:", upperRegularBoldFont, blackBrush, new XRect(leftMargin + columnWidth, issuerYPos, columnWidth, page.Height));
+            gfx.DrawString(DateTime.UtcNow.ToShortDateString(), upperRegularBoldFont, blackBrush, new XRect(leftMargin + columnWidth, issuerYPos + lineSpacing, columnWidth, page.Height));
+
+            gfx.DrawString("Data sprzedaży:", upperRegularBoldFont, blackBrush, new XRect(leftMargin + (columnWidth * 2), issuerYPos, columnWidth, page.Height));
+            gfx.DrawString(DateTime.UtcNow.ToShortDateString(), upperRegularBoldFont, blackBrush, new XRect(leftMargin + (columnWidth * 2), issuerYPos + lineSpacing, columnWidth, page.Height));
 
             // Draw the header for the seller
-            gfx.DrawString("Sprzedawca:", headerFont, blackBrush, new XRect(leftMargin, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString("Sprzedawca:", headerFont, blackBrush, new XRect(leftMargin + columnWidth, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
             merchantYPos += lineSpacing;
-            gfx.DrawString(merchant.CompanyName, regularFont, blackBrush, new XRect(leftMargin, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString(merchant.CompanyName, regularFont, blackBrush, new XRect(leftMargin + columnWidth, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
             merchantYPos += lineSpacing;
-            gfx.DrawString(merchant.Street + " " + merchantHouseNoLine, regularFont, blackBrush, new XRect(leftMargin, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString(merchant.Street + " " + merchantHouseNoLine, regularFont, blackBrush, new XRect(leftMargin + columnWidth, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
             merchantYPos += lineSpacing;
-            gfx.DrawString(merchant.PostCode + " " + merchant.City, regularFont, blackBrush, new XRect(leftMargin, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString(merchant.PostCode + " " + merchant.City, regularFont, blackBrush, new XRect(leftMargin + columnWidth, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
             merchantYPos += lineSpacing;
-            gfx.DrawString(merchant.Country, regularFont, blackBrush, new XRect(leftMargin, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString(merchant.Country, regularFont, blackBrush, new XRect(leftMargin + columnWidth, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
             merchantYPos += lineSpacing;
-            gfx.DrawString("NIP " + merchant.CompanyTaxId, regularFont, blackBrush, new XRect(leftMargin, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString("NIP " + merchant.CompanyTaxId, regularFont, blackBrush, new XRect(leftMargin + columnWidth, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
 
             // Draw the header for the buyer
-            gfx.DrawString("Kupujący:", headerFont, blackBrush, new XRect(columnWidth, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString("Kupujący:", headerFont, blackBrush, new XRect(leftMargin + columnWidth * 2, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
             buyerYPos += lineSpacing;
-            gfx.DrawString(buyerAddress.FirstName + " " + buyerAddress.LastName, regularFont, blackBrush, new XRect(columnWidth, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString(buyerAddress.FirstName + " " + buyerAddress.LastName, regularFont, blackBrush, new XRect(leftMargin + columnWidth * 2, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
             buyerYPos += lineSpacing;
-            gfx.DrawString(buyerAddress.Street + " " + buyerHouseNoLine, regularFont, blackBrush, new XRect(columnWidth, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString(buyerAddress.Street + " " + buyerHouseNoLine, regularFont, blackBrush, new XRect(leftMargin + columnWidth * 2, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
             buyerYPos += lineSpacing;
-            gfx.DrawString(buyerAddress.PostCode + " " + buyerAddress.City, regularFont, blackBrush, new XRect(columnWidth, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString(buyerAddress.PostCode + " " + buyerAddress.City, regularFont, blackBrush, new XRect(leftMargin + columnWidth * 2, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
             buyerYPos += lineSpacing;
-            gfx.DrawString(buyerAddress.Country, regularFont, blackBrush, new XRect(columnWidth, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString(buyerAddress.Country, regularFont, blackBrush, new XRect(leftMargin + columnWidth * 2, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
 
             int tableStartY = 370;
             int columnSpacing = 70; // Adjust the spacing between the columns as needed
 
             // Draw the table headers with adjusted positions
-            gfx.DrawString("Ilość", regularBoldFont, blackBrush, new XRect(leftMargin, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString("Usługa", regularBoldFont, blackBrush, new XRect(leftMargin + columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString("Netto", regularBoldFont, blackBrush, new XRect(leftMargin + 3 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString("VAT", regularBoldFont, blackBrush, new XRect(leftMargin + 4 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString("Brutto", regularBoldFont, blackBrush, new XRect(leftMargin + 5 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Ilość", upperRegularBoldFont, blackBrush, new XRect(leftMargin, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Usługa", upperRegularBoldFont, blackBrush, new XRect(leftMargin + columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Netto", upperRegularBoldFont, blackBrush, new XRect(leftMargin + 3 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("VAT", upperRegularBoldFont, blackBrush, new XRect(leftMargin + 4 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Brutto", upperRegularBoldFont, blackBrush, new XRect(leftMargin + 5 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
 
             // Draw the table content
             gfx.DrawString("1.", regularFont, blackBrush, new XRect(40, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
