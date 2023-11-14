@@ -189,10 +189,16 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 
                                     var res = userRepo.ChangeSubscriptionDatesUTC(checkoutSession.CustomerId, subscriptionStartDate, subscriptionEndDate);
 
-                                    if (res) _logger.LogInformation($"Subscription dates range for a Stripe Customer id: {checkoutSession.CustomerId} updated to {subscriptionStartDate} - {subscriptionEndDate}");
-                                    else _logger.LogError($"Database result of SubscriptionEndDateUTC update was false for customer with id: {checkoutSession.CustomerId}");
-
-                                    await ProcessInvoice(checkoutSession.CustomerId, paymentIntent.AmountReceived, paymentIntent.Currency);
+                                    if (res) { _logger.LogInformation($"Subscription dates range for a Stripe Customer id: {checkoutSession.CustomerId} updated to {subscriptionStartDate} - {subscriptionEndDate}"); }
+                                    else { _logger.LogError($"Database result of SubscriptionEndDateUTC update was false for customer with id: {checkoutSession.CustomerId}"); }
+                                    try
+                                    {
+                                        await ProcessInvoice(checkoutSession.CustomerId, paymentIntent.AmountReceived, paymentIntent.Currency);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError(ex, $"An exception occured while generating an invoice for {checkoutSession.CustomerId}");
+                                    }
                                 }
                                 _logger.LogInformation($"Session completed for a subscription with mode of: {checkoutSession.Mode}");
                             }
