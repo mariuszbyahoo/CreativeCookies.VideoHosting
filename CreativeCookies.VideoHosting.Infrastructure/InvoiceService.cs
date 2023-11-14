@@ -79,7 +79,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             issuerYPos += lineSpacing;
             gfx.DrawString("Creative Cookies sp. z o.o.", regularFont, blackBrush, new XRect(leftMargin, issuerYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
             issuerYPos += lineSpacing;
-            gfx.DrawString("ul. Dunikowskiego 8" + " " + merchantHouseNoLine, regularFont, blackBrush, new XRect(leftMargin, issuerYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString("ul. Dunikowskiego 8", regularFont, blackBrush, new XRect(leftMargin, issuerYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
             issuerYPos += lineSpacing;
             gfx.DrawString("05-501 Piaseczno", regularFont, blackBrush, new XRect(leftMargin, issuerYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
             issuerYPos += lineSpacing;
