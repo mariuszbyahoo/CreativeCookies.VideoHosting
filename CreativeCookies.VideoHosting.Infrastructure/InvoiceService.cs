@@ -36,7 +36,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             var merchantAddress = $"{merchant.Street} {merchantHouseNoLine}, {merchant.PostCode}, {merchant.City}, {merchant.Country}";
             var buyerAddressLine = $"{buyerAddress.Street} {buyerHouseNoLine}, {buyerAddress.PostCode}, {buyerAddress.City}, {buyerAddress.Country}";
             if (isVATExempt) {
-                nettAmount = amount;
+                nettAmount = amount /100;
                 vatRate = "zw.";
             }
             else
@@ -48,6 +48,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             var vatAmount = grossAmount - nettAmount;
             var nettAmountTxt = nettAmount.ToString("N2");
             var grossAmountTxt = grossAmount.ToString("N2");
+            var vatAmountTxt = vatAmount.ToString("N2");
             // Create a new PDF document
             PdfDocument document = new PdfDocument();
             document.Info.Title = $"Faktura VAT nr. {invoiceNumber}";
@@ -108,42 +109,42 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             merchantYPos += lineSpacing;
             gfx.DrawString(merchant.CompanyName, regularFont, blackBrush, new XRect(leftMargin, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
             merchantYPos += lineSpacing;
-            gfx.DrawString(merchant.Street + " " + merchantHouseNoLine, regularFont, blackBrush, new XRect(leftMargin, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString($"{merchant.Street} {merchantHouseNoLine}", regularFont, blackBrush, new XRect(leftMargin, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
             merchantYPos += lineSpacing;
-            gfx.DrawString(merchant.PostCode + " " + merchant.City, regularFont, blackBrush, new XRect(leftMargin, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString($"{merchant.PostCode} {merchant.City}", regularFont, blackBrush, new XRect(leftMargin, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
             merchantYPos += lineSpacing;
             gfx.DrawString(merchant.Country, regularFont, blackBrush, new XRect(leftMargin, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
             merchantYPos += lineSpacing;
-            gfx.DrawString("NIP " + merchant.CompanyTaxId, regularFont, blackBrush, new XRect(leftMargin, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString($"NIP {merchant.CompanyTaxId}", regularFont, blackBrush, new XRect(leftMargin, merchantYPos, columnWidth - leftMargin, lineSpacing), XStringFormats.TopLeft);
 
             // Draw the header for the buyer
-            gfx.DrawString("Kupujący:", headerFont, blackBrush, new XRect(columnWidth, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString("Kupujący:", headerFont, blackBrush, new XRect(columnWidth*2, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
             buyerYPos += lineSpacing;
-            gfx.DrawString(buyerAddress.FirstName + " " + buyerAddress.LastName, regularFont, blackBrush, new XRect(columnWidth, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString(buyerAddress.FirstName + " " + buyerAddress.LastName, regularFont, blackBrush, new XRect(columnWidth * 2, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
             buyerYPos += lineSpacing;
-            gfx.DrawString(buyerAddress.Street + " " + buyerHouseNoLine, regularFont, blackBrush, new XRect(columnWidth, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString(buyerAddress.Street + " " + buyerHouseNoLine, regularFont, blackBrush, new XRect(columnWidth * 2, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
             buyerYPos += lineSpacing;
-            gfx.DrawString(buyerAddress.PostCode + " " + buyerAddress.City, regularFont, blackBrush, new XRect(columnWidth, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString(buyerAddress.PostCode + " " + buyerAddress.City, regularFont, blackBrush, new XRect(columnWidth * 2, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
             buyerYPos += lineSpacing;
-            gfx.DrawString(buyerAddress.Country, regularFont, blackBrush, new XRect(columnWidth, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
+            gfx.DrawString(buyerAddress.Country, regularFont, blackBrush, new XRect(columnWidth * 2, buyerYPos, rightMargin - columnWidth, lineSpacing), XStringFormats.TopLeft);
 
             int tableStartY = 480;
             int columnSpacing = 70; // Adjust the spacing between the columns as needed
 
             // Draw the table headers with adjusted positions
-            gfx.DrawString("Ilość", regularFontBold, blackBrush, new XRect(leftMargin, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString("Usługa", regularFontBold, blackBrush, new XRect(leftMargin + columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString("Netto", regularFontBold, blackBrush, new XRect(leftMargin + 3 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString("Stawka VAT", regularFontBold, blackBrush, new XRect(leftMargin + 4 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString("Wartość VAT", regularFontBold, blackBrush, new XRect(leftMargin + 4 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString("Brutto", regularFontBold, blackBrush, new XRect(leftMargin + 5 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Ilość", regularFontBold, blackBrush, new XRect(40, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Usługa", regularFontBold, blackBrush, new XRect(100, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Netto", regularFontBold, blackBrush, new XRect(175, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Stawka VAT", regularFontBold, blackBrush, new XRect(250, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Wartość VAT", regularFontBold, blackBrush, new XRect(325, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Brutto", regularFontBold, blackBrush, new XRect(450, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
 
             // Draw the table content
             gfx.DrawString("1.", regularFont, blackBrush, new XRect(40, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
             gfx.DrawString("Subskrypcja", regularFont, blackBrush, new XRect(100, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString($"{nettAmountTxt} {currency}", regularFont, blackBrush, new XRect(250, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString(vatRate, regularFont, blackBrush, new XRect(350, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString(vatAmount.ToString(), regularFont, blackBrush, new XRect(380, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString($"{nettAmountTxt} {currency}", regularFont, blackBrush, new XRect(175, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString(vatRate, regularFont, blackBrush, new XRect(250, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString($"{vatAmountTxt} {currency}", regularFont, blackBrush, new XRect(325, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
             gfx.DrawString($"{grossAmountTxt} {currency}", regularFont, blackBrush, new XRect(450, tableStartY + 20, page.Width, page.Height), XStringFormats.TopLeft);
 
             // Draw the total

@@ -14,7 +14,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure
         /// <summary>
         /// Generates an invoice and uploads it to Blob storage associated with MyHub
         /// </summary>
-        /// <param name="amount"></param>
+        /// <param name="amount">Amount in smallest currency unit (example: cents)</param>
         /// <param name="currency"></param>
         /// <param name="isVATExempt"></param>
         /// <param name="buyerAddress"></param>
