@@ -16,10 +16,9 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure
         /// </summary>
         /// <param name="amount">Amount in smallest currency unit (example: cents)</param>
         /// <param name="currency"></param>
-        /// <param name="isVATExempt"></param>
         /// <param name="buyerAddress"></param>
         /// <param name="merchant"></param>
         /// <returns>byte[] data for pdf file</returns>
-        Task<Attachement> GenerateInvoicePdf(decimal amount, string currency, bool isVATExempt, InvoiceAddressDto buyerAddress, MerchantDto merchant);
+        Task<Attachement> GenerateInvoicePdf(decimal amount, string currency, InvoiceAddressDto buyerAddress, MerchantDto merchant);
     }
 }

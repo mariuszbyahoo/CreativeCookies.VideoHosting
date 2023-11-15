@@ -25,7 +25,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             _logger = logger;
         }
 
-        public async Task<Attachement> GenerateInvoicePdf(decimal amount, string currency, bool isVATExempt, InvoiceAddressDto buyerAddress, MerchantDto merchant)
+        public async Task<Attachement> GenerateInvoicePdf(decimal amount, string currency, InvoiceAddressDto buyerAddress, MerchantDto merchant)
         {
             _logger.LogInformation($"Starting invoice generation to: {buyerAddress.FirstName} {buyerAddress.LastName}");
             decimal nettAmount;
@@ -35,7 +35,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             var buyerHouseNoLine = $"{buyerAddress.HouseNo} " + (buyerAddress.AppartmentNo != null ? $"lok. {buyerAddress.AppartmentNo}" : "");
             var merchantAddress = $"{merchant.Street} {merchantHouseNoLine}, {merchant.PostCode}, {merchant.City}, {merchant.Country}";
             var buyerAddressLine = $"{buyerAddress.Street} {buyerHouseNoLine}, {buyerAddress.PostCode}, {buyerAddress.City}, {buyerAddress.Country}";
-            if (isVATExempt) {
+            if (merchant.IsVATExempt) {
                 nettAmount = amount /100;
                 vatRate = "zw.";
             }
