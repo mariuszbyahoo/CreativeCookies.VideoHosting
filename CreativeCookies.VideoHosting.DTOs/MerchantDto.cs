@@ -19,7 +19,9 @@ namespace CreativeCookies.VideoHosting.DTOs
         public string City { get; set; }
         public string Country { get; set; }
 
-        public MerchantDto(int id, string companyName, string companyTaxId, string street, string houseNo, int? appartmentNo, string postCode, string city, string country)
+        public bool IsVATExempt { get; set; }
+
+        public MerchantDto(int id, string companyName, string companyTaxId, string street, string houseNo, int? appartmentNo, string postCode, string city, string country, bool isVatExempt)
         {
             Id = id;
             CompanyName = companyName;
@@ -30,6 +32,7 @@ namespace CreativeCookies.VideoHosting.DTOs
             PostCode = postCode;
             City = city;
             Country = country;
+            IsVATExempt = isVatExempt;
         }
     }
 }

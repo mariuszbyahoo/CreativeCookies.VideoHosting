@@ -267,7 +267,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                     var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
 
                     _logger.LogInformation($"Starting Invoice generation, is emailService null? {emailService == null}");
-                    var invoiceData = await invoiceService.GenerateInvoicePdf(amount, currency, user.Address, merchant);
+                    var invoiceData = await invoiceService.GenerateInvoicePdf(amount, currency, true, user.Address, merchant);
                     _logger.LogInformation($"Invoice {invoiceData.InvoiceNumber}, generated successfully");
                     var res = await emailService.SendInvoiceAsync(user.UserEmail, invoiceData.InvoiceNumber, "TODOWebsiteName", invoiceData);
                     _logger.LogInformation($"Invoice generation finished, result of IEmailService.SendInvoiceAsync(args) = {res}");

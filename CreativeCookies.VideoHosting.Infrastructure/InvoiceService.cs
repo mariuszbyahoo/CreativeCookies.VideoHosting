@@ -25,16 +25,27 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             _logger = logger;
         }
 
-        public async Task<Attachement> GenerateInvoicePdf(decimal amount, string currency, InvoiceAddressDto buyerAddress, MerchantDto merchant)
+        public async Task<Attachement> GenerateInvoicePdf(decimal amount, string currency, bool isVATExempt, InvoiceAddressDto buyerAddress, MerchantDto merchant)
         {
             _logger.LogInformation($"Starting invoice generation to: {buyerAddress.FirstName} {buyerAddress.LastName}");
+            decimal nettAmount;
+            string vatRate;
             var invoiceNumber = await _invoiceNumsRepository.GetNewNumber();
             var merchantHouseNoLine = $"{merchant.HouseNo} " + (merchant.AppartmentNo != null ? $"lok. {merchant.AppartmentNo}" : "");
             var buyerHouseNoLine = $"{buyerAddress.HouseNo} " + (buyerAddress.AppartmentNo != null ? $"lok. {buyerAddress.AppartmentNo}" : "");
             var merchantAddress = $"{merchant.Street} {merchantHouseNoLine}, {merchant.PostCode}, {merchant.City}, {merchant.Country}";
             var buyerAddressLine = $"{buyerAddress.Street} {buyerHouseNoLine}, {buyerAddress.PostCode}, {buyerAddress.City}, {buyerAddress.Country}";
-            var nettAmount = amount / 1.23m / 100;
+            if (isVATExempt) {
+                nettAmount = amount;
+                vatRate = "zw.";
+            }
+            else
+            {
+                nettAmount = amount / 1.23m / 100;
+                vatRate = "23%";
+            }
             var grossAmount = amount / 100;
+            var vatAmount = grossAmount - nettAmount;
             var nettAmountTxt = nettAmount.ToString("N2");
             var grossAmountTxt = grossAmount.ToString("N2");
             // Create a new PDF document
@@ -123,14 +134,16 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             gfx.DrawString("Ilość", regularFontBold, blackBrush, new XRect(leftMargin, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
             gfx.DrawString("Usługa", regularFontBold, blackBrush, new XRect(leftMargin + columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
             gfx.DrawString("Netto", regularFontBold, blackBrush, new XRect(leftMargin + 3 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString("VAT", regularFontBold, blackBrush, new XRect(leftMargin + 4 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Stawka VAT", regularFontBold, blackBrush, new XRect(leftMargin + 4 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString("Wartość VAT", regularFontBold, blackBrush, new XRect(leftMargin + 4 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
             gfx.DrawString("Brutto", regularFontBold, blackBrush, new XRect(leftMargin + 5 * columnSpacing, tableStartY, columnSpacing, page.Height), XStringFormats.TopLeft);
 
             // Draw the table content
             gfx.DrawString("1.", regularFont, blackBrush, new XRect(40, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
             gfx.DrawString("Subskrypcja", regularFont, blackBrush, new XRect(100, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
             gfx.DrawString($"{nettAmountTxt} {currency}", regularFont, blackBrush, new XRect(250, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
-            gfx.DrawString($"23%", regularFont, blackBrush, new XRect(350, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString(vatRate, regularFont, blackBrush, new XRect(350, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
+            gfx.DrawString(vatAmount.ToString(), regularFont, blackBrush, new XRect(380, tableStartY + 20, 50, page.Height), XStringFormats.TopLeft);
             gfx.DrawString($"{grossAmountTxt} {currency}", regularFont, blackBrush, new XRect(450, tableStartY + 20, page.Width, page.Height), XStringFormats.TopLeft);
 
             // Draw the total

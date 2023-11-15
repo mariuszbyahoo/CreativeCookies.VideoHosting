@@ -18,7 +18,12 @@ namespace CreativeCookies.VideoHosting.DAL.DAOs
         public string City { get; set; }
         public string Country { get; set; }
 
-        public Merchant(string companyName, string companyTaxId, string street, string houseNo, int? appartmentNo, string postCode, string city, string country)
+        /// <summary>
+        /// If true - VAT amount on invoices should be zw. (0%), else - standard VAT 23%
+        /// </summary>
+        public bool IsVATExempt { get; set; }
+
+        public Merchant(string companyName, string companyTaxId, string street, string houseNo, int? appartmentNo, string postCode, string city, string country, bool isVATExempt)
         {
             CompanyName = companyName;
             CompanyTaxId = companyTaxId;
@@ -28,6 +33,7 @@ namespace CreativeCookies.VideoHosting.DAL.DAOs
             PostCode = postCode;
             City = city;
             Country = country;
+            IsVATExempt = isVATExempt;
         }
     }
 }

@@ -21,7 +21,10 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
 
         public async Task<int> AddMerchant(MerchantDto newMerchant)
         {
-            var dao = new Merchant(newMerchant.CompanyName, newMerchant.CompanyTaxId, newMerchant.Street, newMerchant.HouseNo, newMerchant.AppartmentNo, newMerchant.PostCode, newMerchant.City, newMerchant.Country);
+            var dao = new Merchant(newMerchant.CompanyName, 
+                newMerchant.CompanyTaxId, newMerchant.Street, newMerchant.HouseNo, 
+                newMerchant.AppartmentNo, newMerchant.PostCode, newMerchant.City, 
+                newMerchant.Country, newMerchant.IsVATExempt);
             _ctx.Merchant.Add(dao);
             return await _ctx.SaveChangesAsync();
         }
@@ -30,7 +33,9 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         {
             var dao = await _ctx.Merchant.FirstOrDefaultAsync();
             if (dao == null) return null;
-            var res = new MerchantDto(dao.Id, dao.CompanyName, dao.CompanyTaxId, dao.Street, dao.HouseNo, dao.AppartmentNo, dao.PostCode, dao.City, dao.Country);
+            var res = new MerchantDto(dao.Id, dao.CompanyName, 
+                dao.CompanyTaxId, dao.Street, dao.HouseNo, dao.AppartmentNo, 
+                dao.PostCode, dao.City, dao.Country, dao.IsVATExempt);
             return res;
         }
 
@@ -45,6 +50,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             dao.PostCode = newMerchant.PostCode;
             dao.City = newMerchant.City;
             dao.Country = newMerchant.Country;
+            dao.IsVATExempt = newMerchant.IsVATExempt;
 
             return await _ctx.SaveChangesAsync();
         }
