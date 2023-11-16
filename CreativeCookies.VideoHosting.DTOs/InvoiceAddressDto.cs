@@ -11,12 +11,11 @@ namespace CreativeCookies.VideoHosting.DTOs
         public Guid Id { get; set; }
         public string UserId { get; set; }
 
-        public InvoiceAddressDto(Guid id, string firstName, 
+        public InvoiceAddressDto(string firstName, 
             string lastName, string street, string houseNo, 
             int? appartmentNo, string postCode, 
             string city, string country, string userId)
         {
-            Id = id;
             FirstName = firstName;
             LastName = lastName;
             Street = street;

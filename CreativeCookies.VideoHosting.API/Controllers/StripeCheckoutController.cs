@@ -70,20 +70,15 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     // User has no subscription, either ongoing or scheduled
                     else if (!datesActive && !userHasSubscription && !isUserWithinCoolingOffPeriod)
                     {
-                        var address = await _addressService.GetAddress(user.Id.ToString());
-                        if (address == null && dto.Address != null)
+                        dto.Address.Country = "Polska";
+                        var invoiceAddress = new InvoiceAddressDto(dto.Address.FirstName, dto.Address.LastName,
+                            dto.Address.Street, dto.Address.HouseNo, dto.Address.AppartmentNo,
+                            dto.Address.PostCode, dto.Address.City, dto.Address.Country, user.Id.ToString());
+                        var res = await _addressService.UpsertAddress(invoiceAddress);
+
+                        if (res != 1)
                         {
-                            dto.Address.Country = "Polska";
-                            var invoiceAddress = new InvoiceAddressDto(
-                                Guid.NewGuid(), dto.Address.FirstName, dto.Address.LastName, 
-                                dto.Address.Street, dto.Address.HouseNo, dto.Address.AppartmentNo, 
-                                dto.Address.PostCode, dto.Address.City, dto.Address.Country, user.Id.ToString());
-                            var res = await _addressService.UpsertAddress(invoiceAddress);
-                            
-                            if(res != 1)
-                            {
-                                return StatusCode(400, $"New address for user: {user.UserEmail} has not been added, result of upsert operation was different than 1");
-                            }
+                            return StatusCode(400, $"New address for user: {user.UserEmail} has not been added, result of upsert operation was different than 1");
                         }
 
                         var sessionUrl = await _checkoutService.CreateNewSession(dto.PriceId, user.StripeCustomerId, dto.HasDeclinedCoolingOffPeriod);

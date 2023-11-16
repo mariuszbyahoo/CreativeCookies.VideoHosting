@@ -25,7 +25,7 @@ namespace CreativeCookies.VideoHosting.Services
 
         public async Task<int> UpsertAddress(InvoiceAddressDto address)
         {
-            var lookup = await _repo.GetAddress(address.Id);
+            var lookup = await _repo.GetAddress(address.UserId);
             if(lookup == null)
             {
                 return await _repo.AddAddress(address);

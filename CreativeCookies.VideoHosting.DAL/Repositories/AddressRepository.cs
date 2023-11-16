@@ -37,7 +37,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             var lowerCaseUserId = userId.ToLowerInvariant();
             var dao = await _ctx.Addresses.Where(a => a.UserId == lowerCaseUserId).FirstOrDefaultAsync();
             if (dao == null) return null;
-            var dto = new InvoiceAddressDto(dao.Id, dao.FirstName, dao.LastName, 
+            var dto = new InvoiceAddressDto(dao.FirstName, dao.LastName, 
                 dao.Street, dao.HouseNo, dao.AppartmentNo, dao.PostCode, 
                 dao.City, dao.Country, dao.UserId);
             return dto;
@@ -47,7 +47,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         {
             var dao = await _ctx.Addresses.FindAsync(addressId);
             if (dao == null) return null;
-            var dto = new InvoiceAddressDto(dao.Id, dao.FirstName, dao.LastName, 
+            var dto = new InvoiceAddressDto(dao.FirstName, dao.LastName, 
                 dao.Street, dao.HouseNo, dao.AppartmentNo, dao.PostCode, 
                 dao.City, dao.Country, dao.UserId);
             return dto;
@@ -55,10 +55,19 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
 
         public async Task<int> UpdateAddress(InvoiceAddressDto updatedAddress)
         {
-            var address = await _ctx.Addresses.FindAsync(updatedAddress.Id);
+            Address address;
+            
+            address = await _ctx.Addresses.FindAsync(updatedAddress.Id);
+
             if (address == null)
             {
-                throw new KeyNotFoundException("Address not found.");
+                var loweredCaseUserId = updatedAddress.UserId.ToLowerInvariant();
+                address = await _ctx.Addresses.FirstOrDefaultAsync(a => a.UserId == loweredCaseUserId);
+            }
+
+            if (address == null)
+            {
+                return 0;
             }
 
             address.FirstName = updatedAddress.FirstName;
