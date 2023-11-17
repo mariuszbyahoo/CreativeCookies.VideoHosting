@@ -71,7 +71,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
                     else if (!datesActive && !userHasSubscription && !isUserWithinCoolingOffPeriod)
                     {
                         dto.Address.Country = "Polska";
-                        var invoiceAddress = new InvoiceAddressDto(dto.Address.FirstName, dto.Address.LastName,
+                        var invoiceAddress = new InvoiceAddressDto(dto.Address.Id, dto.Address.FirstName, dto.Address.LastName,
                             dto.Address.Street, dto.Address.HouseNo, dto.Address.AppartmentNo,
                             dto.Address.PostCode, dto.Address.City, dto.Address.Country, user.Id.ToString());
                         var res = await _addressService.UpsertAddress(invoiceAddress);
