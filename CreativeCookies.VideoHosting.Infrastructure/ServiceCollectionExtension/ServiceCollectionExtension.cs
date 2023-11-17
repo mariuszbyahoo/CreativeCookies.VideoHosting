@@ -13,8 +13,9 @@ using CreativeCookies.VideoHosting.Infrastructure.Azure;
 using CreativeCookies.VideoHosting.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using System.Globalization;
+using PdfSharp.Fonts;
 
-namespace CreativeCookies.VideoHosting.Infrastructure
+namespace CreativeCookies.VideoHosting.Infrastructure.ServiceCollectionExtension
 {
     public static class ServiceCollectionExtension
     {
@@ -27,7 +28,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             KeyVaultSecret nettApplicationFee;
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
             {
-                stripeSecretKey = client.GetSecret("StripeSecretAPIKey"); 
+                stripeSecretKey = client.GetSecret("StripeSecretAPIKey");
                 stripeWebhookSigningKey = client.GetSecret("StripeSecretWebhookSigningKey");
             }
             else
@@ -41,6 +42,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             services.AddSingleton(w => new StripeWebhookSigningKeyWrapper(stripeWebhookSigningKey.Value));
             services.AddSingleton(x => new StorageSharedKeyCredential(storageAccountName, storageAccountKey));
             services.AddSingleton(x => new BlobServiceClient(new Uri(blobServiceUrl), x.GetRequiredService<StorageSharedKeyCredential>()));
+            GlobalFontSettings.FontResolver = new FileFontResolver();
             return services;
         }
     }

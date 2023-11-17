@@ -28,7 +28,7 @@ namespace CreativeCookies.VideoHosting.Services
             var lookup = await _repo.GetMerchant();
 
             if (lookup == null) return await _repo.AddMerchant(newMerchant);
-            else return await _repo.AddMerchant(newMerchant);
+            else return await _repo.UpdateMerchant(newMerchant);
         }
     }
 }

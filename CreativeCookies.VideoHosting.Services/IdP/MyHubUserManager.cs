@@ -68,6 +68,11 @@ namespace CreativeCookies.VideoHosting.Services.IdP
         public async Task<MyHubUserDto?> FindByEmailAsync(string email)
         {
             var dao = await _userManager.FindByEmailAsync(email);
+
+            if (dao == null)
+            {
+                return null;
+            }
             var roles = string.Join(',', await _userManager.GetRolesAsync(dao));
             return new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, roles, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC, dao.HangfireJobId);
         }

@@ -13,6 +13,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Fonts\GlacialIndifference-Bold.ttf" />
+    <None Remove="Fonts\GlacialIndifference-Regular.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Hangfire" Version="1.8.5" />
     <PackageReference Include="MailKit" Version="4.1.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.15.0" />
@@ -66,6 +71,15 @@
     <Content Update="Templates\EmailTemplate.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Fonts\GlacialIndifference-Bold.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Fonts\GlacialIndifference-Regular.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

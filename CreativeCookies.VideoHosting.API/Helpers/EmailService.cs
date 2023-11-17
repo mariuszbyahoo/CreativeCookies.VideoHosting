@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using CreativeCookies.VideoHosting.API.Templates;
+using CreativeCookies.VideoHosting.Contracts.Email;
+using CreativeCookies.VideoHosting.DTOs.Email;
+using Microsoft.Extensions.Localization;
 
 namespace CreativeCookies.VideoHosting.API.Helpers
 {
@@ -80,6 +83,14 @@ namespace CreativeCookies.VideoHosting.API.Helpers
             return await SendMessageAsync(recipientEmail, subject, htmlMessage);
         }
 
+        public async Task<bool> SendInvoiceAsync(string recipientEmail, string invoiceNo, string websiteName, Attachement attachment)
+        {
+            var stringLocalizer = _serviceProvider.GetRequiredService<IStringLocalizer<EmailService>>();
+            var model = new EmailTemplateViewModel(recipientEmail, $"{stringLocalizer["InvoiceMailTxt1"]} {invoiceNo} {stringLocalizer["InvoiceMailTxt2"]}", string.Empty, websiteName);
+            var htmlMessage = await RenderViewToStringAsync("EmailTemplate", model);
+            return await SendMessageAsync(recipientEmail, $"{stringLocalizer["Invoice"]} {invoiceNo}", htmlMessage, attachment);
+        }
+
         /// <summary>
         /// Sends an email using secured TLS encryption, if an email server does not supporting TLS encrpyption, it will throw an NotSupportedException
         /// </summary>
@@ -87,38 +98,48 @@ namespace CreativeCookies.VideoHosting.API.Helpers
         /// <param name="subject"></param>
         /// <param name="htmlMessage"></param>
         /// <returns>Boolean value indicating the result of an operation: true (success) or false (something went wrong, most proppably mail wasn't sent)</returns>
-        private async Task<bool> SendMessageAsync(string recipientEmail, string subject, string htmlMessage)
+        private async Task<bool> SendMessageAsync(string recipientEmail, string subject, string htmlMessage, Attachement? attachment = null)
         {
             try
             {
+                _logger.LogInformation($"Starting SendMessage()");
                 var emailMessage = new MimeMessage();
 
-                emailMessage.From.Add(new MailboxAddress(_senderEmail, _senderEmail));
-                emailMessage.To.Add(new MailboxAddress(recipientEmail, recipientEmail));
+                emailMessage.From.Add(MailboxAddress.Parse(_senderEmail));
+                emailMessage.To.Add(MailboxAddress.Parse(recipientEmail));
                 emailMessage.Subject = subject;
-                emailMessage.Body = new TextPart(TextFormat.Html)
+
+                var builder = new BodyBuilder { HtmlBody = htmlMessage };
+
+                // Check if there's an attachment
+                if (attachment != null && attachment.FileData.Length > 0)
                 {
-                    Text = htmlMessage
-                };
+                    // Add the attachment to the email
+                    builder.Attachments.Add(attachment.FileNameWithExtension, attachment.FileData);
+                }
+
+                // Set the email body
+                emailMessage.Body = builder.ToMessageBody();
 
                 using (var client = new MailKit.Net.Smtp.SmtpClient())
                 {
                     await client.ConnectAsync(_smtpHost, _smtpPort, SecureSocketOptions.StartTls);
                     await client.AuthenticateAsync(_senderEmail, _smtpPass);
 
-                    await client.SendAsync(emailMessage);
+                    var res = await client.SendAsync(emailMessage);
+                    _logger.LogInformation($"SMTPClient.SendAsync(emailMessage) result: {res}");
                     await client.DisconnectAsync(true);
                 }
                 return true;
             }
             catch (NotSupportedException ex)
             {
-                _logger.LogError($"NotSupportedException occured, inspect is an email server : {_smtpHost} supporting TLS encryption at all as this is the most proppable cause of an exception, msg: {ex.Message}, innerException: {ex.InnerException}, source: {ex.Source}", ex);
+                _logger.LogError($"NotSupportedException occurred: {ex.Message}", ex);
                 return false;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                _logger.LogError($"Unexpected exception occured when trying to send an email, msg: {ex.Message}, innerException: {ex.InnerException}, source: {ex.Source}", ex);
+                _logger.LogError($"Unexpected exception occurred: {ex.Message}", ex);
                 return false;
             }
         }

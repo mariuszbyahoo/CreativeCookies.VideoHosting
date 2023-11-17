@@ -1,9 +1,13 @@
 ﻿using Azure.Core;
 using Azure.Messaging.ServiceBus;
 using CreativeCookies.StripeEvents.DTOs;
+using CreativeCookies.VideoHosting.Contracts.Email;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Repositories;
 using CreativeCookies.VideoHosting.Contracts.Services.Stripe;
+using CreativeCookies.VideoHosting.DTOs;
+using CreativeCookies.VideoHosting.DTOs.OAuth;
 using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
 using Hangfire;
 using Microsoft.AspNetCore.Http;
@@ -19,28 +23,30 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CreativeCookies.VideoHosting.Infrastructure.Azure
+namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 {
     public class StripeMessageReceiver : IHostedService
     {
         private readonly ServiceBusClient _serviceBusClient;
         private readonly ServiceBusProcessor _processor;
-        private readonly StripeWebhookSigningKeyWrapper _wrapper;
+        private readonly StripeWebhookSigningKeyWrapper _endpointSecretWrapper;
+        private readonly StripeSecretKeyWrapper _secretKeyWrapper;
         private readonly IBackgroundJobClient _backgroundJobClient;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger _logger;
         private readonly string _connectAccountId;
 
 
-        public StripeMessageReceiver(IBackgroundJobClient backgroundJobClient, StripeWebhookSigningKeyWrapper wrapper, 
-             IServiceScopeFactory serviceScopeFactory, IConfiguration configuration, ILogger<StripeMessageReceiver> logger)
+        public StripeMessageReceiver(IBackgroundJobClient backgroundJobClient, StripeWebhookSigningKeyWrapper endpointSecretWrapper,
+             IServiceScopeFactory serviceScopeFactory, IConfiguration configuration, ILogger<StripeMessageReceiver> logger,
+              StripeSecretKeyWrapper secretKeyWrapper)
         {
             _logger = logger;
             _serviceBusClient = new ServiceBusClient(configuration.GetValue<string>("ServiceBusConnectionString"));
-            _wrapper = wrapper;
+            _endpointSecretWrapper = endpointSecretWrapper;
+            _secretKeyWrapper = secretKeyWrapper;
             _serviceScopeFactory = serviceScopeFactory;
-             _backgroundJobClient = backgroundJobClient;
-            
+            _backgroundJobClient = backgroundJobClient;
             _processor = _serviceBusClient.CreateProcessor("stripe_events_queue", new ServiceBusProcessorOptions());
             _processor.ProcessMessageAsync += MessageHandler;
             _processor.ProcessErrorAsync += ErrorHandler;
@@ -76,8 +82,8 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Azure
             // if so - then perform
 
             _logger.LogInformation("StripeMessageReceiver called");
-            string endpointSecret = _wrapper.Value;
-
+            string endpointSecret = _endpointSecretWrapper.Value;
+            StripeConfiguration.ApiKey = _secretKeyWrapper.Value;
             try
             {
                 using (var scope = _serviceScopeFactory.CreateScope())
@@ -98,7 +104,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Azure
                             var product = stripeEvent.Data.Object as Product;
                             if (product != null)
                             {
-                                await subscriptonPlanService.UpsertSubscriptionPlan(new VideoHosting.DTOs.Stripe.SubscriptionPlanDto(product.Id, product.Name, product.Description));
+                                await subscriptonPlanService.UpsertSubscriptionPlan(new DTOs.Stripe.SubscriptionPlanDto(product.Id, product.Name, product.Description));
                                 _logger.LogInformation($"StripeMessageReceiver product upserted: {product.ToJson()}");
                             }
                         }
@@ -129,6 +135,8 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Azure
                             var res = userRepo.ChangeSubscriptionDatesUTC(invoice.CustomerId, invoice.Lines.Data[0].Period.Start, accessPeriodEnd, false);
                             if (res) _logger.LogInformation($"Subscription dates range for a Stripe Customer id: {invoice.CustomerId} updated to {invoice.Lines.Data[0].Period.Start} - {accessPeriodEnd}");
                             else _logger.LogError($"Database result of SubscriptionEndDateUTC update was false for customer with id: {invoice.CustomerId}");
+
+                            await ProcessInvoice(invoice.Customer.Id, invoice.AmountPaid, invoice.Currency);
                         }
                         else if (stripeEvent.Type == Events.CheckoutSessionCompleted)
                         {
@@ -181,8 +189,16 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Azure
 
                                     var res = userRepo.ChangeSubscriptionDatesUTC(checkoutSession.CustomerId, subscriptionStartDate, subscriptionEndDate);
 
-                                    if (res) _logger.LogInformation($"Subscription dates range for a Stripe Customer id: {checkoutSession.CustomerId} updated to {subscriptionStartDate} - {subscriptionEndDate}");
-                                    else _logger.LogError($"Database result of SubscriptionEndDateUTC update was false for customer with id: {checkoutSession.CustomerId}");
+                                    if (res) { _logger.LogInformation($"Subscription dates range for a Stripe Customer id: {checkoutSession.CustomerId} updated to {subscriptionStartDate} - {subscriptionEndDate}"); }
+                                    else { _logger.LogError($"Database result of SubscriptionEndDateUTC update was false for customer with id: {checkoutSession.CustomerId}"); }
+                                    try
+                                    {
+                                        await ProcessInvoice(checkoutSession.CustomerId, paymentIntent.AmountReceived, paymentIntent.Currency);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError(ex, $"An exception occured while generating an invoice for {checkoutSession.CustomerId}");
+                                    }
                                 }
                                 _logger.LogInformation($"Session completed for a subscription with mode of: {checkoutSession.Mode}");
                             }
@@ -199,20 +215,6 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Azure
                             var res = userRepo.ChangeSubscriptionDatesUTC(charge.CustomerId, DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)), DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)), false);
                             if (res) _logger.LogInformation($"SubscriptionEndDateUTC of Stripe Customer id: {charge.CustomerId} updated to {DateTime.UtcNow}");
                             else _logger.LogError($"Database result of SubscriptionEndDateUTC update was false for customer with id: {charge.CustomerId}");
-                        }
-                        else if (stripeEvent.Type == Events.CustomerSubscriptionDeleted)
-                        {
-                            _logger.LogInformation($"StripeMessageReceiver with event type of {stripeEvent.Type}");
-                            var accountId = stripeEvent.Account;
-                            var subscription = stripeEvent.Data.Object as Subscription;
-                            var res = userRepo.ChangeSubscriptionDatesUTC(subscription.CustomerId, DateTime.UtcNow, DateTime.UtcNow);
-                            if (res) _logger.LogInformation($"SubscriptionEndDateUTC of Stripe Customer id: {subscription.CustomerId} updated to {DateTime.UtcNow}");
-                            else _logger.LogError($"Database result of SubscriptionEndDateUTC update was false for customer with id: {subscription.CustomerId}");
-                        }
-                        else if (stripeEvent.Type == Events.SubscriptionScheduleCanceled)
-                        {
-                            _logger.LogInformation("TODO: IMPLEMENT SUBSCRIPITON SCHEDULE CANCELED HANDLER!");
-                            // HACK: TODO - is there any need for it?
                         }
                         else
                         {
@@ -237,6 +239,40 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Azure
             _logger.LogInformation("StripeMessageReceiver returns 200");
 
             await args.CompleteMessageAsync(args.Message);
+        }
+
+        private async Task ProcessInvoice(string stripeCustomerId, decimal amount, string currency)
+        {
+            MyHubUserDto? user;
+            MerchantDto? merchant;
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var usersRepo = scope.ServiceProvider.GetRequiredService<IUsersRepository>();
+                var merchantRepository = scope.ServiceProvider.GetRequiredService<IMerchantRepository>();
+                user = await usersRepo.GetUserByStripeCustomerId(stripeCustomerId);
+                merchant = await merchantRepository.GetMerchant();
+            }
+
+            if (user?.Address == null)
+                _logger.LogCritical($"No address for user: {user?.UserEmail} found, aborting invoice generation");
+            if (merchant == null)
+                _logger.LogCritical($"No merchant found, aborting invoice generation");
+
+            var canGenerateInvoice = merchant != null && user.Address != null;
+            if (canGenerateInvoice)
+            {
+                using (var scope = _serviceScopeFactory.CreateScope())
+                {
+                    var invoiceService = scope.ServiceProvider.GetRequiredService<IInvoiceService>();
+                    var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
+
+                    _logger.LogInformation($"Starting Invoice generation, is emailService null? {emailService == null}");
+                    var invoiceData = await invoiceService.GenerateInvoicePdf(amount, currency, user.Address, merchant);
+                    _logger.LogInformation($"Invoice {invoiceData.InvoiceNumber}, generated successfully");
+                    var res = await emailService.SendInvoiceAsync(user.UserEmail, invoiceData.InvoiceNumber, "TODOWebsiteName", invoiceData);
+                    _logger.LogInformation($"Invoice generation finished, result of IEmailService.SendInvoiceAsync(args) = {res}");
+                }
+            }
         }
     }
 }

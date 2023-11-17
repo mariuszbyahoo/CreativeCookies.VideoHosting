@@ -27,7 +27,6 @@ using CreativeCookies.VideoHosting.Contracts.Infrastructure.Azure;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using CreativeCookies.VideoHosting.Services.IdP;
-using CreativeCookies.VideoHosting.Infrastructure;
 using CreativeCookies.VideoHosting.Infrastructure.Azure.Wrappers;
 using CreativeCookies.VideoHosting.Contracts.Services.Stripe;
 using CreativeCookies.VideoHosting.Services.Subscriptions;
@@ -35,17 +34,15 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.ApplicationInsights.Extensibility;
 using Hangfire;
 using CreativeCookies.VideoHosting.API.Attributes;
-using Hangfire.Storage;
-using Stripe;
 using CreativeCookies.VideoHosting.Contracts.Services.About;
 using CreativeCookies.VideoHosting.Services.About;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Mvc.Localization;
 using Microsoft.Extensions.Options;
 using CreativeCookies.VideoHosting.API.Utils.JsonStringLocalizer;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.Extensions.Localization;
-using CreativeCookies.VideoHosting.Contracts.Repositories;
+using CreativeCookies.VideoHosting.Contracts.Infrastructure;
+using CreativeCookies.VideoHosting.Contracts.Email;
+using CreativeCookies.VideoHosting.Infrastructure.ServiceCollectionExtension;
 
 namespace CreativeCookies.VideoHosting.API
 {
@@ -157,6 +154,7 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddSingleton(sp => JobStorage.Current.GetMonitoringApi());
             builder.Services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
 
+            builder.Services.AddScoped<IInvoiceService, Infrastructure.InvoiceService>();
             builder.Services.AddScoped<IMerchantService, MerchantService>();
             builder.Services.AddScoped<IAddressService, AddressService>();
             builder.Services.AddScoped<IStripeProductsService, StripeProductsService>();

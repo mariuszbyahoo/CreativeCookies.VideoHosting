@@ -9,7 +9,7 @@ namespace CreativeCookies.VideoHosting.Contracts.Services
 {
     public interface IAddressService
     {
-        Task<AddressDto?> GetAddress(string userId);
+        Task<InvoiceAddressDto?> GetAddress(string userId);
 
         /// <summary>
         /// Checks, is there an entity with address.Id present in the database, if so - updates it
@@ -17,6 +17,6 @@ namespace CreativeCookies.VideoHosting.Contracts.Services
         /// </summary>
         /// <param name="address">Address to upsert</param>
         /// <returns>Amount of entities updated</returns>
-        Task<int> UpsertAddress(AddressDto address);
+        Task<int> UpsertAddress(InvoiceAddressDto address);
     }
 }

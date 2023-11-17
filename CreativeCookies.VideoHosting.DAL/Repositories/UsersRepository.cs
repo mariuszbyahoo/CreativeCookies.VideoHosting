@@ -36,7 +36,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             }
             else
             {
-                var addressDto = new AddressDto(dao.Address.Id, dao.Address.FirstName, dao.Address.LastName, dao.Address.Street, dao.Address.HouseNo, dao.Address.AppartmentNo, dao.Address.PostCode, dao.Address.City, dao.Address.Country, dao.Address.UserId);
+                var addressDto = new InvoiceAddressDto(dao.Address.Id, dao.Address.FirstName, dao.Address.LastName, dao.Address.Street, dao.Address.HouseNo, dao.Address.AppartmentNo, dao.Address.PostCode, dao.Address.City, dao.Address.Country, dao.Address.UserId);
                 dto = new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC, dao.HangfireJobId, addressDto);
             }
             dto.Role = string.Join(",", await _userManager.GetRolesAsync(dto));
@@ -54,7 +54,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             }
             else
             {
-                var addressDto = new AddressDto(dao.Address.Id, dao.Address.FirstName, dao.Address.LastName, dao.Address.Street, dao.Address.HouseNo, dao.Address.AppartmentNo, dao.Address.PostCode, dao.Address.City, dao.Address.Country, dao.Address.UserId);
+                var addressDto = new InvoiceAddressDto(dao.Address.Id, dao.Address.FirstName, dao.Address.LastName, dao.Address.Street, dao.Address.HouseNo, dao.Address.AppartmentNo, dao.Address.PostCode, dao.Address.City, dao.Address.Country, dao.Address.UserId);
                 dto = new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC, dao.HangfireJobId, addressDto);
             }
             dto.Role = string.Join(",", await _userManager.GetRolesAsync(dto));
@@ -64,12 +64,15 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         public MyHubUserDto? AssignHangfireJobIdToUser(string stripeCustomerId, string jobId)
         {
             var dao = _context.Users.Where(u => u.StripeCustomerId.Equals(stripeCustomerId)).FirstOrDefault();
-            dao.HangfireJobId = jobId;
-            var result = _context.SaveChanges();
-            if (result > 0)
+            if (dao != null)
             {
-                var dto = new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC, dao.HangfireJobId);
-                return dto;
+                dao.HangfireJobId = jobId;
+                var result = _context.SaveChanges();
+                if (result > 0)
+                {
+                    var dto = new MyHubUserDto(Guid.Parse(dao.Id), dao.Email, string.Empty, dao.EmailConfirmed, dao.StripeCustomerId, dao.SubscriptionStartDateUTC, dao.SubscriptionEndDateUTC, dao.HangfireJobId);
+                    return dto;
+                }
             }
             return null;
         }
@@ -77,18 +80,26 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         public bool ChangeSubscriptionEndDateUTC(string customerId, DateTime endDateUtc)
         {
             var dao = _context.Users.Where(u => u.StripeCustomerId.Equals(customerId)).FirstOrDefault();
-            dao.SubscriptionEndDateUTC = endDateUtc;
-            var result = _context.SaveChanges();
-            return result > 0;
+            if (dao != null)
+            {
+                dao.SubscriptionEndDateUTC = endDateUtc;
+                var result = _context.SaveChanges();
+                return result > 0;
+            }
+            else return false;
         }
 
         public bool ChangeSubscriptionDatesUTC(string customerId, DateTime startDateUtc, DateTime endDateUtc, bool addDelayForSubscriptions = true)
         {
             var dao = _context.Users.Where(u => u.StripeCustomerId.Equals(customerId)).FirstOrDefault();
-            dao.SubscriptionStartDateUTC = startDateUtc;
-            dao.SubscriptionEndDateUTC = addDelayForSubscriptions ? endDateUtc + TimeSpan.FromHours(3) : endDateUtc;
-            var result = _context.SaveChanges();
-            return result > 0;
+            if (dao != null)
+            {
+                dao.SubscriptionStartDateUTC = startDateUtc;
+                dao.SubscriptionEndDateUTC = addDelayForSubscriptions ? endDateUtc + TimeSpan.FromHours(3) : endDateUtc;
+                var result = _context.SaveChanges();
+                return result > 0;
+            }
+            else return false;
         }
 
         public bool AssignStripeCustomerId(string userId, string stripeCustomerId)
@@ -128,7 +139,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
                 
                 if(user.Address != null)
                 {
-                    dto.Address = new AddressDto(user.Address.Id, user.Address.FirstName, user.Address.LastName, user.Address.Street, user.Address.HouseNo, user.Address.AppartmentNo, user.Address.PostCode, user.Address.City, user.Address.Country, user.Address.UserId);
+                    dto.Address = new InvoiceAddressDto(user.Address.Id, user.Address.FirstName, user.Address.LastName, user.Address.Street, user.Address.HouseNo, user.Address.AppartmentNo, user.Address.PostCode, user.Address.City, user.Address.Country, user.Address.UserId);
                 }
 
                 if (toAdd) result.Add(dto);
@@ -160,7 +171,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
                 var user = await _userManager.FindByIdAsync(dao.Id);
                 if (dao.Address != null)
                 {
-                    user.Address = new AddressDto(user.Address.Id, user.Address.FirstName, user.Address.LastName, user.Address.Street, user.Address.HouseNo, user.Address.AppartmentNo, user.Address.PostCode, user.Address.City, user.Address.Country, user.Address.UserId);
+                    user.Address = new InvoiceAddressDto(user.Address.Id, user.Address.FirstName, user.Address.LastName, user.Address.Street, user.Address.HouseNo, user.Address.AppartmentNo, user.Address.PostCode, user.Address.City, user.Address.Country, user.Address.UserId);
                 }
                 result.Add(user);
             }

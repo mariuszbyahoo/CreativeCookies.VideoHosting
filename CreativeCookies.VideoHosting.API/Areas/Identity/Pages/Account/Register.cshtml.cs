@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
+using CreativeCookies.VideoHosting.Contracts.Email;
 
 namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 {

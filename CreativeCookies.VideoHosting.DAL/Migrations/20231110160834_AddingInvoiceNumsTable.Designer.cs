@@ -4,6 +4,7 @@ using CreativeCookies.VideoHosting.DAL.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CreativeCookies.VideoHosting.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231110160834_AddingInvoiceNumsTable")]
+    partial class AddingInvoiceNumsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -141,9 +144,6 @@ namespace CreativeCookies.VideoHosting.DAL.Migrations
                     b.Property<string>("HouseNo")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsVATExempt")
-                        .HasColumnType("bit");
 
                     b.Property<string>("PostCode")
                         .IsRequired()
@@ -560,8 +560,7 @@ namespace CreativeCookies.VideoHosting.DAL.Migrations
                 {
                     b.HasOne("CreativeCookies.VideoHosting.DAL.DAOs.OAuth.MyHubUser", "User")
                         .WithOne("Address")
-                        .HasForeignKey("CreativeCookies.VideoHosting.DAL.DAOs.Address", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("CreativeCookies.VideoHosting.DAL.DAOs.Address", "UserId");
 
                     b.Navigation("User");
                 });

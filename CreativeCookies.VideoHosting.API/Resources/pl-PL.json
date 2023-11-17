@@ -148,5 +148,8 @@
   "ByReviewingChangingOrDeleting": "przeglądając, edytując bądź usuwając je",
   "ANewAccountOrJust": "nowe konto, lub po prostu",
   "AlternativelyYouCanJustComeBackTo": "Alternatywnie, możesz powrócić do",
-  "Register2": "Zarejestruj"
+  "Register2": "Zarejestruj",
+  "Invoice": "Faktura",
+  "InvoiceMailTxt1": "Otrzymałeś nową fakturę o numerze: ",
+  "InvoiceMailTxt2": "Znajdziesz ją w załącznikach do tej wiadomości"
 }

@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using CreativeCookies.VideoHosting.API.Helpers;
+using CreativeCookies.VideoHosting.Contracts.Email;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
