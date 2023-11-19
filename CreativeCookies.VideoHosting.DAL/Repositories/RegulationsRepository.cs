@@ -62,14 +62,14 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             }
             dao.HtmlContent = dto.HtmlContent;
             var res = _ctx.SaveChanges();
-            if(res != 0)
+            if (res != 0)
             {
                 return new WebsitePrivacyPolicyDTO() { HtmlContent = dao.HtmlContent };
             }
             return new WebsitePrivacyPolicyDTO();
         }
 
-        public async Task<WebsiteRegulationsDTO> UpdateRegulaions(WebsiteRegulationsDTO dto)
+        public async Task<WebsiteRegulationsDTO> UpdateRegulations(WebsiteRegulationsDTO dto)
         {
             var dao = await _ctx.Regulations.FirstOrDefaultAsync();
             if (dao == null)

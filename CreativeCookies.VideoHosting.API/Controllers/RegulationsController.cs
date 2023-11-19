@@ -29,7 +29,7 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin,ADMIN")]
         public async Task<ActionResult<WebsiteRegulationsDTO>> UpdateRegulations([FromBody] WebsiteRegulationsDTO dto)
         {
-            var updateResult = await _repo.UpdateRegulaions(dto);
+            var updateResult = await _repo.UpdateRegulations(dto);
 
             return Ok(updateResult);
         }
