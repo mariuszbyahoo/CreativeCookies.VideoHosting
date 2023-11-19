@@ -20,13 +20,13 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             _ctx = ctx;
         }
 
-        public async Task<WebsitePrivacyPolicyDTO> GetPrivacyPolicy()
+        public async Task<WebsitePrivacyPolicyDTO?> GetPrivacyPolicy()
         {
             var result = new WebsitePrivacyPolicyDTO();
             var dao =  await _ctx.PrivacyPolicies.FirstOrDefaultAsync();
             if (dao == null)
             {
-                result.HtmlContent = string.Empty;
+                return null;
             }
             else
             {
@@ -36,13 +36,13 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             return result;
         }
 
-        public async Task<WebsiteRegulationsDTO> GetRegulations()
+        public async Task<WebsiteRegulationsDTO?> GetRegulations()
         {
             var result = new WebsiteRegulationsDTO();
             var dao = await _ctx.Regulations.FirstOrDefaultAsync();
             if (dao == null)
             {
-                result.HtmlContent = string.Empty;
+                return null;
             }
             else
             {

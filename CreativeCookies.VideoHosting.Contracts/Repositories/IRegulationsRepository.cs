@@ -9,9 +9,9 @@ namespace CreativeCookies.VideoHosting.Contracts.Repositories
 {
     public interface IRegulationsRepository
     {
-        Task<WebsiteRegulationsDTO> GetRegulations();
+        Task<WebsiteRegulationsDTO?> GetRegulations();
         Task<WebsiteRegulationsDTO> UpdateRegulaions(WebsiteRegulationsDTO dto);
-        Task<WebsitePrivacyPolicyDTO> GetPrivacyPolicy();
+        Task<WebsitePrivacyPolicyDTO?> GetPrivacyPolicy();
         Task<WebsitePrivacyPolicyDTO> UpdatePrivacyPolicy(WebsitePrivacyPolicyDTO dto);
     }
 }

@@ -50,6 +50,7 @@ namespace CreativeCookies.VideoHosting.DAL.Config
             services.AddScoped<IClientStore, ClientStore>();
             services.AddScoped<IAboutPageRepository, AboutPageRepository>();
             services.AddScoped<IAddressRepository, AddressRepository>();
+            services.AddScoped<IRegulationsRepository, RegulationsRepository>();
 
             return services;
         }
