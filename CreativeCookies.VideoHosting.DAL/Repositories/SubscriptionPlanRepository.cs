@@ -24,7 +24,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         {
             var plan = new SubscriptionPlan(newSubscriptionPlan.Id, newSubscriptionPlan.Name, newSubscriptionPlan.Description);
             await _ctx.SubscriptionPlans.AddAsync(plan);
-            var res = await _ctx.SaveChangesAsync();
+            var res = _ctx.SaveChanges();
             if (res > 0)
             {
                 return new SubscriptionPlanDto(plan.StripeProductId, plan.Name, plan.Description);
@@ -43,7 +43,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         {
             var plan = await FetchDAOById(productId);
             _ctx.SubscriptionPlans.Remove(plan);
-            return await _ctx.SaveChangesAsync();
+            return _ctx.SaveChanges();
         }
 
         public async Task<SubscriptionPlanDto> UpdateSubscriptionPlan(SubscriptionPlanDto newPlanDto)
@@ -52,7 +52,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             dao.Description = newPlanDto.Description;
             dao.Name = newPlanDto.Name;
             _ctx.SubscriptionPlans.Update(dao);
-            if (await _ctx.SaveChangesAsync() > 0) return newPlanDto;
+            if (_ctx.SaveChanges() > 0) return newPlanDto;
             else return null;
         }
 

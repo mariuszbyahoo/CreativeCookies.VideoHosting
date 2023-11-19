@@ -29,7 +29,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories.OAuth
             // HACK TODO: ADD LOGGER AND LOG DELETED Codes!
             // HACK TODO: Log eventual exceptions
             _ctx.AuthorizationCodes.RemoveRange(expiredCodes);
-            await _ctx.SaveChangesAsync();
+            _ctx.SaveChanges();
         }
         public async Task SaveAuthorizationCode(string client_id, string userId, string redirect_uri, string code_challenge, string code_challenge_method, string authorizationCode)
         {
@@ -46,7 +46,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories.OAuth
             _logger.LogInformation($"code_challenge just before being saved to Dabatase : {codeEntry.CodeChallenge}");
 
             _ctx.AuthorizationCodes.Add(codeEntry);
-            await _ctx.SaveChangesAsync();
+            _ctx.SaveChanges();
         }
 
         public async Task<MyHubUserDto> GetUserByAuthCodeAsync(string code)
@@ -77,7 +77,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories.OAuth
                 .ToArrayAsync();
 
             _ctx.RemoveRange(issuedAuthCodes);
-            await _ctx.SaveChangesAsync();
+            _ctx.SaveChanges();
         }
     }
 }

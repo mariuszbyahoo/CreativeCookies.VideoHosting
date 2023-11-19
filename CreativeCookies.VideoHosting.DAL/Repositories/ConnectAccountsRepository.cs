@@ -44,7 +44,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
         {
             var newAccountRecord = new DAL.DAOs.StripeConfig() { Id = Guid.NewGuid(), StripeConnectedAccountId = accountId, DateCreated = DateTime.UtcNow };
             _ctx.StripeConfig.Add(newAccountRecord);
-            await _ctx.SaveChangesAsync();
+            _ctx.SaveChanges();
         }
 
         private async Task DeleteStoredAccounts(string accountToPersist)
@@ -63,7 +63,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
                         _ctx.Remove(list[i]);
                     }
                 }
-                await _ctx.SaveChangesAsync();
+                _ctx.SaveChanges();
             }
 
             catch (Exception ex)

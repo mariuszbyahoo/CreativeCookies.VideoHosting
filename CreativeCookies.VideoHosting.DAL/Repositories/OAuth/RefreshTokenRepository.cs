@@ -32,7 +32,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories.OAuth
             {
                 _context.RefreshTokens.Remove(dao);
 
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
             }
         }
 
@@ -40,7 +40,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories.OAuth
         {
             _context.RemoveRange(refreshTokens);
 
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
         public async Task<RefreshTokenDto> SaveRefreshToken(RefreshTokenDto refreshTokenDto)
@@ -55,7 +55,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories.OAuth
             };
 
             _context.RefreshTokens.Add(refreshTokenDao);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
 
             return new RefreshTokenDto(refreshTokenDao.Id, Guid.Parse(refreshTokenDao.UserId), refreshTokenDao.Token, refreshTokenDao.CreatedAt, refreshTokenDao.Expires);
         }
@@ -90,7 +90,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories.OAuth
             {
                 refreshToken.IsRevoked = true;
                 _context.RefreshTokens.Update(refreshToken);
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
             }
         }
 

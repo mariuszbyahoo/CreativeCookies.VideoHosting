@@ -24,6 +24,8 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Merchant> Merchant { get; set; }
         public DbSet<InvoiceNum> InvoiceNums { get; set; }
+        public DbSet<WebsiteRegulations> Regulations { get; set; }
+        public DbSet<WebsitePrivacyPolicy> PrivacyPolicies { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -39,7 +41,8 @@ namespace CreativeCookies.VideoHosting.DAL.Contexts
                 .HasForeignKey<Address>(a => a.UserId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
-            ;
+            builder.Entity<WebsiteRegulations>().HasKey(r => r.Id);
+            builder.Entity<WebsitePrivacyPolicy>().HasKey(r => r.Id);
             builder.Entity<MyHubUser>().Property(s => s.StripeCustomerId).IsRequired(false);
             builder.Entity<VideoMetadata>(o =>
             {

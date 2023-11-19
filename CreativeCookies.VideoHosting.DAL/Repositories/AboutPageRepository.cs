@@ -37,13 +37,13 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
                 record = new DAOs.AboutPageContent();
                 record.InnerHtml = newInnerHtml;
                 await _ctx.AboutPageContent.AddAsync(record);
-                var res = await _ctx.SaveChangesAsync();
+                var res = _ctx.SaveChanges();
                 return res > 0;
             }
             else
             {
                 record.InnerHtml = newInnerHtml;
-                var res = await _ctx.SaveChangesAsync();
+                var res = _ctx.SaveChanges();
                 return res > 0;
             }
         }

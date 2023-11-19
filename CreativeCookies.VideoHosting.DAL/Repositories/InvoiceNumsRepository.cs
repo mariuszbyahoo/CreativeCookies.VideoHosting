@@ -30,7 +30,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
 
             var invoiceNumEntity = new InvoiceNum { Id = newInvoiceNum };
             _ctx.InvoiceNums.Add(invoiceNumEntity);
-            await _ctx.SaveChangesAsync();
+            _ctx.SaveChanges();
 
             return newInvoiceNum;
         }

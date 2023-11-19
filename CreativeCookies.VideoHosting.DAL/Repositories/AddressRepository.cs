@@ -29,7 +29,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             if (address.AppartmentNo != null) dao.AppartmentNo = address.AppartmentNo;
 
             _ctx.Addresses.Add(dao);
-            return await _ctx.SaveChangesAsync();
+            return _ctx.SaveChanges();
         }
 
         public async Task<InvoiceAddressDto?> GetAddress(string userId)
@@ -74,7 +74,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             address.Country = updatedAddress.Country;
             address.UserId = updatedAddress.UserId;
 
-            return await _ctx.SaveChangesAsync();
+            return _ctx.SaveChanges();
         }
 
         private async Task<InvoiceAddressDto?> FetchAddressById(Guid addressId)
