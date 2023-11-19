@@ -14,6 +14,7 @@ using CreativeCookies.VideoHosting.Infrastructure.Stripe;
 using CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe;
 using System.Globalization;
 using PdfSharp.Fonts;
+using Azure;
 
 namespace CreativeCookies.VideoHosting.Infrastructure.ServiceCollectionExtension
 {
@@ -36,7 +37,14 @@ namespace CreativeCookies.VideoHosting.Infrastructure.ServiceCollectionExtension
                 stripeSecretKey = client.GetSecret("StripeTestAPIKey");
                 stripeWebhookSigningKey = client.GetSecret("StripeTestWebhookSigningKey");
             }
-            nettApplicationFee = client.GetSecret("NettApplicationFee");
+            try
+            {
+                nettApplicationFee = client.GetSecret("NettApplicationFee");
+            }
+            catch (RequestFailedException ex)
+            {
+                nettApplicationFee = new KeyVaultSecret("NettApplicationFee", "0.1");
+            }
             services.AddSingleton(w => new ApplicationFeeWrapper(decimal.Parse(nettApplicationFee.Value, CultureInfo.InvariantCulture)));
             services.AddSingleton(w => new StripeSecretKeyWrapper(stripeSecretKey.Value));
             services.AddSingleton(w => new StripeWebhookSigningKeyWrapper(stripeWebhookSigningKey.Value));
