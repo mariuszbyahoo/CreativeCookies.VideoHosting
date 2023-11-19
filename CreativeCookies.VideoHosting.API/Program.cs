@@ -61,12 +61,11 @@ namespace CreativeCookies.VideoHosting.API
                     .SetDefaultCulture(supportedCultures[0])
                     .AddSupportedCultures(supportedCultures)
                     .AddSupportedUICultures(supportedCultures);
+                options.DefaultRequestCulture = new RequestCulture("pl-PL");
 
                 options.RequestCultureProviders = new List<IRequestCultureProvider>
                 {
-                    new QueryStringRequestCultureProvider(),
-                    new CookieRequestCultureProvider(),
-                    new AcceptLanguageHeaderRequestCultureProvider()
+                    new CookieRequestCultureProvider()
                 };
             });
 
@@ -248,13 +247,12 @@ namespace CreativeCookies.VideoHosting.API
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
-
-            app.MigrateAndPopulateDatabase(adminEmail);
             var localizationOptions = app.Services.GetService<IOptions<RequestLocalizationOptions>>()?.Value;
             if (localizationOptions != null)
             {
                 app.UseRequestLocalization(localizationOptions);
             }
+            app.MigrateAndPopulateDatabase(adminEmail);
             app.UseHangfireDashboard("/hangfire", new DashboardOptions
             {
                 Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
