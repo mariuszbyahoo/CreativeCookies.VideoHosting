@@ -25,7 +25,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             var newError = new ClientException() { Id = Guid.NewGuid(), Log = errorLog };
 
             var res = await _ctx.AddAsync(newError);
-            await _ctx.SaveChangesAsync();
+            _ctx.SaveChanges();
             if (res == null) return null;
             else
             {

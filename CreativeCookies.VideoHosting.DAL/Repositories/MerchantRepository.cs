@@ -26,7 +26,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
                 newMerchant.AppartmentNo, newMerchant.PostCode, newMerchant.City, 
                 newMerchant.Country, newMerchant.IsVATExempt);
             _ctx.Merchant.Add(dao);
-            return await _ctx.SaveChangesAsync();
+            return _ctx.SaveChanges();
         }
 
         public async Task<MerchantDto?> GetMerchant()
@@ -52,7 +52,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             dao.Country = newMerchant.Country;
             dao.IsVATExempt = newMerchant.IsVATExempt;
 
-            return await _ctx.SaveChangesAsync();
+            return _ctx.SaveChanges();
         }
     }
 }

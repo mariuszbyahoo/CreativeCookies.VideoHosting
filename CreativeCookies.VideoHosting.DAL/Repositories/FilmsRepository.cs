@@ -54,7 +54,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
                 Id = metadata.Id, BlobUrl = metadata.BlobUrl, CreatedOn = metadata.CreatedOn, Description = metadata.Description, 
                 Length = metadata.Length, Name = metadata.Name, ThumbnailName = metadata.ThumbnailName, VideoType = metadata.VideoType };
             _context.VideosMetadata.Add(dao);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
             var result = new VideoMetadataDto(dao.Id, dao.Name, dao.Description, dao.Length, dao.ThumbnailName, dao.BlobUrl, dao.VideoType, dao.CreatedOn);
             return result;
         }
@@ -71,7 +71,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
                 videoMetadataToUpdate.Description = metadata.Description;
 
                 // Save the changes to the database.
-                var status = await _context.SaveChangesAsync();
+                var status = _context.SaveChanges();
                 if(status > 0) 
                     return metadata;
             }
@@ -87,7 +87,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             {
                 // Delete the video metadata from the database
                 _context.VideosMetadata.Remove(videoMetadata);
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
             }
         }
     }
