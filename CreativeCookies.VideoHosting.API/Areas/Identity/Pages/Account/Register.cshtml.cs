@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using CreativeCookies.VideoHosting.DTOs.OAuth;
 using CreativeCookies.VideoHosting.Contracts.Email;
+using CreativeCookies.VideoHosting.API.Attributes;
 
 namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 {
@@ -47,21 +48,33 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
 
         public class InputModel
         {
-            [Required]
+            [Required(ErrorMessage = "Email jest wymagany")]
             [EmailAddress]
             [Display(Name = "Email")]
             public string Email { get; set; }
 
-            [Required]
-            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+            [Required(ErrorMessage = "Hasło jest wymagane")]
+            [StringLength(100, ErrorMessage = "{0} musi być dłuższe niż {2} oraz krótsze niż {1}", MinimumLength = 6)]
             [DataType(DataType.Password)]
             [Display(Name = "Password")]
             public string Password { get; set; }
 
             [DataType(DataType.Password)]
             [Display(Name = "Confirm password")]
-            [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+            [Compare("Password", ErrorMessage = "Hasła są różne")]
             public string ConfirmPassword { get; set; }
+
+            [MustBeTrue(ErrorMessage = "Musisz zaakceptować Regulamin Serwisu i Politykę Prywatności.")]
+            [Display(Name = "Oświadczam, że zapoznałam/em się z Regulaminem Serwisu i Polityką Prywatności Serwisu oraz akceptuję ich treść.")]
+            public bool AcceptTermsAndPrivacy { get; set; }
+
+            [MustBeTrue(ErrorMessage = "Musisz wyrazić zgodę na przetwarzanie danych osobowych.")]
+            [Display(Name = "Wyrażam zgodę na przetwarzanie moich danych osobowych w celach marketingowych przez Operatora Serwisu. Moja zgoda obejmuje nazwę lub imię i nazwisko oraz adres e-mail podane podczas dokonania Rejestracji.")]
+            public bool ConsentToProcessData { get; set; }
+
+            [MustBeTrue(ErrorMessage = "Musisz wyrazić zgodę na używanie środków komunikacji elektronicznej.")]
+            [Display(Name = "Wyrażam zgodę na używanie przez Operatora Serwisu środków komunikacji elektronicznej oraz telekomunikacyjnych urządzeń końcowych w celu przesyłania mi informacji handlowych oraz prowadzenia marketingu przez Operatora Serwisu.")]
+            public bool ConsentToElectronicCommunication { get; set; }
         }
 
 
