@@ -58,6 +58,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             if(dao == null)
             {
                 dao = new WebsitePrivacyPolicy();
+                _ctx.PrivacyPolicies.Add(dao);
             }
             dao.HtmlContent = dto.HtmlContent;
             var res = _ctx.SaveChanges();
@@ -74,6 +75,7 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories
             if (dao == null)
             {
                 dao = new WebsiteRegulations();
+                _ctx.Regulations.Add(dao);
             }
             dao.HtmlContent = dto.HtmlContent;
             var res = _ctx.SaveChanges();
