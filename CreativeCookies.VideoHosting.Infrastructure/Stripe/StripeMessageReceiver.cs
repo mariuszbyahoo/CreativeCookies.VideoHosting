@@ -149,6 +149,8 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 
                                 if (checkoutSession.Mode.Equals("payment"))
                                 {
+                                    TimeSpan trialPeriod;
+
                                     var paymentIntentService = new PaymentIntentService();
                                     var paymentIntent = paymentIntentService.Get(checkoutSession.PaymentIntentId, requestOptions: new RequestOptions() { StripeAccount = stripeEvent.Account });
                                     _logger.LogWarning($"Payment intent performed with an ID: {paymentIntent.Id}, methodId: {paymentIntent.PaymentMethodId}, and sourceId: {paymentIntent.SourceId}");
@@ -167,7 +169,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                                     else
                                         _logger.LogError($"Setting payment as default has not respond with 200 due to error {customer.StripeResponse.StatusCode}, requestId: {customer.StripeResponse.RequestId} with paymentIntent data. An ID: {paymentIntent.Id}, methodId: {paymentIntent.PaymentMethodId}, and sourceId: {paymentIntent.SourceId}");
 
-                                    // HACK: Adjust to subscription start on 00:00 UTC of the next day.
+                                    
                                     var beginningOfTommorow = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, 0, 0, 0, DateTimeKind.Utc).AddDays(1);
                                     var subscriptionStartDate = beginningOfTommorow.AddDays(14);
                                     var subscriptionEndDate = beginningOfTommorow.AddMonths(1).AddDays(14);
@@ -184,8 +186,25 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                                         && p.UnitAmount == checkoutSession.AmountTotal).FirstOrDefault();
 
                                     var checkoutService = scope.ServiceProvider.GetRequiredService<ICheckoutService>();
-
-                                    var jobIdentifier = _backgroundJobClient.Schedule(() => checkoutService.CreateDeferredSubscription(checkoutSession.CustomerId, desiredPrice.Id), delay);
+                                    switch (desiredPrice.RecurringInterval)
+                                    {
+                                        case "year":
+                                            trialPeriod = DateTime.UtcNow.Subtract(DateTime.UtcNow.AddMonths(12));
+                                            break;
+                                        case "month":
+                                            trialPeriod = DateTime.UtcNow.Subtract(DateTime.UtcNow.AddMonths(1));
+                                            break;
+                                        case "week":
+                                            trialPeriod = TimeSpan.FromDays(7);
+                                            break;
+                                        case "day":
+                                            trialPeriod = TimeSpan.FromDays(1);
+                                            break;
+                                        default:
+                                            trialPeriod = DateTime.UtcNow.Subtract(DateTime.UtcNow.AddMonths(1));
+                                            break;
+                                    }
+                                    var jobIdentifier = _backgroundJobClient.Schedule(() => checkoutService.CreateDeferredSubscription(checkoutSession.CustomerId, desiredPrice.Id, trialPeriod), delay);
                                     if (!string.IsNullOrWhiteSpace(jobIdentifier)) userRepo.AssignHangfireJobIdToUser(checkoutSession.CustomerId, jobIdentifier);
 
                                     var res = userRepo.ChangeSubscriptionDatesUTC(checkoutSession.CustomerId, subscriptionStartDate, subscriptionEndDate);
