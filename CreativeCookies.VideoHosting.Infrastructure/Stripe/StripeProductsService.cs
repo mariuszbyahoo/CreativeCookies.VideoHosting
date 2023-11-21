@@ -171,8 +171,6 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             var result = new List<PriceDto>();
             for (int i = 0; i < prices.Data.Count(); i++)
             {
-                if (prices.Data[i].Active == true)
-                {
                     result.Add(
                         new PriceDto(
                             prices.Data[i].Id,
@@ -181,7 +179,6 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                             prices.Data[i].Currency,
                             prices.Data[i].UnitAmount,
                             prices.Data[i].Recurring?.Interval ?? string.Empty));
-                }
             }
             return result;
         }

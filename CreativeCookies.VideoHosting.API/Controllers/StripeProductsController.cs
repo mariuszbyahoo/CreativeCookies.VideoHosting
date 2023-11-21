@@ -63,7 +63,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
             var result = await _subscriptionPlanService.FetchSubscriptionPlan();
             if (result != null)
             {
-                result.Prices = await _stripeProductsService.GetStripePrices(result.Id);
+                result.Prices = (await _stripeProductsService.GetStripePrices(result.Id))
+                    .Where(p => p.IsActive == true).ToList();
             }
             return Ok(result);
         }
@@ -87,15 +88,8 @@ namespace CreativeCookies.VideoHosting.API.Controllers
         public async Task<ActionResult<IEnumerable<PriceDto>>> GetAll([FromQuery] string productId)
         {
             if (string.IsNullOrWhiteSpace(productId)) return BadRequest("productId is required");
-            var res = await _stripeProductsService.GetStripePrices(productId);
-            return Ok(res);
-        }
-
-        [HttpGet("GetPriceById")]
-        public ActionResult<IEnumerable<PriceDto>> GetPriceById([FromQuery] string priceId)
-        {
-            if (string.IsNullOrWhiteSpace(priceId)) return BadRequest("priceId is required");
-            var res = _stripeProductsService.GetStripePrices(priceId);
+            var res = (await _stripeProductsService.GetStripePrices(productId))
+                .Where(p => p.IsActive == true);
             return Ok(res);
         }
 
