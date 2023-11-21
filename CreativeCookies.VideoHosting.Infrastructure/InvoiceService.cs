@@ -68,8 +68,8 @@ namespace CreativeCookies.VideoHosting.Infrastructure
             XFont regularFont = new XFont("Default", 10);
 
             // Define the colors
-            XBrush brush = new XSolidBrush(XColor.FromArgb(250, 250, 250)); // Background color (Gold)
-            XBrush blackBrush = new XSolidBrush(XColor.FromArgb(0, 0, 0)); // Text color (Black)
+            XBrush brush = new XSolidBrush(XColor.FromArgb(250, 250, 250)); 
+            XBrush blackBrush = new XSolidBrush(XColor.FromArgb(0, 0, 0)); 
 
             // Draw the background
             gfx.DrawRectangle(brush, 0, 0, page.Width, page.Height);
