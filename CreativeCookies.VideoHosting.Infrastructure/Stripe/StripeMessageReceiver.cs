@@ -180,8 +180,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                                     var prices = await stripeProductsService.GetStripePrices(product.Id);
 
                                     var desiredPrice = prices.Where(p =>
-                                        p.IsActive
-                                        && p.Currency.Equals(checkoutSession.Currency, StringComparison.InvariantCultureIgnoreCase)
+                                        p.Currency.Equals(checkoutSession.Currency, StringComparison.InvariantCultureIgnoreCase)
                                         && p.UnitAmount == checkoutSession.AmountTotal).FirstOrDefault();
 
                                     var checkoutService = scope.ServiceProvider.GetRequiredService<ICheckoutService>();
