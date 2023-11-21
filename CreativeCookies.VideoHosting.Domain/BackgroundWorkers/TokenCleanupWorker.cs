@@ -23,7 +23,6 @@ namespace CreativeCookies.VideoHosting.Domain.BackgroundWorkers
                     using (var scope = _serviceScopeFactory.CreateScope())
                     {
                         var authCodeRepository = scope.ServiceProvider.GetRequiredService<IAuthorizationCodeService>();
-                        // HACK: TODO Add expired tokens cleanup!
                         await authCodeRepository.ClearExpiredAuthorizationCodes();
                     }
                     await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);

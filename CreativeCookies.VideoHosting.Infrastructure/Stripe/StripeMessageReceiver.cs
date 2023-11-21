@@ -34,6 +34,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         private readonly IBackgroundJobClient _backgroundJobClient;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger _logger;
+        private readonly string _websiteName;
         private readonly string _connectAccountId;
 
 
@@ -43,6 +44,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
         {
             _logger = logger;
             _serviceBusClient = new ServiceBusClient(configuration.GetValue<string>("ServiceBusConnectionString"));
+            _websiteName = configuration.GetValue<string>("WebsiteName");
             _endpointSecretWrapper = endpointSecretWrapper;
             _secretKeyWrapper = secretKeyWrapper;
             _serviceScopeFactory = serviceScopeFactory;
@@ -269,7 +271,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                     _logger.LogInformation($"Starting Invoice generation, is emailService null? {emailService == null}");
                     var invoiceData = await invoiceService.GenerateInvoicePdf(amount, currency, user.Address, merchant);
                     _logger.LogInformation($"Invoice {invoiceData.InvoiceNumber}, generated successfully");
-                    var res = await emailService.SendInvoiceAsync(user.UserEmail, invoiceData.InvoiceNumber, "TODOWebsiteName", invoiceData);
+                    var res = await emailService.SendInvoiceAsync(user.UserEmail, invoiceData.InvoiceNumber, _websiteName, invoiceData);
                     _logger.LogInformation($"Invoice generation finished, result of IEmailService.SendInvoiceAsync(args) = {res}");
                 }
             }

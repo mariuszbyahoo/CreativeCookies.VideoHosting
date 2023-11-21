@@ -26,8 +26,6 @@ namespace CreativeCookies.VideoHosting.DAL.Repositories.OAuth
         public async Task ClearExpiredAuthorizationCodes()
         {
             var expiredCodes = _ctx.AuthorizationCodes.Where(ac => ac.Expiration < DateTime.UtcNow).ToList();
-            // HACK TODO: ADD LOGGER AND LOG DELETED Codes!
-            // HACK TODO: Log eventual exceptions
             _ctx.AuthorizationCodes.RemoveRange(expiredCodes);
             _ctx.SaveChanges();
         }
