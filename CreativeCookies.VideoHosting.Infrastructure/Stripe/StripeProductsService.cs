@@ -171,14 +171,17 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             var result = new List<PriceDto>();
             for (int i = 0; i < prices.Data.Count(); i++)
             {
-                result.Add(
-                    new PriceDto(
-                        prices.Data[i].Id,
-                        prices.Data[i].Active,
-                        prices.Data[i].ProductId,
-                        prices.Data[i].Currency,
-                        prices.Data[i].UnitAmount,
-                        prices.Data[i].Recurring?.Interval ?? string.Empty));
+                if (prices.Data[i].Active == true)
+                {
+                    result.Add(
+                        new PriceDto(
+                            prices.Data[i].Id,
+                            prices.Data[i].Active,
+                            prices.Data[i].ProductId,
+                            prices.Data[i].Currency,
+                            prices.Data[i].UnitAmount,
+                            prices.Data[i].Recurring?.Interval ?? string.Empty));
+                }
             }
             return result;
         }
