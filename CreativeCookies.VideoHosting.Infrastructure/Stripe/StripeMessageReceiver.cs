@@ -178,9 +178,9 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
 
                                     
                                     var beginningOfTommorow = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, 0, 0, 0, DateTimeKind.Utc).AddDays(1);
-                                    var subscriptionStartDate = DateTime.UtcNow.AddMinutes(15);// beginningOfTommorow.AddDays(14);
-                                    var subscriptionEndDate = DateTime.UtcNow.AddMinutes(15).AddDays(1); // beginningOfTommorow.AddMonths(1).AddDays(14);
-                                    var delay = DateTime.UtcNow.AddMinutes(15).Subtract(DateTime.UtcNow); //subscriptionStartDate.Subtract(DateTime.UtcNow);
+                                    var subscriptionStartDate = beginningOfTommorow.AddDays(14);
+                                    var subscriptionEndDate = beginningOfTommorow.AddMonths(1).AddDays(14);
+                                    var delay = subscriptionStartDate.Subtract(DateTime.UtcNow);
 
                                     _logger.LogInformation($"Adding a subscription starting at {subscriptionStartDate} till {subscriptionEndDate}");
                                     var stripeProductsService = scope.ServiceProvider.GetRequiredService<IStripeProductsService>();
