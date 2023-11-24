@@ -116,8 +116,8 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account
                     var websiteUrl = _configuration.GetValue<string>("ClientUrl");
                     var wasEmailSent = await _emailService.SendAccountActivationEmailAsync(
                         Input.Email, 
-                        $"Confirm your account at {websiteName}", 
-                        $"You're recieving this email because you've requested to sign in at {websiteName}: {websiteUrl}",
+                        $"Potwierdzenie konta {websiteName}", 
+                        $"Otrzymałeś tego maila ponieważ zgłosiłeś chęć rejestracji konta na stronie {websiteName}: {websiteUrl}",
                         websiteUrl, websiteName, callbackUrl);
                     if (wasEmailSent)
                     {
