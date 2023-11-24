@@ -199,8 +199,19 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             };
 
             var service = new SubscriptionService();
-            Subscription subscription = service.Create(options, requestOptions: _requestOptions);
-            return subscription.Id;
+            try
+            {
+                Subscription subscription = service.Create(options, requestOptions: _requestOptions);
+                return subscription.Id;
+            }
+            catch (StripeException ex)
+            {
+                if (ex.Message.Contains("price specified is inactive"))
+                {
+                    _logger.LogError(ex, "An attempt has been made to create a subscription using an archived price");
+                }
+                return string.Empty;
+            }
         }
 
         public async Task<bool> RefundCanceledOrder(string userId)
