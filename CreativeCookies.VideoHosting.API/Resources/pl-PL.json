@@ -151,5 +151,16 @@
   "Register2": "Zarejestruj",
   "Invoice": "Faktura",
   "InvoiceMailTxt1": "Otrzymałeś nową fakturę o numerze: ",
-  "InvoiceMailTxt2": "Znajdziesz ją w załącznikach do tej wiadomości"
+  "InvoiceMailTxt2": "Znajdziesz ją w załącznikach do tej wiadomości",
+  "FirstName": "Imię",
+  "LastName": "Nazwisko",
+  "Street": "Ulica",
+  "HouseNo": "Nr budynku",
+  "ApparmentNo": "Nr lokalu",
+  "PostCode": "Kod pocztowy",
+  "City": "Miejscowość",
+  "Country": "Kraj",
+  "ManageAddress": "Zarządzaj adresem",
+  "ManageAddressDesc": "Tutaj możesz edytować adres który zostanie użyty w celu wygenerowania faktury VAT",
+  "SaveAddress": "Zapisz adres"
 }

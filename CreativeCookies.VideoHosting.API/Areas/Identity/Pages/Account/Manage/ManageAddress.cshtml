@@ -1,0 +1,72 @@
+﻿@page
+@model CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage.ManageAddressModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@{
+    ViewData["ActivePage"] = ManageNavPages.ManageAddresses;
+}
+
+<h3>@Localizer["ManageAddress"]</h3>
+
+<p>
+    @Localizer["ManageAddressDesc"]</p>
+    <form method="post">
+        <input asp-for="Address.Id" type="hidden" />
+        <input asp-for="Address.UserId" type="hidden" />
+        <div class="row">
+            <div class="form-group col-md-4" style="margin-top:1%;">
+                <label asp-for="Address.FirstName" class="control-label">@Localizer["FirstName"]</label>
+                <input asp-for="Address.FirstName" class="form-control" />
+                <span asp-validation-for="Address.FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group col-md-4" style="margin-top:1%;">
+                <label asp-for="Address.LastName" class="control-label">@Localizer["LastName"]</label>
+                <input asp-for="Address.LastName" class="form-control" />
+                <span asp-validation-for="Address.LastName" class="text-danger"></span>
+            </div>
+            </div>
+                    <div class="row">
+
+            <div class="form-group col-md-4" style="margin-top:1%;">
+                <label asp-for="Address.Street" class="control-label">@Localizer["Street"]</label>
+                <input asp-for="Address.Street" class="form-control" />
+                <span asp-validation-for="Address.Street" class="text-danger"></span>
+            </div>
+            <div class="form-group col-md-4"style="margin-top:1%;">
+                <label asp-for="Address.HouseNo" class="control-label">@Localizer["HouseNo"]</label>
+                <input asp-for="Address.HouseNo" class="form-control" />
+                <span asp-validation-for="Address.HouseNo" class="text-danger"></span>
+            </div>
+            <div class="form-group col-md-4" style="margin-top:1%;">
+                <label asp-for="Address.AppartmentNo" class="control-label">@Localizer["AppartmentNo"]</label>
+                <input asp-for="Address.AppartmentNo" class="form-control" />
+                <span asp-validation-for="Address.AppartmentNo" class="text-danger"></span>
+            </div>
+            </div>
+                    <div class="row">
+            <div class="form-group col-md-4" style="margin-top:1%;">
+                <label asp-for="Address.PostCode" class="control-label">@Localizer["PostCode"]</label>
+                <input asp-for="Address.PostCode" class="form-control" />
+                <span asp-validation-for="Address.PostCode" class="text-danger"></span>
+            </div>
+
+            <div class="form-group col-md-4"style="margin-top:1%;">
+                <label asp-for="Address.City" class="control-label">@Localizer["City"]</label>
+                <input asp-for="Address.City" class="form-control" />
+                <span asp-validation-for="Address.City" class="text-danger"></span>
+            </div>
+            <div class="form-group col-md-4"style="margin-top:1%;">
+                <label asp-for="Address.Country" class="control-label">@Localizer["Country"]</label>
+                <input asp-for="Address.Country" class="form-control" value="Polska" disabled />
+                <input type="hidden" asp-for="Address.Country" value="Polska" />
+                <span asp-validation-for="Address.Country" class="text-danger"></span>
+        </div>
+            </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary" style="margin-top:1%;">@Localizer["SaveAddress"]</button>
+        </div>
+    </form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
