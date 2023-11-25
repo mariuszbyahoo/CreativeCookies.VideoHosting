@@ -1,4 +1,4 @@
-using CreativeCookies.VideoHosting.Contracts.Services.IdP;
+﻿using CreativeCookies.VideoHosting.Contracts.Services.IdP;
 using CreativeCookies.VideoHosting.Contracts.Services;
 using CreativeCookies.VideoHosting.DTOs;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +10,9 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
     {
         private readonly IMyHubUserManager _userManager;
         private readonly IAddressService _addressService;
+
+        [TempData]
+        public string StatusMessage { get; set; }
 
         [BindProperty]
         public InvoiceAddressDto Address { get; set; }
@@ -50,7 +53,7 @@ namespace CreativeCookies.VideoHosting.API.Areas.Identity.Pages.Account.Manage
             }
 
             await _addressService.UpsertAddress(Address);
-
+            StatusMessage = "Adres został zedytowany";
             return RedirectToPage("./ManageAddress", new { success = true });
         }
     }
