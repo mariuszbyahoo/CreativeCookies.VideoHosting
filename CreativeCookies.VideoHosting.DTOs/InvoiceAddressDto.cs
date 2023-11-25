@@ -27,6 +27,10 @@ namespace CreativeCookies.VideoHosting.DTOs
             Country = country;
             UserId = userId;
         }
+        public InvoiceAddressDto()
+        {
+
+        }
 
         public override bool Equals(object obj)
         {

@@ -179,7 +179,7 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
             return session.PaymentStatus.Equals("paid");
         }
 
-        public string CreateDeferredSubscription(string customerId, string priceId)
+        public string CreateDeferredSubscription(string customerId, string priceId, TimeSpan trialPeriod)
         {
             StripeConfiguration.ApiKey = _stripeApiSecretKey;
             var beginningOfTommorow = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, 0, 0, 0, DateTimeKind.Utc).AddDays(1);
@@ -194,13 +194,24 @@ namespace CreativeCookies.VideoHosting.Infrastructure.Stripe
                         Price = priceId
                     },
                 },
-                TrialEnd = beginningOfTommorow.AddDays(14)
+                TrialEnd = beginningOfTommorow.Add(trialPeriod)
                 // Set TrialEnd to next day's beginning and add 14 days for the trial period
             };
 
             var service = new SubscriptionService();
-            Subscription subscription = service.Create(options, requestOptions: _requestOptions);
-            return subscription.Id;
+            try
+            {
+                Subscription subscription = service.Create(options, requestOptions: _requestOptions);
+                return subscription.Id;
+            }
+            catch (StripeException ex)
+            {
+                if (ex.Message.Contains("price specified is inactive"))
+                {
+                    _logger.LogError(ex, "An attempt has been made to create a subscription using an archived price");
+                }
+                return string.Empty;
+            }
         }
 
         public async Task<bool> RefundCanceledOrder(string userId)

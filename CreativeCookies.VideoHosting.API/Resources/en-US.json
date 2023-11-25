@@ -151,5 +151,16 @@
   "Register2": "Register",
   "Invoice": "Invoice",
   "InvoiceMailTxt1": "You have received a new invoice no: ",
-  "InvoiceMailTxt2": "You can find it in this email attachments"
+  "InvoiceMailTxt2": "You can find it in this email attachments",
+  "FirstName": "First name",
+  "LastName": "Last name",
+  "Street": "Street ",
+  "HouseNo": "House no",
+  "ApparmentNo": "Appartment no",
+  "PostCode": "Post code",
+  "City": "City",
+  "Country": "Country",
+  "ManageAddress": "Manage address",
+  "ManageAddressDesc": "Here you can edit the address which will be used to generate an invoice",
+  "SaveAddress": "Save address"
 }

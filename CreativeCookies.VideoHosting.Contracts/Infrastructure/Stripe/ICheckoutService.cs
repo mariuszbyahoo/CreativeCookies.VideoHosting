@@ -13,8 +13,14 @@ namespace CreativeCookies.VideoHosting.Contracts.Infrastructure.Stripe
 
         Task<bool> IsSessionPaymentPaid(string sessionId);
 
-        string CreateDeferredSubscription(string customerId, string priceId);
-
+        /// <summary>
+        /// Creates subscription with specified TrialPeriod
+        /// </summary>
+        /// <param name="customerId"></param>
+        /// <param name="priceId"></param>
+        /// <param name="TrialPeriod">Trial period after which user will be charged normally</param>
+        /// <returns></returns>
+        string CreateDeferredSubscription(string customerId, string priceId, TimeSpan TrialPeriod);
         /// <summary>
         /// Initiates full refund for customer - use in case of cancellation within 14 days cooling off period
         /// </summary>
